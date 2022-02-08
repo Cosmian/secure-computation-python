@@ -9,13 +9,6 @@ def is_hidden(path: Path) -> bool:
     return any((part.startswith(".") for part in path.parts))
 
 
-def listing(dir_path: Path, dot_files: bool = False) -> Iterator[Path]:
-    for path in dir_path.absolute().rglob("*"):  # type: Path
-        if path.is_file():
-            if not dot_files and not is_hidden(path.relative_to(dir_path)):
-                yield path
-
-
 def ls(dir_path: Path, dot_files: bool = False) -> Iterator[Path]:
     for path in sorted(dir_path.absolute().rglob("*")):  # type: Path
         if path.is_file():
@@ -25,7 +18,7 @@ def ls(dir_path: Path, dot_files: bool = False) -> Iterator[Path]:
 
 def tar(dir_path: Path, tar_path: Path, dot_files: bool = False) -> Path:
     with tarfile.open(tar_path, "w:") as tar_file:
-        for path in listing(dir_path, dot_files):
+        for path in ls(dir_path, dot_files):
             rel_path: Path = path.relative_to(dir_path)
             tar_file.add(path, rel_path)
 
