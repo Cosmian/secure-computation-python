@@ -6,7 +6,7 @@ from typing import Iterator
 
 import pandas as pd
 
-from cosmian_lib.sgx import KeyInfo, InputData, OutputData, parse_args
+from cosmian_lib_sgx import KeyInfo, InputData, OutputData, parse_args
 
 
 def merge_all(datas: Iterator[BytesIO], on: str, sep: str = ";") -> pd.DataFrame:
