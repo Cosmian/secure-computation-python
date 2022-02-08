@@ -12,7 +12,7 @@ def pytest_addoption(parser):
                      default="127.0.0.1")
     parser.addoption("--port",
                      action="store",
-                     default="9999")
+                     default=None)
     parser.addoption("--ssl",
                      action="store_true",
                      default=False)

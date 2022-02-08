@@ -6,7 +6,7 @@ Client to communicate with `enclave-http` API powered by Intel SGX.
 
 ## Install
 
-```
+```console
 $ pip install .
 ```
 
@@ -98,3 +98,15 @@ print("==> Result saved in result.csv")
 
 result_owner.reset(algo_name=algo_name)
 ```
+
+## Test
+
+```console
+$ pytest
+```
+
+Optional arguments:
+
+- `--host HOST`, default to `"127.0.0.1"`
+- `--port PORT`, default to `None`
+- `--ssl`, default to `False`
