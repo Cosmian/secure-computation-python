@@ -7,7 +7,7 @@ from cosmian_client_sgx.crypto.helper import (x25519_keypair, x25519_pubkey_from
                                               client_shared_key, encrypt, decrypt,
                                               encrypt_file, decrypt_file,
                                               encrypt_directory, decrypt_directory,
-                                              random_symkey, pubkey_fingerprint)
+                                              random_symkey, pubkey_fingerprint, seal)
 
 
 class CryptoContext:
@@ -70,3 +70,6 @@ class CryptoContext:
 
     def decrypt_directory(self, dir_path: Path) -> bool:
         return decrypt_directory(dir_path, self._symkey)
+
+    def seal_symkey(self, recipient_public_key: bytes) -> bytes:
+        return seal(self._symkey, recipient_public_key)
