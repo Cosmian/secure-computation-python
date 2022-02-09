@@ -52,15 +52,3 @@ class AlgoProviderAPI(CommonAPI):
         else:
             tar_path = tar(dir_path, dir_path / f"{dir_path.name}.tar")
         return self.upload_tar(tar_path)
-
-    def start_daemon(self, entrypoint: str) -> Dict[str, str]:
-        resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/start_daemon/{self.algo_name}",
-            json={"entrypoint": entrypoint})
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-
-        return resp.json()
