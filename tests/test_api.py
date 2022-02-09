@@ -5,10 +5,9 @@ import pytest
 
 @pytest.mark.incremental
 class TestAPI:
-    # TODO: fix enclave-http tokio runtime error
-    # @staticmethod
-    # def test_reset_first(result_owner, algo_name):
-    #     assert result_owner.reset(algo_name=algo_name) is True
+    @staticmethod
+    def test_reset_first(result_owner, algo_name):
+        assert result_owner.reset(algo_name=algo_name) is True
 
     @staticmethod
     def test_ap_handshake(algo_provider):
