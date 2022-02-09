@@ -7,7 +7,7 @@ from cosmian_client_sgx.crypto.helper import (x25519_keypair, x25519_pubkey_from
                                               client_shared_key, encrypt, decrypt,
                                               encrypt_file, decrypt_file,
                                               encrypt_directory, decrypt_directory,
-                                              pubkey_fingerprint)
+                                              random_symkey, pubkey_fingerprint)
 
 
 class CryptoContext:
@@ -21,6 +21,7 @@ class CryptoContext:
         self.fingerprint: bytes = pubkey_fingerprint(self.pubkey)
         self.remote_pubkey: Optional[bytes] = None
         self._shared_key: Optional[bytes] = None
+        self._symkey: bytes = random_symkey()
 
     def set_keypair(self, public_key: bytes, private_key: bytes) -> None:
         self.pubkey = public_key
@@ -29,6 +30,9 @@ class CryptoContext:
 
         if self.remote_pubkey:
             self.key_exchange(self.remote_pubkey)
+
+    def set_symkey(self, symkey: bytes) -> None:
+        self._symkey = symkey
 
     @classmethod
     def from_path(cls, private_key_path: Path):
@@ -47,22 +51,22 @@ class CryptoContext:
         )
 
     def encrypt(self, data: bytes) -> bytes:
-        return encrypt(data, self._shared_key)
+        return encrypt(data, self._symkey)
 
     def encrypt_file(self, path: Path) -> Path:
-        return encrypt_file(path, self._shared_key)
+        return encrypt_file(path, self._symkey)
 
     def encrypt_directory(self, dir_path: Path, patterns: List[str],
                           exceptions: List[str], dir_exceptions: List[str],
                           out_dir_path: Path) -> bool:
-        return encrypt_directory(dir_path, patterns, self._shared_key,
+        return encrypt_directory(dir_path, patterns, self._symkey,
                                  exceptions, dir_exceptions, out_dir_path)
 
     def decrypt(self, encrypted_data: bytes) -> bytes:
-        return decrypt(encrypted_data, self._shared_key)
+        return decrypt(encrypted_data, self._symkey)
 
     def decrypt_file(self, path: Path) -> Path:
-        return decrypt_file(path, self._shared_key)
+        return decrypt_file(path, self._symkey)
 
     def decrypt_directory(self, dir_path: Path) -> bool:
-        return decrypt_directory(dir_path, self._shared_key)
+        return decrypt_directory(dir_path, self._symkey)
