@@ -14,10 +14,8 @@ class CryptoContext:
     def __init__(self, private_key: Optional[bytes] = None):
         self.privkey: bytes
         self.pubkey: bytes
-        if private_key is None:
-            self.pubkey, self.privkey = x25519_keypair()
-        else:
-            self.pubkey, self.privkey = x25519_pubkey_from_privkey(private_key), private_key
+        self.pubkey, self.privkey = (x25519_keypair() if private_key is None else
+                                    (x25519_pubkey_from_privkey(private_key), private_key))
         self.fingerprint: bytes = pubkey_fingerprint(self.pubkey)
         self.remote_pubkey: Optional[bytes] = None
         self._shared_key: Optional[bytes] = None
@@ -71,5 +69,8 @@ class CryptoContext:
     def decrypt_directory(self, dir_path: Path) -> bool:
         return decrypt_directory(dir_path, self._symkey)
 
-    def seal_symkey(self, recipient_public_key: bytes) -> bytes:
-        return seal(self._symkey, recipient_public_key)
+    def seal_symkey(self) -> bytes:
+        if self.remote_pubkey is None:
+            raise Exception("Remote public key must be setup first!")
+
+        return seal(self._symkey, self.remote_pubkey)

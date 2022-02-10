@@ -58,6 +58,50 @@ class CommonAPI(CryptoContext):
 
         return {"pub_key": self.remote_pubkey, "side": Side[content["side"]]}
 
+    def hello(self) -> Dict[str, str]:
+        resp: requests.Response = self.session.post(
+            url=f"{self.url}/enclave/key/hello",
+            json={
+                "pub_key": list(self.pubkey),
+                "side": str(self.side)
+            })
+
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
+
+        return resp.json()
+
+    def key_finalize(self) -> Dict[str, Union[Side, bytes]]:
+        resp: requests.Response = self.session.get(
+            url=f"{self.url}/enclave/key/finalize")
+
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
+        content: Dict[str, Union[str, List[int]]] = resp.json()
+        self.remote_pubkey = bytes(content["pub_key"])
+
+        return {"pub_key": self.remote_pubkey, "side": Side[content["side"]]}
+
+    def key_provisioning(self) -> Dict[str, str]:
+        resp: requests.Response = self.session.post(
+            url=f"{self.url}/enclave/key/provisioning",
+            json={
+                "fingerprint": self.fingerprint.hex(),
+                "sealed_symkey": list(self.seal_symkey()),
+                "side": str(self.side)
+            })
+
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
+
+        return resp.json()
+
     def remote_attestation(self, quote: Dict[str, str]) -> bool:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/enclave/remote_attestation",
