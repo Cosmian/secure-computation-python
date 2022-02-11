@@ -129,3 +129,15 @@ class CommonAPI(CryptoContext):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
         return resp.json()
+
+    def reset(self) -> bool:
+        resp: requests.Response = self.session.delete(
+            url=f"{self.url}/enclave/reset"
+        )
+
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
+
+        return True if "success" in resp.json() else False

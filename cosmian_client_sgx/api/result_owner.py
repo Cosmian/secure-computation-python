@@ -29,18 +29,6 @@ class ResultOwnerAPI(CommonAPI):
 
         return True if "success" in resp.json() else False
 
-    def reset(self, algo_name: str) -> bool:
-        resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/reset/{algo_name}"
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-
-        return True if "success" in resp.json() else False
-
     def fetch_result(self, algo_name: str) -> Optional[bytes]:
         resp: requests.Response = self.session.get(
             url=f"{self.url}/enclave/result/{algo_name}/{self.fingerprint.hex()}"
