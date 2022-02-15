@@ -1,12 +1,12 @@
-"""CSV Join with Cosmian Confidential Microservice."""
+"""CSV Join with Cosmian Secure Computation."""
 
 from io import BytesIO
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Dict, List
 
 import pandas as pd
 
-from cosmian_lib_sgx import KeyInfo, InputData, OutputData, parse_args
+from cosmian_lib_sgx import InputData, KeyInfo, OutputData, Side, parse_args
 
 
 def merge_all(datas: Iterator[BytesIO], on: str, sep: str = ";") -> pd.DataFrame:
