@@ -7,12 +7,12 @@ setup(
     name="cosmian_client_sgx",
     version="1.0.0",
     python_requires=">=3.8.0",
-    description="Interaction with the REST API of Cosmian Confidential Microservice",
+    description="Interaction with the REST API of Cosmian Secure Computation",
     packages=find_packages(),
     zip_safe=True,
     entry_points={
         "console_scripts": [
-            "cosmian_client_sgx = cosmian_client_sgx.cli:main"
+            "csmutil = cosmian_client_sgx.cli.main:main"
         ]
     },
     install_requires=[
