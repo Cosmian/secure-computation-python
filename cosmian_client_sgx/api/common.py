@@ -4,6 +4,10 @@ import re
 from typing import Optional, Dict, Union, List
 from urllib.parse import unquote
 
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+
 from cosmian_client_sgx.crypto.context import CryptoContext
 from cosmian_client_sgx.api.side import Side
 
@@ -112,12 +116,22 @@ class CommonAPI(CryptoContext):
             raise Exception(
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
-        # print(resp.headers)
-        # print(resp.json())
+
         pems = unquote(resp.headers["x-iasreport-signing-certificate"])
-        m = re.findall(r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", pems, flags=re.DOTALL)
-        print(m)
-        # print(x509.load_pem_x509_certificate(m[0].encode("utf-8")))
+        m = re.findall(
+            r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----",
+            pems,
+            flags=re.DOTALL
+        )
+        intel_cert = x509.load_pem_x509_certificate(m[0].encode("utf-8"))
+        intel_pubkey = intel_cert.public_key()
+
+        intel_pubkey.verify(
+            resp.headers["x-iasreport-signature"].encode("utf-8"),
+            resp.content,
+            hashes.SHA256()
+        )
+
         return True
 
     def get_quote(self) -> Dict[str, str]:
