@@ -44,24 +44,6 @@ class CommonAPI(CryptoContext):
             }
         }
 
-    def handshake(self) -> Dict[str, Union[Side, bytes]]:
-        resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/handshake",
-            json={
-                "pub_key": list(self.pubkey),
-                "side": str(self.side)
-            })
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-        content: Dict[str, Union[str, List[int]]] = resp.json()
-        self.remote_pubkey = bytes(content["pub_key"])
-        self.key_exchange(self.remote_pubkey)
-
-        return {"pub_key": self.remote_pubkey, "side": Side[content["side"]]}
-
     def hello(self) -> Dict[str, str]:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/enclave/key/hello",
