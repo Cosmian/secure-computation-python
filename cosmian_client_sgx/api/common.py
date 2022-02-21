@@ -23,7 +23,7 @@ class CommonAPI(CryptoContext):
                          f"{f'{hostname}:{port}' if port else f'{hostname}'}")
         super().__init__()
 
-    def status(self) -> Dict[str, Dict[Side, bytes]]:
+    def status(self) -> Dict[str, Dict[Side, List[bytes]]]:
         resp: requests.Response = self.session.get(
             url=f"{self.url}/enclave/status")
 
@@ -31,7 +31,7 @@ class CommonAPI(CryptoContext):
             raise Exception(
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
-        content = resp.json()
+        content: Dict[str, Dict[str, List[bytes]]] = resp.json()
 
         return {
             "pub_keys": {
