@@ -1,6 +1,5 @@
 """CSV Join with Cosmian Secure Computation."""
 
-from io import BytesIO
 from pathlib import Path
 from typing import Iterator, Dict, List
 
@@ -8,22 +7,7 @@ import pandas as pd
 
 from cosmian_lib_sgx import InputData, KeyInfo, OutputData, Side, parse_args
 
-
-def merge_all(datas: Iterator[BytesIO], on: str, sep: str = ";") -> pd.DataFrame:
-    content: BytesIO = next(files)
-    dataframe: pd.DataFrame = pd.read_csv(content, sep=sep)
-
-    for data in datas:  # type: BytesIO
-        df: pd.DataFrame = pd.read_csv(data, sep=sep)
-
-        dataframe: pd.DataFrame = pd.merge(
-            dataframe,
-            df,
-            how="inner",
-            on=on
-        )
-
-    return dataframe
+from merge import merge_all
 
 
 def main() -> int:
@@ -32,11 +16,13 @@ def main() -> int:
 
     input: InputData = InputData(
         root_path=root_path,
-        keys=keys
+        keys=keys,
+        debug=False if keys else True
     )
     output: OutputData = OutputData(
         root_path=root_path,
-        keys=keys
+        keys=keys,
+        debug=False if keys else True
     )
 
     df: pd.DataFrame = merge_all(datas=input.read(), on="siren", sep=";")
