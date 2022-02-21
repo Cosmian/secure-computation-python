@@ -6,6 +6,8 @@ import shutil
 from typing import Tuple, List
 
 import nacl.public
+import nacl.secret
+import nacl.utils
 from nacl.public import PrivateKey, PublicKey, SealedBox
 from nacl.signing import SigningKey, VerifyKey
 from nacl.secret import SecretBox
