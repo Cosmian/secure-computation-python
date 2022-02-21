@@ -15,7 +15,7 @@ class CryptoContext:
         self.privkey: bytes
         self.pubkey: bytes
         self.pubkey, self.privkey = (x25519_keypair() if private_key is None else
-                                    (x25519_pubkey_from_privkey(private_key), private_key))
+                                     (x25519_pubkey_from_privkey(private_key), private_key))
         self.fingerprint: bytes = pubkey_fingerprint(self.pubkey)
         self.remote_pubkey: Optional[bytes] = None
         self._shared_key: Optional[bytes] = None
@@ -25,9 +25,6 @@ class CryptoContext:
         self.pubkey = public_key
         self.privkey = private_key
         self.fingerprint = pubkey_fingerprint(self.pubkey)
-
-        if self.remote_pubkey:
-            self.key_exchange(self.remote_pubkey)
 
     def set_symkey(self, symkey: bytes) -> None:
         self._symkey = symkey
