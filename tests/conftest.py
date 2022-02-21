@@ -40,6 +40,11 @@ def cp_root_path():
 
 
 @pytest.fixture(scope="module")
+def code_path():
+    return Path(__file__).parent / "data" / "cp" / "enclave-join"
+
+
+@pytest.fixture(scope="module")
 def code_name():
     return (Path(__file__).parent / "data" / "cp" / "enclave-join").name
 

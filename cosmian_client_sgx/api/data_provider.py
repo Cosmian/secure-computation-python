@@ -36,7 +36,11 @@ class DataProviderAPI(CommonAPI):
         for path in paths:
             if not path.is_file():
                 raise FileNotFoundError
-            print(self.push_data(code_name, path.name, path.read_bytes()))
+
+            if not "success" in self.push_data(code_name, path.name, path.read_bytes()):
+                raise Exception(
+                    f"Unexpected response ({resp.status_code}): {resp.content}"
+                )
 
         return True
 

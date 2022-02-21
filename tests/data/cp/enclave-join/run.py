@@ -11,7 +11,7 @@ from merge import merge_all
 
 
 def main() -> int:
-    root_path: Path = Path(__file__).parent.absolute()
+    root_path: Path = Path(__file__).parent.parent.absolute()
     keys: Dict[Side, List[KeyInfo]] = parse_args()
 
     input: InputData = InputData(

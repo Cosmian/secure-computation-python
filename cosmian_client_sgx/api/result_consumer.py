@@ -12,10 +12,10 @@ class ResultConsumerAPI(CommonAPI):
     def __init__(self, hostname: str, port: int, ssl: bool = False) -> None:
         super().__init__(Side.ResultConsumer, hostname, port, ssl)
 
-    def run(self, code_name: str, entrypoint: str) -> bool:
+    def run(self, code_name: str) -> bool:
         resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/run/{code_name}/{self.fingerprint.hex()}",
-            json={"entrypoint": entrypoint})
+            url=f"{self.url}/enclave/run/{code_name}/{self.fingerprint.hex()}"
+        )
 
         if not resp.ok:
             raise Exception(
