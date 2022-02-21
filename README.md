@@ -16,7 +16,7 @@ $ pip install .
 from pathlib import Path
 from typing import Optional
 
-from cosmian_client_sgx import AlgoProviderAPI, DataProviderAPI, ResultOwnerAPI
+from cosmian_client_sgx import CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
 
 # host of `cosmian_server`
 host: str = "localhost"
@@ -24,7 +24,7 @@ host: str = "localhost"
 port: Optional[int] = 9999
 ssl: bool = False
 
-algo_provider = AlgoProviderAPI(host, port, ssl)
+algo_provider = CodeProviderAPI(host, port, ssl)
 algo_provider.set_keypair(
     public_key=bytes.fromhex("1f80306ddf75ee31bc8f71f29c93768bc6eaba2c1f67bcd7f179ca26d4361331"),
     private_key=bytes.fromhex("deb832a69e996898c835b9779c3a98cd3ba0b437a6aba94dacc33692154a815c")
@@ -72,7 +72,7 @@ data_provider2.push_data(
 )
 print(data_provider2.list_data(algo_name))
 
-result_owner = ResultOwnerAPI(host, port, ssl)
+result_owner = ResultConsumerAPI(host, port, ssl)
 result_owner.set_keypair(
     public_key=bytes.fromhex("bd2c17ec62bf8424fda8e36429be0d73f794fd64d92b57c17c17dccf76d6f62e"),
     private_key=bytes.fromhex("697d565f2b421e72635329aaa539fca57e8bc8eaf108ff0ce30e114981ad1f23")

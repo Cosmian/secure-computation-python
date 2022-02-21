@@ -8,9 +8,9 @@ from cosmian_client_sgx.api.side import Side
 from cosmian_client_sgx.api.common import CommonAPI
 
 
-class ResultOwnerAPI(CommonAPI):
+class ResultConsumerAPI(CommonAPI):
     def __init__(self, hostname: str, port: int, ssl: bool = False) -> None:
-        super().__init__(Side.ResultOwner, hostname, port, ssl)
+        super().__init__(Side.ResultConsumer, hostname, port, ssl)
 
     def run(self, algo_name: str, entrypoint: str) -> bool:
         resp: requests.Response = self.session.post(

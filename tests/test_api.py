@@ -1,20 +1,22 @@
+import pytest
+
 from cosmian_client_sgx.api.side import Side
 
-import pytest
+from keys import *
 
 
 @pytest.mark.incremental
 class TestAPI:
-    # @staticmethod
-    # def test_reset_first(result_owner):
-    #     assert result_owner.reset() is True
+    @staticmethod
+    def test_reset_first(code_provider):
+        assert code_provider.reset() is True
 
-    def test_first_status(self, algo_provider):
-        assert algo_provider.status() == {"pub_keys": {}}
+    def test_first_status(self, code_provider):
+        assert code_provider.status() == {"pub_keys": {}}
 
     @staticmethod
-    def test_ap_hello(algo_provider):
-        response = algo_provider.hello()
+    def test_cp_hello(code_provider):
+        response = code_provider.hello()
 
         assert "success" in response
 
@@ -31,26 +33,19 @@ class TestAPI:
         assert "success" in response
 
     @staticmethod
-    def test_ro_hello(result_owner):
-        response = result_owner.hello()
+    def test_rc_hello(result_consumer):
+        response = result_consumer.hello()
 
         assert "success" in response
 
-    def test_status(self, algo_provider):
-        response = algo_provider.status()
-        print(response)
-        # assert response == {"pub_keys": {}}
+    def test_status(self, code_provider):
+        response = code_provider.status()
 
-    # @staticmethod
-    # def test_ap_handshake(algo_provider):
-    #     response = algo_provider.handshake()
-    #
-    #     assert "pub_key" in response and "side" in response
-    #     assert response["side"] == Side.Enclave
-    #     assert response["pub_key"] == bytes.fromhex("6f87e3130637e00d87e2aaca20361c0f58ef4db4113718a4a6dd7009569e3505")
+        assert "pub_keys" in response
 
-    # @staticmethod
-    # def test_ap_ra(algo_provider):
-    #     quote = algo_provider.get_quote()
-    #     print(quote)
-    #     assert algo_provider.remote_attestation(quote) is True
+        pubkeys = response["pub_keys"]
+
+        assert pubkeys[Side.CodeProvider][0] == CP_PUBKEY
+        assert pubkeys[Side.DataProvider][0] == DP1_PUBKEY
+        assert pubkeys[Side.DataProvider][1] == DP2_PUBKEY
+        assert pubkeys[Side.ResultConsumer][0] == RC_PUBKEY

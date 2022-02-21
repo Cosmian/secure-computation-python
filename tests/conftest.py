@@ -2,8 +2,9 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 import pytest
+from cosmian_client_sgx import CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
 
-from cosmian_client_sgx import AlgoProviderAPI, DataProviderAPI, ResultOwnerAPI
+from keys import *
 
 
 def pytest_addoption(parser):
@@ -34,12 +35,12 @@ def ssl(pytestconfig):
 
 
 @pytest.fixture(scope="module")
-def ap_root_path():
+def cp_root_path():
     return Path(__file__).parent / "data" / "ap"
 
 
 @pytest.fixture(scope="module")
-def algo_name():
+def code_name():
     return (Path(__file__).parent / "data" / "ap" / "enclave-join").name
 
 
@@ -54,28 +55,30 @@ def dp2_root_path():
 
 
 @pytest.fixture(scope="module")
-def ro_root_path():
+def rc_root_path():
     return Path(__file__).parent / "data" / "ro"
 
 
 @pytest.fixture(scope="module")
-def algo_provider(host, port, ssl):
-    ap = AlgoProviderAPI(host, port, ssl)
-    ap.set_keypair(
-        public_key=bytes.fromhex("1f80306ddf75ee31bc8f71f29c93768bc6eaba2c1f67bcd7f179ca26d4361331"),
-        private_key=bytes.fromhex("deb832a69e996898c835b9779c3a98cd3ba0b437a6aba94dacc33692154a815c")
+def code_provider(host, port, ssl):
+    cp = CodeProviderAPI(host, port, ssl)
+    cp.set_keypair(
+        public_key=CP_PUBKEY,
+        private_key=CP_PRIVKEY
     )
+    cp.set_symkey(CP_SYMKEY)
 
-    yield ap
+    yield cp
 
 
 @pytest.fixture(scope="module")
 def data_provider1(host, port, ssl):
     dp = DataProviderAPI(host, port, ssl)
     dp.set_keypair(
-        public_key=bytes.fromhex("08278fc6860d83b598e54462e9c5c68e5eb0bff588de413a0e651a65dd540a29"),
-        private_key=bytes.fromhex("dcd1512baa17cb7440078844f3c090dd86c7e3e948065cb6f037f3413b23873f")
+        public_key=DP1_PUBKEY,
+        private_key=DP1_PRIVKEY
     )
+    dp.set_symkey(DP1_SYMKEY)
 
     yield dp
 
@@ -84,22 +87,24 @@ def data_provider1(host, port, ssl):
 def data_provider2(host, port, ssl):
     dp = DataProviderAPI(host, port, ssl)
     dp.set_keypair(
-        public_key=bytes.fromhex("6b47b13b4fe3efa09334b079b4cd57ad5f263e4010325510c493cdccc3440b50"),
-        private_key=bytes.fromhex("363f07b34144e9b095dfe38b797c6e6012e8d0752a8c621e6d809309e0d83d13")
+        public_key=DP2_PUBKEY,
+        private_key=DP2_PRIVKEY
     )
+    dp.set_symkey(DP2_SYMKEY)
 
     yield dp
 
 
 @pytest.fixture(scope="module")
-def result_owner(host, port, ssl):
-    ro = ResultOwnerAPI(host, port, ssl)
-    ro.set_keypair(
-        public_key=bytes.fromhex("bd2c17ec62bf8424fda8e36429be0d73f794fd64d92b57c17c17dccf76d6f62e"),
-        private_key=bytes.fromhex("697d565f2b421e72635329aaa539fca57e8bc8eaf108ff0ce30e114981ad1f23")
+def result_consumer(host, port, ssl):
+    rc = ResultConsumerAPI(host, port, ssl)
+    rc.set_keypair(
+        public_key=RC_PUBKEY,
+        private_key=RC_PRIVKEY
     )
+    rc.set_symkey(RC_SYMKEY)
 
-    yield ro
+    yield rc
 
 
 _test_failed_incremental: Dict[str, Dict[Tuple[int, ...], str]] = {}

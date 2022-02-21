@@ -11,10 +11,10 @@ from cosmian_client_sgx.api.side import Side
 from cosmian_client_sgx.api.common import CommonAPI
 
 
-class AlgoProviderAPI(CommonAPI):
+class CodeProviderAPI(CommonAPI):
     def __init__(self, hostname: str, port: int, ssl: bool = False) -> None:
         self.algo_name: Optional[str] = None
-        super().__init__(Side.AlgoProvider, hostname, port, ssl)
+        super().__init__(Side.CodeProvider, hostname, port, ssl)
 
     def upload_tar(self, tar_path: Path) -> Dict[str, str]:
         if not tar_path.exists():
