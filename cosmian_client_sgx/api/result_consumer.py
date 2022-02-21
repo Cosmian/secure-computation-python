@@ -1,4 +1,4 @@
-"""cosmian_client_sgx.api.result_owner module."""
+"""cosmian_client_sgx.api.result_consumer module."""
 
 from typing import Optional
 
@@ -12,9 +12,9 @@ class ResultConsumerAPI(CommonAPI):
     def __init__(self, hostname: str, port: int, ssl: bool = False) -> None:
         super().__init__(Side.ResultConsumer, hostname, port, ssl)
 
-    def run(self, algo_name: str, entrypoint: str) -> bool:
+    def run(self, code_name: str, entrypoint: str) -> bool:
         resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/run/{algo_name}/{self.fingerprint.hex()}",
+            url=f"{self.url}/enclave/run/{code_name}/{self.fingerprint.hex()}",
             json={"entrypoint": entrypoint})
 
         if not resp.ok:
@@ -29,9 +29,9 @@ class ResultConsumerAPI(CommonAPI):
 
         return True if "success" in resp.json() else False
 
-    def fetch_result(self, algo_name: str) -> Optional[bytes]:
+    def fetch_result(self, code_name: str) -> Optional[bytes]:
         resp: requests.Response = self.session.get(
-            url=f"{self.url}/enclave/result/{algo_name}/{self.fingerprint.hex()}"
+            url=f"{self.url}/enclave/result/{code_name}/{self.fingerprint.hex()}"
         )
 
         if not resp.ok:
