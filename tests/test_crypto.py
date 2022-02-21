@@ -1,4 +1,4 @@
-from cosmian_client_sgx.crypto.helper import seal, unseal
+from cosmian_client_sgx.crypto.helper import seal, unseal, random_symkey
 
 
 TEST_X25519_PUBKEY = bytes.fromhex("1f80306ddf75ee31bc8f71f29c93768bc6eaba2c1f67bcd7f179ca26d4361331")
@@ -11,3 +11,10 @@ def test_sealing():
     cleartext: bytes = unseal(ciphertext, TEST_X25519_PRIVKEY)
 
     assert message == cleartext
+
+    symkey: bytes = random_symkey()
+    print(symkey.hex())
+    print(len(symkey))
+    c: bytes = seal(symkey, TEST_X25519_PUBKEY)
+    print(c.hex())
+    print(len(c))
