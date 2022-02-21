@@ -36,12 +36,12 @@ def ssl(pytestconfig):
 
 @pytest.fixture(scope="module")
 def cp_root_path():
-    return Path(__file__).parent / "data" / "ap"
+    return Path(__file__).parent / "data" / "cp"
 
 
 @pytest.fixture(scope="module")
 def code_name():
-    return (Path(__file__).parent / "data" / "ap" / "enclave-join").name
+    return (Path(__file__).parent / "data" / "cp" / "enclave-join").name
 
 
 @pytest.fixture(scope="module")
@@ -56,7 +56,7 @@ def dp2_root_path():
 
 @pytest.fixture(scope="module")
 def rc_root_path():
-    return Path(__file__).parent / "data" / "ro"
+    return Path(__file__).parent / "data" / "rc"
 
 
 @pytest.fixture(scope="module")
