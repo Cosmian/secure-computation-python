@@ -29,7 +29,7 @@ class TestAPI:
         response = code_provider.upload(
             dir_path=code_path,
             exceptions=None,
-            encrypt=False
+            encrypt=True
         )
 
         assert "success" in response

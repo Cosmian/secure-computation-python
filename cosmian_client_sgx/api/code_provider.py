@@ -46,9 +46,10 @@ class CodeProviderAPI(CommonAPI):
         tar_path: Path
         if encrypt:
             enc_dir_path: Path = Path(tempfile.gettempdir()) / dir_path.name
+            exceptions = [] if exceptions is None else exceptions
             self.encrypt_directory(dir_path=dir_path,
                                    patterns=["*"],
-                                   exceptions=[] if exceptions is None else exceptions,
+                                   exceptions=exceptions + ["run.py", "server.py"],
                                    dir_exceptions=[".git"],
                                    out_dir_path=enc_dir_path)
             tar_path = tar(enc_dir_path, enc_dir_path / f"{enc_dir_path.name}.tar")

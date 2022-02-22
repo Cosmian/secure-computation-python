@@ -5,9 +5,8 @@ from typing import Dict, List
 
 import pandas as pd
 
-from cosmian_lib_sgx import InputData, KeyInfo, OutputData, Side, parse_args
-
-from merge import merge_all
+from cosmian_lib_sgx import (InputData, KeyInfo, OutputData, Side,
+                             parse_args, import_set_key)
 
 
 def main() -> int:
@@ -24,7 +23,13 @@ def main() -> int:
         keys=keys
     )
 
-    dataframe: pd.DataFrame = merge_all(datas=input_data.read(), on="siren", sep=";")
+    # import hook for ciphered Python module
+    # the Code Provider key will be used for decryption
+    import_set_key(keys)
+    # import your module normally
+    import merge
+
+    dataframe: pd.DataFrame = merge.merge_all(datas=input_data.read(), on="siren", sep=";")
     result: bytes = dataframe.to_csv(index=False, sep=";").encode("utf-8")
     output_data.write(result)
 
