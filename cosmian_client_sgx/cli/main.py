@@ -1,13 +1,9 @@
 """cosmian_client_sgx.cli.main module."""
 
 import argparse
-from pathlib import Path
-import tempfile
 
 from cosmian_client_sgx.cli.encrypt import parse_encrypt
 from cosmian_client_sgx.cli.decrypt import parse_decrypt
-from cosmian_client_sgx.crypto.helper import encrypt_directory
-from cosmian_client_sgx.util.fs import tar
 
 
 def main() -> int:

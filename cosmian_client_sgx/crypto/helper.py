@@ -9,7 +9,6 @@ import nacl.public
 import nacl.secret
 import nacl.utils
 from nacl.public import PrivateKey, PublicKey, SealedBox
-from nacl.signing import SigningKey, VerifyKey
 from nacl.secret import SecretBox
 from nacl.bindings.crypto_scalarmult import (crypto_scalarmult,
                                              crypto_scalarmult_ed25519_base,
@@ -17,9 +16,7 @@ from nacl.bindings.crypto_scalarmult import (crypto_scalarmult,
 from nacl.bindings import (crypto_sign_keypair,
                            crypto_sign_ed25519_sk_to_curve25519,
                            crypto_sign_ed25519_pk_to_curve25519,
-                           crypto_sign_ed25519_sk_to_pk,
-                           crypto_sign_SEEDBYTES,
-                           crypto_sign_PUBLICKEYBYTES)
+                           crypto_sign_SEEDBYTES)
 from nacl.hash import blake2b
 from nacl.encoding import Encodable
 

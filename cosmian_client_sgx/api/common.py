@@ -1,6 +1,7 @@
 """cosmian_client_sgx.api.common module."""
 
 import re
+import requests
 from typing import Optional, Dict, Union, List
 from urllib.parse import unquote
 
@@ -10,8 +11,6 @@ from cryptography.hazmat.primitives.asymmetric import padding
 
 from cosmian_client_sgx.crypto.context import CryptoContext
 from cosmian_client_sgx.api.side import Side
-
-import requests
 
 
 class CommonAPI(CryptoContext):
@@ -136,4 +135,4 @@ class CommonAPI(CryptoContext):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        return True if "success" in resp.json() else False
+        return "success" in resp.json()

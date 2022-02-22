@@ -42,7 +42,10 @@ class CodeProviderAPI(CommonAPI):
 
         return resp.json()
 
-    def upload(self, dir_path: Path, exceptions: Optional[List[str]] = None, encrypt: bool = True) -> Dict[str, str]:
+    def upload(self,
+               dir_path: Path,
+               exceptions: Optional[List[str]] = None,
+               encrypt: bool = True) -> Dict[str, str]:
         tar_path: Path
         if encrypt:
             enc_dir_path: Path = Path(tempfile.gettempdir()) / dir_path.name
