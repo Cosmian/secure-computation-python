@@ -1,11 +1,19 @@
 """setup module."""
 
+from pathlib import Path
+
 from setuptools import setup, find_packages
 
 
 setup(
     name="cosmian_client_sgx",
-    version="0.1.0",
+    version="0.1.1",
+    url="https://cosmian.com",
+    license="MIT",
+    author="Cosmian Tech",
+    author_email="tech@cosmian.com",
+    long_description=Path("README.md").read_text(),
+    long_description_content_type="text/markdown",
     python_requires=">=3.8.0",
     description="Python client library for Cosmian Secure Computation",
     packages=find_packages(),
