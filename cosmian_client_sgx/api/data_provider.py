@@ -41,7 +41,7 @@ class DataProviderAPI(CommonAPI):
             if not path.is_file():
                 raise FileNotFoundError
 
-            if not "success" in self.push_data(code_name,
+            if "success" not in self.push_data(code_name,
                                                path.name,
                                                path.read_bytes(),
                                                encrypt):
