@@ -22,7 +22,7 @@ class ResultConsumerAPI(CommonAPI):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        return True if "success" in resp.json() else False
+        return "success" in resp.json()
 
     def fetch_result(self, code_name: str) -> Optional[bytes]:
         resp: requests.Response = self.session.get(

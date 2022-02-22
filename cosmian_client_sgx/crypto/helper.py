@@ -110,7 +110,7 @@ def encrypt_directory(dir_path: Path, patterns: List[str], key: bytes,
     for pattern in patterns:  # type: str
         for path in out_dir_path.rglob(pattern):  # type: Path
             if path.is_file() and path.name not in exceptions and all(
-                    [directory not in path.parts for directory in dir_exceptions]):
+                    directory not in path.parts for directory in dir_exceptions):
                 encrypt_file(path, key)
                 path.unlink()
 
