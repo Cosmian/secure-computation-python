@@ -1,7 +1,7 @@
-"""CSV Join with Cosmian Secure Computation."""
+"""run module."""
 
 from pathlib import Path
-from typing import Iterator, Dict, List
+from typing import Dict, List
 
 import pandas as pd
 
@@ -11,22 +11,22 @@ from merge import merge_all
 
 
 def main() -> int:
+    """Entrypoint of your code."""
     root_path: Path = Path(__file__).parent.parent.absolute()
     keys: Dict[Side, List[KeyInfo]] = parse_args()
 
-    input: InputData = InputData(
+    input_data: InputData = InputData(
         root_path=root_path,
-        keys=keys,
-        debug=False if keys else True
+        keys=keys
     )
-    output: OutputData = OutputData(
+    output_data: OutputData = OutputData(
         root_path=root_path,
-        keys=keys,
-        debug=False if keys else True
+        keys=keys
     )
 
-    df: pd.DataFrame = merge_all(datas=input.read(), on="siren", sep=";")
-    output.write(df.to_csv(index=False, sep=";").encode("utf-8"))
+    dataframe: pd.DataFrame = merge_all(datas=input_data.read(), on="siren", sep=";")
+    result: bytes = dataframe.to_csv(index=False, sep=";").encode("utf-8")
+    output_data.write(result)
 
     return 0
 
