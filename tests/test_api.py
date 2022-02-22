@@ -92,7 +92,6 @@ class TestAPI:
                                          dp2_root_path.glob("*.csv"))
         assert data_provider2.list_data(code_name) =={"data": ["B.csv.enc"], "total": 1}
 
-
     @staticmethod
     def test_key_provisioning(code_provider,
                               data_provider1,

@@ -22,11 +22,6 @@ class ResultConsumerAPI(CommonAPI):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        # output = resp.json()["success"]
-        # print(f"Output: {output}")
-        #
-        # return self.decrypt(bytes.fromhex(output))
-
         return True if "success" in resp.json() else False
 
     def fetch_result(self, code_name: str) -> Optional[bytes]:

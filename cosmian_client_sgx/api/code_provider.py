@@ -16,7 +16,7 @@ class CodeProviderAPI(CommonAPI):
         self.code_name: Optional[str] = None
         super().__init__(Side.CodeProvider, hostname, port, ssl)
 
-    def upload_tar(self, tar_path: Path) -> Dict[str, str]:
+    def upload_tar(self, tar_path: Path, keep: bool = True) -> Dict[str, str]:
         if not tar_path.exists():
             raise FileNotFoundError("Can't find tar file!")
 
@@ -32,12 +32,15 @@ class CodeProviderAPI(CommonAPI):
                 },
                 timeout=None)
 
-            if not resp.ok:
-                raise Exception(
-                    f"Unexpected response ({resp.status_code}): {resp.content}"
-                )
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
 
-            return resp.json()
+        if not keep:
+            tar_path.unlink()
+
+        return resp.json()
 
     def upload(self, dir_path: Path, exceptions: Optional[List[str]] = None, encrypt: bool = True) -> Dict[str, str]:
         tar_path: Path
@@ -51,4 +54,5 @@ class CodeProviderAPI(CommonAPI):
             tar_path = tar(enc_dir_path, enc_dir_path / f"{enc_dir_path.name}.tar")
         else:
             tar_path = tar(dir_path, dir_path / f"{dir_path.name}.tar")
-        return self.upload_tar(tar_path)
+
+        return self.upload_tar(tar_path, keep=False)
