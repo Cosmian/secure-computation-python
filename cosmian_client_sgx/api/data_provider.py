@@ -13,8 +13,12 @@ class DataProviderAPI(CommonAPI):
     def __init__(self, hostname: str, port: int, ssl: bool = False) -> None:
         super().__init__(Side.DataProvider, hostname, port, ssl)
 
-    def push_data(self, code_name: str, data_name: str, data: bytes) -> Dict[str, str]:
-        encrypted_data: bytes = self.encrypt(data)
+    def push_data(self,
+                  code_name: str,
+                  data_name: str,
+                  data: bytes,
+                  encrypt: bool = True) -> Dict[str, str]:
+        encrypted_data: bytes = self.encrypt(data) if encrypt else data
 
         resp: requests.Response = self.session.post(
             url=f"{self.url}/enclave/data/{code_name}/{self.fingerprint.hex()}",
@@ -32,12 +36,15 @@ class DataProviderAPI(CommonAPI):
 
         return resp.json()
 
-    def push_files(self, code_name: str, paths: Iterable[Path]) -> bool:
+    def push_files(self, code_name: str, paths: Iterable[Path], encrypt: bool = True) -> bool:
         for path in paths:
             if not path.is_file():
                 raise FileNotFoundError
 
-            if not "success" in self.push_data(code_name, path.name, path.read_bytes()):
+            if not "success" in self.push_data(code_name,
+                                               path.name,
+                                               path.read_bytes(),
+                                               encrypt):
                 raise Exception(
                     f"Unexpected response ({resp.status_code}): {resp.content}"
                 )
