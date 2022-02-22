@@ -5,9 +5,9 @@ from setuptools import setup, find_packages
 
 setup(
     name="cosmian_client_sgx",
-    version="1.0.0",
+    version="0.1.0",
     python_requires=">=3.8.0",
-    description="Interaction with the REST API of Cosmian Secure Computation",
+    description="Python client library for Cosmian Secure Computation",
     packages=find_packages(),
     zip_safe=True,
     entry_points={
@@ -21,7 +21,7 @@ setup(
         "cryptography>=36.0.1,<37.0.0"
     ],
     test_requires=[
-        "pytest>=7.0.0,<8.0.0"
+        "pytest>=7.0.1,<8.0.0"
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
