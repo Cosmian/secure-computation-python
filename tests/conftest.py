@@ -17,6 +17,12 @@ def pytest_addoption(parser):
     parser.addoption("--ssl",
                      action="store_true",
                      default=False)
+    parser.addoption("--user",
+                     action="store",
+                     default=None)
+    parser.addoption("--pass",
+                     action="store",
+                     default=None)
 
 
 @pytest.fixture(scope="session")
@@ -32,6 +38,16 @@ def port(pytestconfig):
 @pytest.fixture(scope="session")
 def ssl(pytestconfig):
     return pytestconfig.getoption("ssl")
+
+
+@pytest.fixture(scope="session")
+def user(pytestconfig):
+    return pytestconfig.getoption("user")
+
+
+@pytest.fixture(scope="session")
+def passwd(pytestconfig):
+    return pytestconfig.getoption("pass")
 
 
 @pytest.fixture(scope="module")
@@ -65,8 +81,13 @@ def rc_root_path():
 
 
 @pytest.fixture(scope="module")
-def code_provider(host, port, ssl):
-    cp = CodeProviderAPI(host, port, ssl)
+def code_provider(host, port, ssl, user, passwd):
+    cp = CodeProviderAPI(
+        host,
+        port,
+        ssl,
+        (user, passwd) if user and passwd else None
+    )
     cp.set_keypair(
         public_key=CP_PUBKEY,
         private_key=CP_PRIVKEY
@@ -77,8 +98,13 @@ def code_provider(host, port, ssl):
 
 
 @pytest.fixture(scope="module")
-def data_provider1(host, port, ssl):
-    dp = DataProviderAPI(host, port, ssl)
+def data_provider1(host, port, ssl, user, passwd):
+    dp = DataProviderAPI(
+        host,
+        port,
+        ssl,
+        (user, passwd) if user and passwd else None
+    )
     dp.set_keypair(
         public_key=DP1_PUBKEY,
         private_key=DP1_PRIVKEY
@@ -89,8 +115,13 @@ def data_provider1(host, port, ssl):
 
 
 @pytest.fixture(scope="module")
-def data_provider2(host, port, ssl):
-    dp = DataProviderAPI(host, port, ssl)
+def data_provider2(host, port, ssl, user, passwd):
+    dp = DataProviderAPI(
+        host,
+        port,
+        ssl,
+        (user, passwd) if user and passwd else None
+    )
     dp.set_keypair(
         public_key=DP2_PUBKEY,
         private_key=DP2_PRIVKEY
@@ -101,8 +132,13 @@ def data_provider2(host, port, ssl):
 
 
 @pytest.fixture(scope="module")
-def result_consumer(host, port, ssl):
-    rc = ResultConsumerAPI(host, port, ssl)
+def result_consumer(host, port, ssl, user, passwd):
+    rc = ResultConsumerAPI(
+        host,
+        port,
+        ssl,
+        (user, passwd) if user and passwd else None
+    )
     rc.set_keypair(
         public_key=RC_PUBKEY,
         private_key=RC_PRIVKEY
