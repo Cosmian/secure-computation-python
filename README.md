@@ -164,3 +164,5 @@ Optional arguments:
 - `--host HOST`, default to `"127.0.0.1"`
 - `--port PORT`, default to `None`
 - `--ssl`, default to `False`
+- `--user`, default to `None` (for HTTP auth)
+- `--pass`, default to `None` (for HTTP auth)
