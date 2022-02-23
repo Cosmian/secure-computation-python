@@ -2,7 +2,7 @@
 
 from pathlib import Path
 import tempfile
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Tuple
 
 import requests
 
@@ -12,9 +12,14 @@ from cosmian_client_sgx.api.common import CommonAPI
 
 
 class CodeProviderAPI(CommonAPI):
-    def __init__(self, hostname: str, port: int, ssl: bool = False) -> None:
+    def __init__(self,
+                 hostname: str,
+                 port: int,
+                 ssl: bool = False,
+                 auth: Optional[Tuple[str, str]] = None
+                 ) -> None:
         self.code_name: Optional[str] = None
-        super().__init__(Side.CodeProvider, hostname, port, ssl)
+        super().__init__(Side.CodeProvider, hostname, port, ssl, auth)
 
     def upload_tar(self, tar_path: Path, keep: bool = True) -> Dict[str, str]:
         if not tar_path.exists():
@@ -30,7 +35,9 @@ class CodeProviderAPI(CommonAPI):
                         "Expires": "0"
                     })
                 },
-                timeout=None)
+                timeout=None,
+                auth=self.auth
+            )
 
         if not resp.ok:
             raise Exception(

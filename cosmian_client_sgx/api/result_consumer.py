@@ -1,6 +1,6 @@
 """cosmian_client_sgx.api.result_consumer module."""
 
-from typing import Optional
+from typing import Optional, Tuple
 
 import requests
 
@@ -9,12 +9,18 @@ from cosmian_client_sgx.api.common import CommonAPI
 
 
 class ResultConsumerAPI(CommonAPI):
-    def __init__(self, hostname: str, port: int, ssl: bool = False) -> None:
-        super().__init__(Side.ResultConsumer, hostname, port, ssl)
+    def __init__(self,
+                 hostname: str,
+                 port: int,
+                 ssl: bool = False,
+                 auth: Optional[Tuple[str, str]] = None
+                 ) -> None:
+        super().__init__(Side.ResultConsumer, hostname, port, ssl, auth)
 
     def run(self, code_name: str) -> bool:
         resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/run/{code_name}/{self.fingerprint.hex()}"
+            url=f"{self.url}/enclave/run/{code_name}/{self.fingerprint.hex()}",
+            auth=self.auth
         )
 
         if not resp.ok:
@@ -26,7 +32,8 @@ class ResultConsumerAPI(CommonAPI):
 
     def fetch_result(self, code_name: str) -> Optional[bytes]:
         resp: requests.Response = self.session.get(
-            url=f"{self.url}/enclave/result/{code_name}/{self.fingerprint.hex()}"
+            url=f"{self.url}/enclave/result/{code_name}/{self.fingerprint.hex()}",
+            auth=self.auth
         )
 
         if not resp.ok:
