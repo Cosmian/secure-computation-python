@@ -1,37 +1,38 @@
 """run module."""
 
-from pathlib import Path
-from typing import Dict, List
+from io import BytesIO
+from typing import Iterator
 
 import pandas as pd
 
-from cosmian_lib_sgx import (InputData, KeyInfo, OutputData, Side,
-                             parse_args, import_set_key)
+from cosmian_lib_sgx import Enclave
+
+SEP: str = ";"
+
+
+def input_reader(datas: Iterator[BytesIO]) -> Iterator[pd.DataFrame]:
+    """Transform input data bytes to pandas DataFrame."""
+    for data in datas:  # type: BytesIO
+        yield pd.read_csv(data, sep=SEP)
 
 
 def main() -> int:
     """Entrypoint of your code."""
-    root_path: Path = Path(__file__).parent.parent.absolute()
-    keys: Dict[Side, List[KeyInfo]] = parse_args()
+    with Enclave() as enclave:
+        # import your ciphered module normally
+        import merge
 
-    input_data: InputData = InputData(
-        root_path=root_path,
-        keys=keys
-    )
-    output_data: OutputData = OutputData(
-        root_path=root_path,
-        keys=keys
-    )
+        # convert input data bytes from DataProviders
+        datas: Iterator[pd.DataFrame] = input_reader(enclave.read())
 
-    # import hook for ciphered Python module
-    # the Code Provider key will be used for decryption
-    import_set_key(keys)
-    # import your module normally
-    import merge
+        # apply your secret function coded by the CodeProvider
+        dataframe: pd.DataFrame = merge.merge_all(datas=datas, on="siren")
 
-    dataframe: pd.DataFrame = merge.merge_all(datas=input_data.read(), on="siren", sep=";")
-    result: bytes = dataframe.to_csv(index=False, sep=";").encode("utf-8")
-    output_data.write(result)
+        # convert output result
+        result: bytes = dataframe.to_csv(index=False, sep=SEP).encode("utf-8")
+
+        # write result for ResultConsumers
+        enclave.write(result)
 
     return 0
 

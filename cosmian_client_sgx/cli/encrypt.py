@@ -10,16 +10,19 @@ from cosmian_client_sgx.util.fs import tar
 
 
 def parse_encrypt(args: Namespace) -> None:
+    key: bytes
+    out_path: Path
+
     if args.directory:
         dir_path: Path = Path(args.directory).absolute()
         print(f"==> Encrypt directory {dir_path}...")
         if not dir_path.exists():
             raise FileNotFoundError
 
-        key: bytes = (Path(args.key_file).read_bytes() if args.key_file
-                      else bytes.fromhex(args.key))
+        key = (Path(args.key_file).read_bytes() if args.key_file
+               else bytes.fromhex(args.key))
 
-        out_path: Path = Path(args.output_dir).absolute()
+        out_path = Path(args.output_dir).absolute()
 
         with tempfile.TemporaryDirectory() as temp_dir:
             tmp_dir_path: Path = Path(temp_dir)
@@ -44,9 +47,9 @@ def parse_encrypt(args: Namespace) -> None:
         if not file_path.exists():
             raise FileNotFoundError
 
-        key: bytes = (Path(args.key_file).read_bytes() if args.key_file
-                      else bytes.fromhex(args.key))
+        key = (Path(args.key_file).read_bytes() if args.key_file
+               else bytes.fromhex(args.key))
 
-        out_path: Path = Path(args.output_dir).absolute()
+        out_path = Path(args.output_dir).absolute()
 
         encrypt_file(out_path / file_path.name, key)
