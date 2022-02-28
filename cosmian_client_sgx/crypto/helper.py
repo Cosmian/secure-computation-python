@@ -18,7 +18,7 @@ from nacl.bindings import (crypto_sign_keypair,
                            crypto_sign_ed25519_pk_to_curve25519,
                            crypto_sign_SEEDBYTES)
 from nacl.hash import blake2b
-from nacl.encoding import Encodable
+from nacl.encoding import RawEncoder
 
 ENC_EXT: str = ".enc"
 
@@ -68,7 +68,7 @@ def server_shared_key(public_key: bytes, private_key: bytes,
     shared_key: bytes = x25519(private_key, remote_pubkey)
 
     # Blake2b(shared_key || remote_pubkey || public_key)
-    return blake2b(shared_key + remote_pubkey + public_key, encoder=Encodable)
+    return blake2b(shared_key + remote_pubkey + public_key, encoder=RawEncoder)
 
 
 def client_shared_key(public_key: bytes, private_key: bytes,
@@ -76,7 +76,7 @@ def client_shared_key(public_key: bytes, private_key: bytes,
     shared_key = crypto_scalarmult(private_key, remote_pubkey)
 
     # Blake2b(shared_key || public_key || remote_pubkey)
-    return blake2b(shared_key + public_key + remote_pubkey, encoder=Encodable)
+    return blake2b(shared_key + public_key + remote_pubkey, encoder=RawEncoder)
 
 
 def encrypt(data: bytes, key: bytes) -> bytes:
