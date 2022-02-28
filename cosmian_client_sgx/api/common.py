@@ -3,11 +3,10 @@
 import re
 from typing import Optional, Dict, Union, List, Tuple
 
+from urllib.parse import unquote
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
 import requests
-from urllib.parse import unquote
 
 from cosmian_client_sgx.crypto.context import CryptoContext
 from cosmian_client_sgx.api.side import Side

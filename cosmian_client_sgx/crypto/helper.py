@@ -41,7 +41,9 @@ def x25519_pubkey_from_privkey(private_key: bytes) -> bytes:
 def ed25519_keygen() -> Tuple[bytes, bytes, bytes]:
     public_key, sk = crypto_sign_keypair()  # type: bytes, bytes
     seed: bytes = sk[:crypto_sign_SEEDBYTES]
-    private_key: bytes = hashlib.sha512(seed).digest()[:crypto_scalarmult_ed25519_SCALARBYTES]
+    private_key: bytes = hashlib.sha512(
+        seed
+    ).digest()[:crypto_scalarmult_ed25519_SCALARBYTES]
 
     return public_key, seed, private_key
 

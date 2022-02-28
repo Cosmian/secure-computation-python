@@ -43,7 +43,10 @@ class DataProviderAPI(CommonAPI):
 
         return resp.json()
 
-    def push_files(self, code_name: str, paths: Iterable[Path], encrypt: bool = True) -> bool:
+    def push_files(self,
+                   code_name: str,
+                   paths: Iterable[Path],
+                   encrypt: bool = True) -> bool:
         for path in paths:
             if not path.is_file():
                 raise FileNotFoundError

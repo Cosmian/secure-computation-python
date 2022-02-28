@@ -14,8 +14,10 @@ class CryptoContext:
     def __init__(self, private_key: Optional[bytes] = None):
         self.privkey: bytes
         self.pubkey: bytes
-        self.pubkey, self.privkey = (x25519_keypair() if private_key is None else
-                                     (x25519_pubkey_from_privkey(private_key), private_key))
+        self.pubkey, self.privkey = (
+            x25519_keypair() if private_key is None else
+            (x25519_pubkey_from_privkey(private_key), private_key)
+        )
         self.fingerprint: bytes = pubkey_fingerprint(self.pubkey)
         self.remote_pubkey: Optional[bytes] = None
         self._shared_key: Optional[bytes] = None
