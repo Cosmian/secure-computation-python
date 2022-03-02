@@ -73,10 +73,16 @@ class CommonAPI(CryptoContext):
             raise Exception(
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
+
         content: Dict[str, Union[str, List[int]]] = resp.json()
+
         self.remote_pubkey = bytes(content["pub_key"])
 
-        return {"pub_key": self.remote_pubkey, "side": Side[content["side"]]}
+        return {
+            "pub_key": self.remote_pubkey,
+            "side": Side[content["side"]],
+            "isvEnclaveQuote": content["isvEnclaveQuote"]
+        }
 
     def key_provisioning(self) -> Dict[str, str]:
         resp: requests.Response = self.session.post(
