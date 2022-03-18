@@ -43,6 +43,7 @@ def parse_encrypt(args: Namespace) -> None:
             print(f"  --> Directory encrypted and copied to {dst_path}")
     else:
         file_path: Path = Path(args.file).absolute()
+        print(f"==> Encrypt file {file_path.name}...")
 
         if not file_path.exists():
             raise FileNotFoundError
