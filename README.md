@@ -37,6 +37,12 @@ code_provider.set_keypair(
 # say hello to the enclave by sending your public key
 code_provider.hello()
 
+# upload your Python code (could be encrypted or not)
+code_path: Path = Path("tests/data/cp/enclave-join")
+code_name: str = code_path.name
+code_provider.upload(dir_path=code_path,
+                     encrypt=False)
+
 # get enclave's public key bound to the code and each participant public key
 code_provider.key_finalize()
 
@@ -47,12 +53,6 @@ code_provider.key_provisioning()
 quote = code_provider.get_quote()
 # Intel's remote attestation
 code_provider.remote_attestation(quote)
-
-# upload your Python code (could be encrypted or not)
-code_path: Path = Path("tests/data/cp/enclave-join")
-code_name: str = code_path.name
-code_provider.upload(dir_path=code_path,
-                     encrypt=False)
 
 #
 # Data Provider 1
