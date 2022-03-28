@@ -14,7 +14,7 @@ def test_encrypt():
     assert message == cleartext
 
 
-def test_sealing():
+def test_seal():
     message: bytes = b"Hello World!"
 
     assert (len(CP_PUBKEY) == len(DP1_PUBKEY) ==
@@ -37,3 +37,36 @@ def test_sealing():
     ciphertext: bytes = seal(message, RC_PUBKEY)
     cleartext: bytes = unseal(ciphertext, RC_PRIVKEY)
     assert message == cleartext
+
+
+def test_sign():
+    public_key, seed, _ = ed25519_keygen()
+
+    message: bytes = b"Hello World!"
+
+    sig: bytes = sign(message, seed)
+
+    assert verify(message, sig, public_key) is True
+
+
+def test_verify():
+    enclave_public_key, enclave_seed, _ = ed25519_keygen()
+    enclave_x25519_pk, enclave_x25519_sk = ed25519_to_x25519(
+        enclave_public_key,
+        enclave_seed
+    )
+
+    client_public_key, client_seed, _ = ed25519_keygen()
+
+    symkey: bytes = random_symkey()
+    sig: bytes = sign(symkey, client_seed)
+
+    sealed_symkey: bytes = seal(sig + symkey, enclave_x25519_pk)
+
+    assert len(sealed_symkey) == 144
+
+    unsealed_symkey: bytes = unseal(sealed_symkey, enclave_x25519_sk)
+
+    assert len(unsealed_symkey) == 64 + 32
+
+    assert verify(unsealed_symkey[64:], unsealed_symkey[:64], client_public_key) is True

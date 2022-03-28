@@ -7,13 +7,16 @@ from typing import Tuple, List
 
 import nacl.public
 import nacl.secret
+import nacl.signing
 import nacl.utils
 from nacl.public import PrivateKey, PublicKey, SealedBox
 from nacl.secret import SecretBox
+from nacl.signing import SigningKey, VerifyKey
 from nacl.bindings.crypto_scalarmult import (crypto_scalarmult,
                                              crypto_scalarmult_ed25519_base,
                                              crypto_scalarmult_ed25519_SCALARBYTES)
 from nacl.bindings import (crypto_sign_keypair,
+                           crypto_sign_seed_keypair,
                            crypto_sign_ed25519_sk_to_curve25519,
                            crypto_sign_ed25519_pk_to_curve25519,
                            crypto_sign_SEEDBYTES)
@@ -48,15 +51,37 @@ def ed25519_keygen() -> Tuple[bytes, bytes, bytes]:
     return public_key, seed, private_key
 
 
+def ed25519_seed_keygen(seed: bytes) -> Tuple[bytes, bytes, bytes]:
+    public_key, sk = crypto_sign_seed_keypair(seed)
+
+    assert seed == sk[:crypto_sign_SEEDBYTES]
+
+    private_key: bytearray = bytearray(
+        hashlib.sha512(
+            seed
+        ).digest()[:crypto_scalarmult_ed25519_SCALARBYTES]
+    )
+
+    private_key[0] &= 248
+    private_key[31] &= 127
+    private_key[31] |= 64
+
+    return public_key, seed, bytes(private_key)
+
+
 def ed25519_pubkey_from_privkey(private_key: bytes) -> bytes:
     return crypto_scalarmult_ed25519_base(private_key)
 
 
-def ed25519_to_x25519(public_key: bytes, seed: bytes) -> Tuple[bytes, bytes]:
+def ed25519_to_x25519_keypair(public_key: bytes, seed: bytes) -> Tuple[bytes, bytes]:
     x25519_privkey: bytes = crypto_sign_ed25519_sk_to_curve25519(seed + public_key)
     x25519_pubkey: bytes = crypto_sign_ed25519_pk_to_curve25519(public_key)
 
     return x25519_pubkey, x25519_privkey
+
+
+def ed25519_to_x25519_pubkey(public_key: bytes) -> bytes:
+    return crypto_sign_ed25519_pk_to_curve25519(public_key)
 
 
 def x25519(private_key: bytes, public_key: bytes) -> bytes:
@@ -145,15 +170,71 @@ def decrypt_directory(dir_path: Path, key: bytes) -> bool:
 
 
 def seal(data: bytes, recipient_public_key: bytes) -> bytes:
+    """Seal with sealed box of libsodium (X25519 and XSalsa20-Poly1305).
+
+    Parameters
+    ----------
+    data : bytes
+        The data to be sealed.
+    recipient_public_key : bytes
+        Recipent X25519 public key (32 bytes).
+
+    Returns
+    -------
+    bytes
+        `data` sealed for `recipient_public_key`.
+
+
+    Notes
+    -----
+    ephemeral_pk ‖ box(m,
+                       recipient_pk,
+                       ephemeral_sk,
+                       nonce=blake2b(ephemeral_pk ‖ recipient_pk))
+
+    """
     box = SealedBox(PublicKey(recipient_public_key))
 
     return box.encrypt(data)
 
 
 def unseal(encrypted_data: bytes, private_key: bytes) -> bytes:
+    """Unseal with sealed box of libsodium (X25519 and XSalsa20-Poly1305).
+
+    Parameters
+    ----------
+    encrypted_data : bytes
+        The encrypted data to be unsealed:
+        ephemeral_pk (32 bytes) || MAC (16 bytes) || box(data) (var).
+    private_key : bytes
+        X25519 private key (32 bytes).
+
+    Returns
+    -------
+    bytes
+        cleartext data if success.
+
+    """
     box = SealedBox(PrivateKey(private_key))
 
     return box.decrypt(encrypted_data)
+
+
+def sign(data: bytes, private_key: bytes) -> bytes:
+    signing_key: SigningKey = SigningKey(private_key)
+
+    return signing_key.sign(data).signature
+
+
+def verify(data: bytes, sig: bytes, public_key: bytes) -> bool:
+    verify_key: VerifyKey = VerifyKey(public_key)
+
+    try:
+        verify_key.verify(data, sig)
+    except nacl.exceptions.BadSignatureError:
+        return False
+
+    return True
 
 
 def random_symkey() -> bytes:
