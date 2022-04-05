@@ -7,25 +7,66 @@ from urllib.parse import unquote
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 import requests
+import os
 
 from cosmian_client_sgx.crypto.context import CryptoContext
 from cosmian_client_sgx.api.side import Side
 
 
 class CommonAPI(CryptoContext):
-    def __init__(self,
-                 side: Side,
-                 hostname: str,
-                 port: Optional[int],
-                 ssl: bool = False,
-                 auth: Optional[Tuple[str, str]] = None) -> None:
+    def __init__(self, side: Side, token: str) -> None:
         assert side != Side.Enclave, "Can't control Enclave keypair!"
         self.side: Side = side
         self.session: requests.Session = requests.Session()
-        self.url: str = (f"{'https://' if ssl else 'http://'}"
-                         f"{f'{hostname}:{port}' if port else f'{hostname}'}")
-        self.auth: Optional[Tuple[str, str]] = auth
+        self.url: str = os.getenv('COSMIAN_BASE_URL', default="TODO_production_URL")
+        self.token = token
         super().__init__()
+
+    def access_token(self) -> str: 
+        resp: requests.Response = self.session.post(
+            url=f"{self.url}/oauth/token",
+            json={
+                "type": 'refresh_token',
+                "refresh_token": self.token,
+            },
+        )
+
+        content: Dict[str, str] = resp.json()
+        return content["access_token"]
+
+    def register(self, computation_id: str, public_key: str) -> Dict[str, str]:
+        resp: requests.Response = self.session.post(
+            url=f"{self.url}/computations/{computation_id}/register",
+            json={
+                "public_key": public_key,
+                "side": str(self.side),
+            },
+            headers={
+                "Authorization": f"Bearer {self.access_token()}",
+            },
+        )
+
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
+
+        return resp.json()
+
+    def get_computation(self, computation_id: str) -> Dict[str, str]:
+        resp: requests.Response = self.session.get(
+            url=f"{self.url}/computations/{computation_id}",
+            headers={
+                "Authorization": f"Bearer {self.access_token()}",
+            },
+        )
+
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
+
+        return resp.json()
 
     def status(self) -> Dict[str, Dict[Side, List[bytes]]]:
         resp: requests.Response = self.session.get(
@@ -46,22 +87,6 @@ class CommonAPI(CryptoContext):
             }
         }
 
-    def hello(self) -> Dict[str, str]:
-        resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/key/hello",
-            json={
-                "pub_key": list(self.pubkey),
-                "side": str(self.side)
-            },
-            auth=self.auth
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-
-        return resp.json()
 
     def key_finalize(self) -> Dict[str, Union[Side, bytes]]:
         resp: requests.Response = self.session.get(
@@ -84,15 +109,16 @@ class CommonAPI(CryptoContext):
             "isvEnclaveQuote": content["isvEnclaveQuote"]
         }
 
-    def key_provisioning(self) -> Dict[str, str]:
+    def key_provisioning(self, computation_uuid: str, sealed_symetric_key: bytes) -> Dict[str, str]:
         resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/key/provisioning",
+            url=f"{self.url}/computations/{computation_uuid}/key/provisioning",
             json={
-                "fingerprint": self.fingerprint.hex(),
-                "sealed_symkey": list(self.seal_symkey()),
-                "side": str(self.side)
+                "role": str(self.side),
+                "sealed_symetric_key": list(sealed_symetric_key),
             },
-            auth=self.auth
+            headers={
+                "Authorization": f"Bearer {self.access_token()}",
+            },
         )
 
         if not resp.ok:

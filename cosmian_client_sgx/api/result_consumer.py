@@ -9,13 +9,8 @@ from cosmian_client_sgx.api.common import CommonAPI
 
 
 class ResultConsumerAPI(CommonAPI):
-    def __init__(self,
-                 hostname: str,
-                 port: int,
-                 ssl: bool = False,
-                 auth: Optional[Tuple[str, str]] = None
-                 ) -> None:
-        super().__init__(Side.ResultConsumer, hostname, port, ssl, auth)
+    def __init__(self, token: str) -> None:
+        super().__init__(Side.ResultConsumer, token)
 
     def run(self, code_name: str) -> bool:
         resp: requests.Response = self.session.post(
