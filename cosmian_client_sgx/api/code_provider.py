@@ -53,7 +53,7 @@ class CodeProviderAPI(CommonAPI):
             dir_path = directory_path,
             key = symetric_key,
             patterns = patterns,
-            exceptions = files_exceptions + ["run.py", "server.py"], # TODO Why `server.py` here?
+            exceptions = files_exceptions + ["run.py"],
             dir_exceptions = directories_exceptions,
             out_dir_path = encrypted_directory_path
         )

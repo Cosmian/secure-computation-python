@@ -65,8 +65,8 @@ def step_2_code_provider_registers(cosmian_token, computation):
     
     To generate your PGP key, you can use `gpg` as follow:
     """
-    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud@example.org>', 'ed25519', 'cert', 'never'])
-    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud@example.org'])
+    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud+code_provider@example.org>', 'ed25519', 'cert', 'never'])
+    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud+code_provider@example.org'])
 
     computation = code_provider.register(computation['uuid'], public_key)
 
@@ -82,8 +82,8 @@ def step_2_data_providers_register(cosmian_token, computation):
     
     To generate your PGP key, you can use `gpg` as follow:
     """
-    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud@example.org>', 'ed25519', 'cert', 'never'])
-    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud@example.org'])
+    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud+data_provider@example.org>', 'ed25519', 'cert', 'never'])
+    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud+data_provider@example.org'])
 
     computation = data_provider.register(computation['uuid'], public_key)
 
@@ -99,8 +99,8 @@ def step_2_result_consumers_register(cosmian_token, computation):
     
     To generate your PGP key, you can use `gpg` as follow:
     """
-    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud@example.org>', 'ed25519', 'cert', 'never'])
-    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud@example.org'])
+    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud+result_consumer@example.org>', 'ed25519', 'cert', 'never'])
+    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud+result_consumer@example.org'])
 
     computation = result_consumer.register(computation['uuid'], public_key)
 
@@ -241,6 +241,15 @@ def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation
 
     result_consumer.key_provisioning(computation['uuid'], sealed_symetric_key)
 
+
+def step_8_result_consumers_get_results(cosmian_token, computation):
+    """
+    When the computation is over, you can fetch the results.
+    """
+    result_consumer = ResultConsumerAPI(cosmian_token)
+
+    result_consumer.fetch_result(computation['uuid'])
+
 computation = step_1_create_computation()
 print(computation)
 
@@ -257,3 +266,4 @@ step_4_computation_owner_approves_participants(cosmian_token, computation)
 step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation, code_provider_symetric_key)
 step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, computation, Path(os.path.dirname(__file__) + "/../tests/data/dp1/A.csv"), Path(os.path.dirname(__file__) + "/../tests/data/dp2/B.csv"))
 step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation)
+step_8_result_consumers_get_results(cosmian_token, computation)

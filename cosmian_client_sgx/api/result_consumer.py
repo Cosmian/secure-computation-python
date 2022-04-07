@@ -12,23 +12,12 @@ class ResultConsumerAPI(CommonAPI):
     def __init__(self, token: str) -> None:
         super().__init__(Side.ResultConsumer, token)
 
-    def run(self, code_name: str) -> bool:
-        resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/run/{code_name}/{self.fingerprint.hex()}",
-            auth=self.auth
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-
-        return "success" in resp.json()
-
-    def fetch_result(self, code_name: str) -> Optional[bytes]:
+    def fetch_results(self, computation_uuid: str) -> Optional[bytes]:
         resp: requests.Response = self.session.get(
-            url=f"{self.url}/enclave/result/{code_name}/{self.fingerprint.hex()}",
-            auth=self.auth
+            url=f"{self.url}/computations/{computation_uuid}/results",
+            headers={
+                "Authorization": f"Bearer {self.access_token()}",
+            },
         )
 
         if not resp.ok:
