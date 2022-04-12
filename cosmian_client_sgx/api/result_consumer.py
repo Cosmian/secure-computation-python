@@ -28,4 +28,4 @@ class ResultConsumerAPI(CommonAPI):
         if "success" not in resp.json():
             return None
 
-        return self.decrypt(bytes.fromhex(resp.json()["success"]))
+        return bytes.fromhex(resp.json()["success"])

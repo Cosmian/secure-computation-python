@@ -18,7 +18,7 @@ class CommonAPI(CryptoContext):
         assert side != Side.Enclave, "Can't control Enclave keypair!"
         self.side: Side = side
         self.session: requests.Session = requests.Session()
-        self.url: str = os.getenv('COSMIAN_BASE_URL', default="TODO_production_URL")
+        self.url: str = os.getenv('COSMIAN_BASE_URL', default="https://backend.cosmian.com")
         self.token = token
         super().__init__()
 

@@ -11,10 +11,10 @@ def run_subprocess(command: List[str]) -> Optional[str]:
     process = subprocess.Popen(command, stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True)
     stdout, stderr = process.communicate()
 
-    if stderr != "":
-        print("Non empty stderr during command:")
-        print(stderr)
-        return None
+    # if stderr != "":
+    #     print("Non empty stderr during command:")
+    #     print(stderr)
+    #     return None
 
     return stdout
 
@@ -48,6 +48,40 @@ def step_1_create_computation():
         code_provider_email="thibaud@example.org",
         data_providers_emails=["thibaud@example.org"],
         result_consumers_emails=["thibaud@example.org"]
+    )
+
+    return computation
+
+def step_1_create_computation_seed():
+    """
+    First, you need to fetch your Cosmian token from the web console: TODO add link here
+    Store your token inside env variable, file, whatever suit's your security needs.
+    For the example, we'll fetch the token from an env variable.
+    """
+    cosmian_token = environ.get('COSMIAN_TOKEN')
+
+    """
+    Next, you need to create the ComputationOwner object to create your first computation.
+    """
+    computation_owner = ComputationOwner(cosmian_token)
+
+    """
+    To create a computation, you need to pass the name of the computation,
+    your PGP public key for the computation and the list of participants.
+    To simplify the example, we'll say that all participants are
+    yourself (thibaud@example.org).
+
+    To generate your PGP key, you can use `gpg` as follow:
+    """
+    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud@example.org>', 'ed25519', 'cert', 'never'])
+    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud@example.org'])
+
+    computation = computation_owner.create_computation(
+        'Lifeline',
+        owner_public_key=public_key,
+        code_provider_email=environ.get('SEED_EMAIL'),
+        data_providers_emails=[environ.get('SEED_EMAIL')],
+        result_consumers_emails=[environ.get('SEED_EMAIL')]
     )
 
     return computation
@@ -241,29 +275,85 @@ def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation
 
     result_consumer.key_provisioning(computation['uuid'], sealed_symetric_key)
 
+    return symetric_key
 
-def step_8_result_consumers_get_results(cosmian_token, computation):
+
+def step_8_result_consumers_get_results(cosmian_token, computation, symetric_key):
     """
     When the computation is over, you can fetch the results.
     """
     result_consumer = ResultConsumerAPI(cosmian_token)
 
-    result_consumer.fetch_result(computation['uuid'])
+    encrypted_results = result_consumer.fetch_results(computation['uuid'])
+    print(encrypted_results)
 
-computation = step_1_create_computation()
-print(computation)
+    from cosmian_client_sgx.crypto.helper import decrypt
+    results = decrypt(encrypted_results, symetric_key)
 
-print("Sleeping on Docker creation…")
-time.sleep(5)
+    print(results)
 
-print("Continuing…")
-cosmian_token = environ.get('COSMIAN_TOKEN')
-step_2_code_provider_registers(cosmian_token, computation)
-step_2_data_providers_register(cosmian_token, computation)
-step_2_result_consumers_register(cosmian_token, computation)
-code_provider_symetric_key = step_3_code_provider_sends_code(cosmian_token, computation, Path(os.path.dirname(__file__) + "/../tests/data/cp/enclave-join"))
-step_4_computation_owner_approves_participants(cosmian_token, computation)
-step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation, code_provider_symetric_key)
-step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, computation, Path(os.path.dirname(__file__) + "/../tests/data/dp1/A.csv"), Path(os.path.dirname(__file__) + "/../tests/data/dp2/B.csv"))
-step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation)
-step_8_result_consumers_get_results(cosmian_token, computation)
+
+def run(until = 12):
+    print("### step_1_create_computation")
+    computation = step_1_create_computation() if environ.get('SEED_EMAIL') is None else step_1_create_computation_seed()
+    print(computation)
+
+    if until < 2: return
+
+    print("Sleeping on Docker creation…")
+    time.sleep(5)
+
+    print("Continuing…")
+    cosmian_token = environ.get('COSMIAN_TOKEN')
+
+    print("### step_2_code_provider_registers")
+    step_2_code_provider_registers(cosmian_token, computation)
+
+    if until < 3: return
+
+    print("### step_2_data_providers_register")
+    step_2_data_providers_register(cosmian_token, computation)
+    
+    if until < 4: return
+
+    print("### step_2_result_consumers_register")
+    step_2_result_consumers_register(cosmian_token, computation)
+    
+    if until < 5: return
+
+    print("### step_3_code_provider_sends_code")
+    code_provider_symetric_key = step_3_code_provider_sends_code(cosmian_token, computation, Path(os.path.dirname(__file__) + "/../tests/data/cp/enclave-join"))
+    
+    if until < 6: return
+
+    print("### step_4_computation_owner_approves_participants")
+    step_4_computation_owner_approves_participants(cosmian_token, computation)
+    
+    if until < 7: return
+
+    print("### step_5_code_provider_sends_sealed_symetric_key")
+    step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation, code_provider_symetric_key)
+    
+    if until < 8: return
+
+    print("### step_6_data_providers_send_data_and_sealed_symetric_keys")
+    step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, computation, Path(os.path.dirname(__file__) + "/../tests/data/dp1/A.csv"), Path(os.path.dirname(__file__) + "/../tests/data/dp2/B.csv"))
+    
+    if until < 9: return
+
+    print("### step_7_result_consumers_send_sealed_symetric_keys")
+    result_consumer_symetric_key = step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation)
+    
+    if until < 10: return
+
+    print("### step_8_result_consumers_get_results")
+    step_8_result_consumers_get_results(cosmian_token, computation, result_consumer_symetric_key)
+
+
+def run_all():
+    print(f"Seeding for {environ.get('SEED_EMAIL')}…\n\n")
+    for i in range(1,11):
+        print(f"\n\n###### Running until {i} ######\n")
+        run(i)
+
+run(10) if environ.get('SEED_EMAIL') is None else run_all()
