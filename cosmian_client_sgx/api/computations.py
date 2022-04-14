@@ -104,6 +104,9 @@ class CurrentRun:
 class PreviousRun:
     created_at: str
     ended_at: str
+    exit_code: int
+    stdout: str
+    stderr: str
 
     @staticmethod
     def from_json_dict(json):

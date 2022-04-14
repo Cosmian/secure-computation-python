@@ -292,7 +292,14 @@ def step_8_result_consumers_get_results(cosmian_token, computation, symetric_key
         time.sleep(2)
         computation = result_consumer.get_computation(computation.uuid)
 
-        if computation.runs.current is None and computation.runs.previous.len() == 1:
+        if computation.runs.current is None and len(computation.runs.previous) == 1:
+            run = computation.runs.previous[0]
+            if run.exit_code != 0:
+                print(run.exit_code)
+                print(run.stdout)
+                print(run.stderr)
+                raise "Run fail."
+
             break
 
     encrypted_results = result_consumer.fetch_results(computation.uuid)
