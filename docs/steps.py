@@ -295,9 +295,13 @@ def step_8_result_consumers_get_results(cosmian_token, computation, symetric_key
         if computation.runs.current is None and len(computation.runs.previous) == 1:
             run = computation.runs.previous[0]
             if run.exit_code != 0:
+                print("\n\n### Exit Code ###\n")
                 print(run.exit_code)
+                print("\n\n### stdout ###\n")
                 print(run.stdout)
+                print("\n\n### stderr ###\n")
                 print(run.stderr)
+                print("\n\n")
                 raise "Run fail."
 
             break

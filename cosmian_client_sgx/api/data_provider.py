@@ -63,15 +63,3 @@ class DataProviderAPI(CommonAPI):
 
         return resp.json()
 
-    # def list_data(self, code_name: str) -> Dict[str, str]:
-    #     resp: requests.Response = self.session.get(
-    #         url=f"{self.url}/enclave/data/{code_name}/{self.fingerprint.hex()}",
-    #         auth=self.auth
-    #     )
-
-    #     if not resp.ok:
-    #         raise Exception(
-    #             f"Unexpected response ({resp.status_code}): {resp.content}"
-    #         )
-
-    #     return resp.json()

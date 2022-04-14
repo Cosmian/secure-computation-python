@@ -69,47 +69,6 @@ class CommonAPI(CryptoContext):
 
         return Computation.from_json_dict(resp.json())
 
-    def status(self) -> Dict[str, Dict[Side, List[bytes]]]:
-        resp: requests.Response = self.session.get(
-            url=f"{self.url}/enclave/status",
-            auth=self.auth
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-        content: Dict[str, Dict[str, List[bytes]]] = resp.json()
-
-        return {
-            "pub_keys": {
-                Side[key]: [bytes(value) for value in values]
-                for key, values in content["pub_keys"].items()
-            }
-        }
-
-
-    def key_finalize(self) -> Dict[str, Union[Side, bytes]]:
-        resp: requests.Response = self.session.get(
-            url=f"{self.url}/enclave/key/finalize",
-            auth=self.auth
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-
-        content: Dict[str, Union[str, List[int]]] = resp.json()
-
-        self.remote_pubkey = bytes(content["pub_key"])
-
-        return {
-            "pub_key": self.remote_pubkey,
-            "side": Side[content["side"]],
-            "isvEnclaveQuote": content["isvEnclaveQuote"]
-        }
-
     def key_provisioning(self, computation_uuid: str, sealed_symetric_key: bytes) -> Dict[str, str]:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations/{computation_uuid}/key/provisioning",
@@ -157,28 +116,3 @@ class CommonAPI(CryptoContext):
         )
 
         return True
-
-    def get_quote(self) -> Dict[str, str]:
-        resp: requests.Response = self.session.get(
-            url=f"{self.url}/enclave/quote",
-            auth=self.auth
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-        return resp.json()
-
-    def reset(self) -> bool:
-        resp: requests.Response = self.session.delete(
-            url=f"{self.url}/enclave/reset",
-            auth=self.auth
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-
-        return "success" in resp.json()
