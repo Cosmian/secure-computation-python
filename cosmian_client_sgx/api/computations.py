@@ -88,6 +88,8 @@ class Enclave:
 
     @staticmethod
     def from_json_dict(json):
+        json['public_key'] = None if json['public_key'] is None else bytes(json['public_key'])
+
         return Enclave(**json)
 
 @dataclass(frozen=True)

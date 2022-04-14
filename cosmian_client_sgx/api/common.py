@@ -11,6 +11,7 @@ import os
 
 from cosmian_client_sgx.crypto.context import CryptoContext
 from cosmian_client_sgx.api.side import Side
+from cosmian_client_sgx.api.computations import Computation
 
 
 class CommonAPI(CryptoContext):
@@ -53,7 +54,7 @@ class CommonAPI(CryptoContext):
 
         return resp.json()
 
-    def get_computation(self, computation_id: str) -> Dict[str, str]:
+    def get_computation(self, computation_id: str) -> Computation:
         resp: requests.Response = self.session.get(
             url=f"{self.url}/computations/{computation_id}",
             headers={
@@ -66,7 +67,7 @@ class CommonAPI(CryptoContext):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        return resp.json()
+        return Computation.from_json_dict(resp.json())
 
     def status(self) -> Dict[str, Dict[Side, List[bytes]]]:
         resp: requests.Response = self.session.get(

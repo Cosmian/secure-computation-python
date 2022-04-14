@@ -201,7 +201,7 @@ def step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation, s
     enclave public key.
     """
     from cosmian_client_sgx.crypto.helper import seal
-    sealed_symetric_key = seal(symetric_key, bytes(computation['enclave']['public_key'])) # TODO when Computation'll be a class and not a Dict we'll convert it before handling it to the client
+    sealed_symetric_key = seal(symetric_key, computation.enclave.public_key)
 
     code_provider.key_provisioning(computation.uuid, sealed_symetric_key)
 
@@ -241,7 +241,7 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     You also need to send your symetric key sealed with the public key of the enclave.
     """
     from cosmian_client_sgx.crypto.helper import seal
-    sealed_symetric_key = seal(symetric_key, bytes(computation['enclave']['public_key'])) # TODO when Computation'll be a class and not a Dict we'll convert it before handling it to the client
+    sealed_symetric_key = seal(symetric_key, computation.enclave.public_key)
 
     data_provider.key_provisioning(computation.uuid, sealed_symetric_key)
 
@@ -271,7 +271,7 @@ def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation
     You then need to send your symetric key sealed with the public key of the enclave.
     """
     from cosmian_client_sgx.crypto.helper import seal
-    sealed_symetric_key = seal(symetric_key, bytes(computation['enclave']['public_key'])) # TODO when Computation'll be a class and not a Dict we'll convert it before handling it to the client
+    sealed_symetric_key = seal(symetric_key, computation.enclave.public_key)
 
     result_consumer.key_provisioning(computation.uuid, sealed_symetric_key)
 
