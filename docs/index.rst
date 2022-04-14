@@ -12,3 +12,5 @@ Cosmian Secure Computation
    step_6_data_providers_send_data_and_sealed_symetric_keys
    step_7_result_consumers_send_sealed_symetric_keys
    step_8_result_consumers_get_results
+   appendix_types
+

@@ -29,6 +29,7 @@ author = 'Cosmian'
 # ones.
 extensions = [
     'sphinx.ext.doctest',
+    'sphinx.ext.autodoc',
     'sphinx_rtd_theme'
 ]
 

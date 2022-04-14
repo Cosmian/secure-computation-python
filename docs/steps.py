@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Union, List, Tuple
 
-from cosmian_client_sgx import ComputationOwner, CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
+from cosmian_client_sgx import Computation, ComputationOwner, CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
 from os import environ
 import os
 import subprocess
@@ -87,7 +87,7 @@ def step_1_create_computation_seed():
     return computation
 
 
-def step_2_code_provider_registers(cosmian_token, computation):
+def step_2_code_provider_registers(cosmian_token, computation: Computation):
     """
     You need to create the CodeProvider object to register.
     """
@@ -102,9 +102,9 @@ def step_2_code_provider_registers(cosmian_token, computation):
     run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud+code_provider@example.org>', 'ed25519', 'cert', 'never'])
     public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud+code_provider@example.org'])
 
-    computation = code_provider.register(computation['uuid'], public_key)
+    computation = code_provider.register(computation.uuid, public_key)
 
-def step_2_data_providers_register(cosmian_token, computation):
+def step_2_data_providers_register(cosmian_token, computation: Computation):
     """
     You need to create the DataProvider object to register.
     """
@@ -119,9 +119,9 @@ def step_2_data_providers_register(cosmian_token, computation):
     run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud+data_provider@example.org>', 'ed25519', 'cert', 'never'])
     public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud+data_provider@example.org'])
 
-    computation = data_provider.register(computation['uuid'], public_key)
+    computation = data_provider.register(computation.uuid, public_key)
 
-def step_2_result_consumers_register(cosmian_token, computation):
+def step_2_result_consumers_register(cosmian_token, computation: Computation):
     """
     You need to create the ResultConsumer object to register.
     """
@@ -136,7 +136,7 @@ def step_2_result_consumers_register(cosmian_token, computation):
     run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud+result_consumer@example.org>', 'ed25519', 'cert', 'never'])
     public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud+result_consumer@example.org'])
 
-    computation = result_consumer.register(computation['uuid'], public_key)
+    computation = result_consumer.register(computation.uuid, public_key)
 
 def step_3_code_provider_sends_code(cosmian_token, computation, path):
     code_provider = CodeProviderAPI(cosmian_token)
@@ -156,11 +156,11 @@ def step_3_code_provider_sends_code(cosmian_token, computation, path):
     Next, you can upload your code folder. This folder should contains a `run.py` file.
     This `run.py` file will not be encrypted. Everything else will be.
     """
-    code_provider.upload(computation['uuid'], symetric_key, path)
+    code_provider.upload(computation.uuid, symetric_key, path)
 
     return symetric_key
 
-def step_4_computation_owner_approves_participants(cosmian_token, computation):
+def step_4_computation_owner_approves_participants(cosmian_token, computation: Computation):
     """
     You need to check that the list of participants is correct. To do that, you can 
     fetch the status of the computation and read the enclave manifest.
@@ -170,7 +170,7 @@ def step_4_computation_owner_approves_participants(cosmian_token, computation):
     """
     computation_owner = ComputationOwner(cosmian_token)
 
-    computation = computation_owner.get_computation(computation['uuid'])
+    computation = computation_owner.get_computation(computation.uuid)
 
     """
     To approve the participants, you need to sign the manifest.
@@ -179,7 +179,7 @@ def step_4_computation_owner_approves_participants(cosmian_token, computation):
 
     TODO crypto stuff here / PGP sign with external run? / bytes or string for signature?
     """
-    computation_owner.approve_participants(computation['uuid'], "TODO_compute_signature_here")
+    computation_owner.approve_participants(computation.uuid, "TODO_compute_signature_here")
 
 def step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation, symetric_key):
     """
@@ -192,7 +192,7 @@ def step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation, s
     """
     code_provider = CodeProviderAPI(cosmian_token)
 
-    computation = code_provider.get_computation(computation['uuid'])
+    computation = code_provider.get_computation(computation.uuid)
 
     """
     To approve the computation, you need to send your symetric key sealed with the public key of the enclave.
@@ -203,7 +203,7 @@ def step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation, s
     from cosmian_client_sgx.crypto.helper import seal
     sealed_symetric_key = seal(symetric_key, bytes(computation['enclave']['public_key'])) # TODO when Computation'll be a class and not a Dict we'll convert it before handling it to the client
 
-    code_provider.key_provisioning(computation['uuid'], sealed_symetric_key)
+    code_provider.key_provisioning(computation.uuid, sealed_symetric_key)
 
 def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, computation, path_1, path_2):
     """
@@ -216,7 +216,7 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     """
     data_provider = DataProviderAPI(cosmian_token)
 
-    computation = data_provider.get_computation(computation['uuid'])
+    computation = data_provider.get_computation(computation.uuid)
 
     """
     To send your data, you first need to generate a symetric key. The Cosmian client
@@ -229,13 +229,13 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     """
     You can next send your encrypted data
     """
-    data_provider.push_files(computation['uuid'], symetric_key, [path_1, path_2])
+    data_provider.push_files(computation.uuid, symetric_key, [path_1, path_2])
 
     """
     When you have finished uploading your files, you need to tell it to the server so
     it knows data are ready
     """
-    data_provider.done(computation['uuid'])
+    data_provider.done(computation.uuid)
 
     """
     You also need to send your symetric key sealed with the public key of the enclave.
@@ -243,10 +243,10 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     from cosmian_client_sgx.crypto.helper import seal
     sealed_symetric_key = seal(symetric_key, bytes(computation['enclave']['public_key'])) # TODO when Computation'll be a class and not a Dict we'll convert it before handling it to the client
 
-    data_provider.key_provisioning(computation['uuid'], sealed_symetric_key)
+    data_provider.key_provisioning(computation.uuid, sealed_symetric_key)
 
 
-def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation):
+def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation: Computation):
     """
     You need to check that the computation is correct. To do that, you can 
     fetch the status of the computation and read the enclave manifest. You can also
@@ -257,7 +257,7 @@ def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation
     """
     result_consumer = ResultConsumerAPI(cosmian_token)
 
-    computation = result_consumer.get_computation(computation['uuid'])
+    computation = result_consumer.get_computation(computation.uuid)
 
     """
     To fetch your results after the computation ran, you first need to generate a symetric key.
@@ -273,7 +273,7 @@ def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation
     from cosmian_client_sgx.crypto.helper import seal
     sealed_symetric_key = seal(symetric_key, bytes(computation['enclave']['public_key'])) # TODO when Computation'll be a class and not a Dict we'll convert it before handling it to the client
 
-    result_consumer.key_provisioning(computation['uuid'], sealed_symetric_key)
+    result_consumer.key_provisioning(computation.uuid, sealed_symetric_key)
 
     return symetric_key
 
@@ -284,7 +284,18 @@ def step_8_result_consumers_get_results(cosmian_token, computation, symetric_key
     """
     result_consumer = ResultConsumerAPI(cosmian_token)
 
-    encrypted_results = result_consumer.fetch_results(computation['uuid'])
+    while True:
+        """
+        First we'll check that the computation ended and one computation is in previous runs.
+        """
+        print("Waiting end of computation…")
+        time.sleep(2)
+        computation = result_consumer.get_computation(computation.uuid)
+
+        if computation.runs.current is None and computation.runs.previous.len() == 1:
+            break
+
+    encrypted_results = result_consumer.fetch_results(computation.uuid)
     print(encrypted_results)
 
     from cosmian_client_sgx.crypto.helper import decrypt

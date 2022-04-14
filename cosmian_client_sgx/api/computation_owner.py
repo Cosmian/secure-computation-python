@@ -8,13 +8,14 @@ import requests
 
 from cosmian_client_sgx.api.side import Side
 from cosmian_client_sgx.api.common import CommonAPI
+from cosmian_client_sgx.api.computations import Computation
 
 
 class ComputationOwner(CommonAPI):
     def __init__(self, token: str) -> None:
         super().__init__(Side.Owner, token)
 
-    def create_computation(self, name: str, owner_public_key: str, code_provider_email: str, data_providers_emails: List[str], result_consumers_emails: List[str]):
+    def create_computation(self, name: str, owner_public_key: str, code_provider_email: str, data_providers_emails: List[str], result_consumers_emails: List[str]) -> Computation:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations",
             json={
@@ -34,7 +35,9 @@ class ComputationOwner(CommonAPI):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        return resp.json()
+        print(resp.json())
+
+        return Computation.from_json_dict(resp.json())
 
     def approve_participants(self, computation_uuid: str, signature: str):
         resp: requests.Response = self.session.post(
