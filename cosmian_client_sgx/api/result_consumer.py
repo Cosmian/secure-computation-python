@@ -25,7 +25,4 @@ class ResultConsumerAPI(CommonAPI):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        if "success" not in resp.json():
-            return None
-
-        return bytes.fromhex(resp.json()["success"])
+        return bytes.fromhex(resp.json()["message"])

@@ -307,7 +307,6 @@ def step_8_result_consumers_get_results(cosmian_token, computation, symetric_key
             break
 
     encrypted_results = result_consumer.fetch_results(computation.uuid)
-    print(encrypted_results)
 
     from cosmian_client_sgx.crypto.helper import decrypt
     results = decrypt(encrypted_results, symetric_key)
