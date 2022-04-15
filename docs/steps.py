@@ -20,64 +20,73 @@ def run_subprocess(command: List[str]) -> Optional[str]:
 
 def step_1_create_computation():
     """
-    First, you need to fetch your Cosmian token from the web console: TODO add link here
+    Fetch your Cosmian token from the web console: https://console.cosmian.com/secret-token
     Store your token inside env variable, file, whatever suit's your security needs.
     For the example, we'll fetch the token from an env variable.
     """
     cosmian_token = environ.get('COSMIAN_TOKEN')
 
     """
-    Next, you need to create the ComputationOwner object to create your first computation.
+    To create your first computation, create the ComputationOwner object with your secret token.
     """
     computation_owner = ComputationOwner(cosmian_token)
 
     """
-    To create a computation, you need to pass the name of the computation,
-    your PGP public key for the computation and the list of participants.
-    To simplify the example, we'll say that all participants are
-    yourself (thibaud@example.org).
+    To create a computation, you need to pass :
+    - the name of the computation
+    - your PGP public key for the computation
+    - the list of participants and their associated roles
 
-    To generate your PGP key, you can use `gpg` as follow:
+    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
     """
-    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud@example.org>', 'ed25519', 'cert', 'never'])
-    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud@example.org'])
+    public_key = "your_own_gpg_public_key"
 
+    """
+    Create your computation :
+    You will be the Computation Owner of this computation.
+    """
     computation = computation_owner.create_computation(
-        'Lifeline',
+        'computation name',
         owner_public_key=public_key,
-        code_provider_email="thibaud@example.org",
-        data_providers_emails=["thibaud@example.org"],
-        result_consumers_emails=["thibaud@example.org"]
+        code_provider_email="code.provider@example.org",
+        data_providers_emails=["data.provider@example.org"],
+        result_consumers_emails=["result.consumer@example.org"]
     )
 
     return computation
 
 def step_1_create_computation_seed():
     """
-    First, you need to fetch your Cosmian token from the web console: TODO add link here
+    Fetch your Cosmian token from the web console: https://console.cosmian.com/secret-token
     Store your token inside env variable, file, whatever suit's your security needs.
     For the example, we'll fetch the token from an env variable.
     """
     cosmian_token = environ.get('COSMIAN_TOKEN')
 
     """
-    Next, you need to create the ComputationOwner object to create your first computation.
+    To create your first computation, create the ComputationOwner object with your secret token.
     """
     computation_owner = ComputationOwner(cosmian_token)
 
     """
-    To create a computation, you need to pass the name of the computation,
-    your PGP public key for the computation and the list of participants.
+    To create a computation, you need to pass :
+    - the name of the computation
+    - your PGP public key for the computation
+    - the list of participants and their associated roles
+
     To simplify the example, we'll say that all participants are
-    yourself (thibaud@example.org).
+    yourself (me@example.org).
 
-    To generate your PGP key, you can use `gpg` as follow:
+    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
     """
-    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud@example.org>', 'ed25519', 'cert', 'never'])
-    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud@example.org'])
+    public_key = "your_own_gpg_public_key"
 
+    """
+    Create your computation :
+    You will be the Computation Owner of this computation.
+    """
     computation = computation_owner.create_computation(
-        'Lifeline',
+        'computation name',
         owner_public_key=public_key,
         code_provider_email=environ.get('SEED_EMAIL'),
         data_providers_emails=[environ.get('SEED_EMAIL')],
@@ -87,26 +96,25 @@ def step_1_create_computation_seed():
     return computation
 
 
-def step_2_code_provider_registers(cosmian_token, computation: Computation):
+def step_2_code_provider_registers(cosmian_token, computation_uuid):
     """
-    You need to create the CodeProvider object to register.
+    You need to create the CodeProvider object to register as a code provider.
     """
     code_provider = CodeProviderAPI(cosmian_token)
 
     """
-    To register, you need to pass the UUID of the computation given on the interface and
+    To register, pass the UUID of the computation given on the interface and
     your PGP public key for your role on this computation.
     
-    To generate your PGP key, you can use `gpg` as follow:
+    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
     """
-    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud+code_provider@example.org>', 'ed25519', 'cert', 'never'])
-    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud+code_provider@example.org'])
+    public_key = "your_own_gpg_public_key"
 
-    computation = code_provider.register(computation.uuid, public_key)
+    computation = code_provider.register(computation_uuid, public_key)
 
-def step_2_data_providers_register(cosmian_token, computation: Computation):
+def step_2_data_providers_register(cosmian_token, computation_uuid):
     """
-    You need to create the DataProvider object to register.
+    You need to create the DataProvider object to register as a data provider.
     """
     data_provider = DataProviderAPI(cosmian_token)
 
@@ -114,16 +122,15 @@ def step_2_data_providers_register(cosmian_token, computation: Computation):
     To register, you need to pass the UUID of the computation given on the interface and
     your PGP public key for your role on this computation.
     
-    To generate your PGP key, you can use `gpg` as follow:
+    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
     """
-    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud+data_provider@example.org>', 'ed25519', 'cert', 'never'])
-    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud+data_provider@example.org'])
+    public_key = "your_own_gpg_public_key"
 
-    computation = data_provider.register(computation.uuid, public_key)
+    computation = data_provider.register(computation_uuid, public_key)
 
-def step_2_result_consumers_register(cosmian_token, computation: Computation):
+def step_2_result_consumers_register(cosmian_token, computation_uuid):
     """
-    You need to create the ResultConsumer object to register.
+    You need to create the ResultConsumer object to register as a result consumer.
     """
     result_consumer = ResultConsumerAPI(cosmian_token)
 
@@ -131,114 +138,120 @@ def step_2_result_consumers_register(cosmian_token, computation: Computation):
     To register, you need to pass the UUID of the computation given on the interface and
     your PGP public key for your role on this computation.
     
-    To generate your PGP key, you can use `gpg` as follow:
+    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
     """
-    run_subprocess(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'Thibaud Doe <thibaud+result_consumer@example.org>', 'ed25519', 'cert', 'never'])
-    public_key = run_subprocess(['gpg', '--export', '--armor', 'thibaud+result_consumer@example.org'])
+    public_key = "your_own_gpg_public_key"
 
-    computation = result_consumer.register(computation.uuid, public_key)
+    computation = result_consumer.register(computation_uuid, public_key)
 
-def step_3_code_provider_sends_code(cosmian_token, computation, path):
-    code_provider = CodeProviderAPI(cosmian_token)
-
+def step_3_code_provider_sends_code(cosmian_token, computation_uuid, path):
     """
-    To send your code, you first need to generate a symetric key. The Cosmian client
-    provides a function for that, but you can use whatever suit's your security needs.
+    As a code provider, you will send code to the enclave.
+    > First, you have to generate a symetric key. The Cosmian client
+    provides a function for that, but you can also use whatever suit's your security needs.
     *TODO explain what type of key is required*
 
-    Please store this symetric key somewhere. It'll be required later to send it to 
+    You need to store this symetric key somewhere safe. It'll be required later for you to send it to 
     the enclave.
     """
     from cosmian_client_sgx.crypto.helper import random_symkey
     symetric_key = random_symkey()
 
     """
-    Next, you can upload your code folder. This folder should contains a `run.py` file.
-    This `run.py` file will not be encrypted. Everything else will be.
+    > Next, upload your code folder, specifying its path.
+    This folder should contains a `run.py` file.
+    The `run.py` file will not be encrypted, everything else will be.
     """
-    code_provider.upload(computation.uuid, symetric_key, path)
+    code_provider = CodeProviderAPI(cosmian_token)
+
+    code_provider.upload(computation_uuid, symetric_key, path)
 
     return symetric_key
 
-def step_4_computation_owner_approves_participants(cosmian_token, computation: Computation):
+def step_4_computation_owner_approves_participants(cosmian_token, computation_uuid):
     """
-    You need to check that the list of participants is correct. To do that, you can 
-    fetch the status of the computation and read the enclave manifest.
+    You need to check that the list of participants is correct. To do so, you can 
+    fetch computation's status and read the enclave manifest.
 
     TODO explain how Cosmian cannot change the participants list because
     it's signed by the enclave / check enclave public key / check manifest signature.
+
+    TODO explain how to fetch the manifest.
     """
     computation_owner = ComputationOwner(cosmian_token)
 
-    computation = computation_owner.get_computation(computation.uuid)
+    computation = computation_owner.get_computation(computation_uuid)
 
     """
-    To approve the participants, you need to sign the manifest.
-    Every participant can check your signature with your public key to check
-    if you're ok with this computation.
+    To approve participants, you need to sign the enclave's manifest.
+    After that, each participant will be able to see that you've approved this computation
+    and check your signature with your provided public key.
 
     TODO crypto stuff here / PGP sign with external run? / bytes or string for signature?
     """
     computation_owner.approve_participants(computation.uuid, "TODO_compute_signature_here")
 
-def step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation, symetric_key):
+def step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation_uuid, symetric_key):
     """
-    You need to check that the computation is correct. To do that, you can 
-    fetch the status of the computation and read the enclave manifest. You can also
-    check the manifest's signature of the computation owner.
+    You need to check that the computation is correct :
+    > You can fetch computation's status and read the enclave manifest.
+    > You can check computation owner's signature from the manifest.
 
     TODO explain how Cosmian cannot change the participants list because
     it's signed by the enclave / check enclave public key / check manifest signature.
+
+    TODO explain how to fetch the manifest.
     """
     code_provider = CodeProviderAPI(cosmian_token)
 
-    computation = code_provider.get_computation(computation.uuid)
+    computation = code_provider.get_computation(computation_uuid)
 
     """
-    To approve the computation, you need to send your symetric key sealed with the public key of the enclave.
+    To approve the computation, send your symetric key sealed with enclave's public key.
 
-    You need to fetch back your symetric key from the step 3, when you've uploaded your code and sealed it with the
-    enclave public key.
+    You need to use the same symetric key as in step 3 (code upload).
     """
     from cosmian_client_sgx.crypto.helper import seal
     sealed_symetric_key = seal(symetric_key, computation.enclave.public_key)
 
     code_provider.key_provisioning(computation.uuid, sealed_symetric_key)
 
-def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, computation, path_1, path_2):
+def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, computation_uuid, path_1, path_2):
     """
-    You need to check that the computation is correct. To do that, you can 
-    fetch the status of the computation and read the enclave manifest. You can also
-    check the manifest's signature of the computation owner.
+    You need to check that the computation is correct :
+    > You can fetch computation's status and read the enclave manifest.
+    > You can check computation owner's signature from the manifest.
 
     TODO explain how Cosmian cannot change the participants list because
     it's signed by the enclave / check enclave public key / check manifest signature.
+
+    TODO explain how to fetch the manifest.
     """
     data_provider = DataProviderAPI(cosmian_token)
 
-    computation = data_provider.get_computation(computation.uuid)
+    computation = data_provider.get_computation(computation_uuid)
 
     """
-    To send your data, you first need to generate a symetric key. The Cosmian client
-    provides a function for that, but you can use whatever suit's your security needs.
+    As a data provider, you will send data to the enclave.
+    > First, you have to generate a symetric key. The Cosmian client
+    provides a function for that, but you can also use whatever suit's your security needs.
     *TODO explain what type of key is required*
     """
     from cosmian_client_sgx.crypto.helper import random_symkey
     symetric_key = random_symkey()
 
     """
-    You can next send your encrypted data
+    > Next, send your encrypted data to the enclave, specifying the different paths :
     """
     data_provider.push_files(computation.uuid, symetric_key, [path_1, path_2])
 
     """
-    When you have finished uploading your files, you need to tell it to the server so
-    it knows data are ready
+    When you're done uploading your files, notify the server so it knows that data are ready :
     """
     data_provider.done(computation.uuid)
 
     """
-    You also need to send your symetric key sealed with the public key of the enclave.
+    > Finally, send your symetric key sealed with enclave's public key :
     """
     from cosmian_client_sgx.crypto.helper import seal
     sealed_symetric_key = seal(symetric_key, computation.enclave.public_key)
@@ -246,29 +259,33 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     data_provider.key_provisioning(computation.uuid, sealed_symetric_key)
 
 
-def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation: Computation):
+def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation_uuid):
     """
-    You need to check that the computation is correct. To do that, you can 
-    fetch the status of the computation and read the enclave manifest. You can also
-    check the manifest's signature of the computation owner.
+    You need to check that the computation is correct :
+    > You can fetch computation's status and read the enclave manifest.
+    > You can check computation owner's signature from the manifest.
 
     TODO explain how Cosmian cannot change the participants list because
     it's signed by the enclave / check enclave public key / check manifest signature.
+
+    TODO explain how to fetch the manifest.
     """
     result_consumer = ResultConsumerAPI(cosmian_token)
 
-    computation = result_consumer.get_computation(computation.uuid)
+    computation = result_consumer.get_computation(computation_uuid)
 
     """
-    To fetch your results after the computation ran, you first need to generate a symetric key.
-    The Cosmian client provides a function for that, but you can use whatever suit's your security needs.
+    As a result consumer, you will retrieve results after computation's run. But before,
+    you have to send you symetric key, sealed with enclave's public key :
+    > First, you have to generate a symetric key. The Cosmian client
+    provides a function for that, but you can also use whatever suit's your security needs.
     *TODO explain what type of key is required*
     """
     from cosmian_client_sgx.crypto.helper import random_symkey
     symetric_key = random_symkey()
 
     """
-    You then need to send your symetric key sealed with the public key of the enclave.
+    > Next, send your symetric key sealed with enclave's public key :
     """
     from cosmian_client_sgx.crypto.helper import seal
     sealed_symetric_key = seal(symetric_key, computation.enclave.public_key)
@@ -278,9 +295,9 @@ def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation
     return symetric_key
 
 
-def step_8_result_consumers_get_results(cosmian_token, computation, symetric_key):
+def step_8_result_consumers_get_results(cosmian_token, computation_uuid, symetric_key):
     """
-    When the computation is over, you can fetch the results.
+    When the computation is over, you can fetch results.
     """
     result_consumer = ResultConsumerAPI(cosmian_token)
 
@@ -290,7 +307,7 @@ def step_8_result_consumers_get_results(cosmian_token, computation, symetric_key
         """
         print("Waiting end of computation…")
         time.sleep(2)
-        computation = result_consumer.get_computation(computation.uuid)
+        computation = result_consumer.get_computation(computation_uuid)
 
         if computation.runs.current is None and len(computation.runs.previous) == 1:
             run = computation.runs.previous[0]
