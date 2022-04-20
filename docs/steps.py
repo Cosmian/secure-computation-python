@@ -30,6 +30,7 @@ def step_1_create_computation():
     """
     To create your first computation, create the ComputationOwner object with your secret token.
     """
+    from cosmian_client_sgx import ComputationOwner
     computation_owner = ComputationOwner(cosmian_token)
 
     """
@@ -78,6 +79,7 @@ def step_1_create_computation_seed():
     """
     To create your first computation, create the ComputationOwner object with your secret token.
     """
+    from cosmian_client_sgx import ComputationOwner
     computation_owner = ComputationOwner(cosmian_token)
 
     """
@@ -123,6 +125,7 @@ def step_2_code_provider_registers(cosmian_token, computation_uuid):
     """
     You need to create the CodeProvider object to register as a code provider.
     """
+    from cosmian_client_sgx import CodeProviderAPI
     code_provider = CodeProviderAPI(cosmian_token)
 
     """
@@ -150,6 +153,7 @@ def step_2_data_providers_register(cosmian_token, computation_uuid):
     """
     You need to create the DataProvider object to register as a data provider.
     """
+    from cosmian_client_sgx import DataProviderAPI
     data_provider = DataProviderAPI(cosmian_token)
 
     """
@@ -177,6 +181,7 @@ def step_2_result_consumers_register(cosmian_token, computation_uuid):
     """
     You need to create the ResultConsumer object to register as a result consumer.
     """
+    from cosmian_client_sgx import ResultConsumerAPI
     result_consumer = ResultConsumerAPI(cosmian_token)
 
     """
@@ -218,6 +223,7 @@ def step_3_code_provider_sends_code(cosmian_token, computation_uuid, path):
     This folder should contains a `run.py` file.
     The `run.py` file will not be encrypted, everything else will be.
     """
+    from cosmian_client_sgx import CodeProviderAPI
     code_provider = CodeProviderAPI(cosmian_token)
 
     code_provider.upload(computation_uuid, symetric_key, path)
@@ -233,6 +239,7 @@ def step_4_computation_owner_approves_participants(cosmian_token, computation_uu
     security of the process. You can access these informations from the computation
     object.
     """
+    from cosmian_client_sgx import ComputationOwner
     computation_owner = ComputationOwner(cosmian_token)
 
     computation = computation_owner.get_computation(computation_uuid)
@@ -276,6 +283,7 @@ def step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation_uu
     security of the process. You can access these informations from the computation
     object.
     """
+    from cosmian_client_sgx import CodeProviderAPI
     code_provider = CodeProviderAPI(cosmian_token)
 
     computation = code_provider.get_computation(computation_uuid)
@@ -307,6 +315,7 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     security of the process. You can access these informations from the computation
     object.
     """
+    from cosmian_client_sgx import DataProviderAPI
     data_provider = DataProviderAPI(cosmian_token)
 
     computation = data_provider.get_computation(computation_uuid)
@@ -358,6 +367,7 @@ def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation
     security of the process. You can access these informations from the computation
     object.
     """
+    from cosmian_client_sgx import ResultConsumerAPI
     result_consumer = ResultConsumerAPI(cosmian_token)
 
     computation = result_consumer.get_computation(computation_uuid)
@@ -396,6 +406,7 @@ def step_8_result_consumers_get_results(cosmian_token, computation_uuid, symetri
     """
     When the computation is over, you can fetch results.
     """
+    from cosmian_client_sgx import ResultConsumerAPI
     result_consumer = ResultConsumerAPI(cosmian_token)
 
     while True:
