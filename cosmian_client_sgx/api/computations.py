@@ -85,6 +85,7 @@ class ResultConsumer:
 class Enclave:
     public_key: Optional[bytes]
     manifest: Optional[str]
+    quote: Optional[str]
 
     @staticmethod
     def from_json_dict(json):
@@ -107,6 +108,7 @@ class PreviousRun:
     exit_code: int
     stdout: str
     stderr: str
+    results_fetches_datetimes_by_result_consumers_uuid: Dict[str, str]
 
     @staticmethod
     def from_json_dict(json):
