@@ -37,7 +37,18 @@ def step_1_create_computation():
     - your PGP public key for the computation
     - the list of participants and their associated roles
 
-    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
+    To generate your PGP key, you can use `gpg` as follow: 
+    ```
+    gpg --batch --passphrase --quick-generate-key "John Doe <john@example.org>" ed25519 cert never
+    gpg --export --armor john@example.org
+    ```
+
+    /!\/!\/!\ WARNING /!\/!\/!\
+
+    If you share multiple roles in the computation, you must use different PGP key for each role.
+    You can generate a new PGP key for an alias of your email address "john+data_provider@example.org".
+
+    /!\/!\/!\ WARNING /!\/!\/!\
     """
     public_key = "your_own_gpg_public_key"
 
@@ -77,7 +88,18 @@ def step_1_create_computation_seed():
     To simplify the example, we'll say that all participants are
     yourself (me@example.org).
 
-    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
+    To generate your PGP key, you can use `gpg` as follow: 
+    ```
+    gpg --batch --passphrase --quick-generate-key "John Doe <john@example.org>" ed25519 cert never
+    gpg --export --armor john@example.org
+    ```
+
+    /!\/!\/!\ WARNING /!\/!\/!\
+
+    If you share multiple roles in the computation, you must use different PGP key for each role.
+    You can generate a new PGP key for an alias of your email address "john+data_provider@example.org".
+
+    /!\/!\/!\ WARNING /!\/!\/!\
     """
     public_key = "your_own_gpg_public_key"
 
@@ -106,7 +128,18 @@ def step_2_code_provider_registers(cosmian_token, computation_uuid):
     To register, pass the UUID of the computation given on the interface and
     your PGP public key for your role on this computation.
     
-    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
+    To generate your PGP key, you can use `gpg` as follow: 
+    ```
+    gpg --batch --passphrase --quick-generate-key "John Doe <john@example.org>" ed25519 cert never
+    gpg --export --armor john@example.org
+    ```
+
+    /!\/!\/!\ WARNING /!\/!\/!\
+
+    If you share multiple roles in the computation, you must use different PGP key for each role.
+    You can generate a new PGP key for an alias of your email address "john+data_provider@example.org".
+
+    /!\/!\/!\ WARNING /!\/!\/!\
     """
     public_key = "your_own_gpg_public_key"
 
@@ -122,7 +155,18 @@ def step_2_data_providers_register(cosmian_token, computation_uuid):
     To register, you need to pass the UUID of the computation given on the interface and
     your PGP public key for your role on this computation.
     
-    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
+    To generate your PGP key, you can use `gpg` as follow: 
+    ```
+    gpg --batch --passphrase --quick-generate-key "John Doe <john@example.org>" ed25519 cert never
+    gpg --export --armor john@example.org
+    ```
+
+    /!\/!\/!\ WARNING /!\/!\/!\
+
+    If you share multiple roles in the computation, you must use different PGP key for each role.
+    You can generate a new PGP key for an alias of your email address "john+data_provider@example.org".
+
+    /!\/!\/!\ WARNING /!\/!\/!\
     """
     public_key = "your_own_gpg_public_key"
 
@@ -138,7 +182,18 @@ def step_2_result_consumers_register(cosmian_token, computation_uuid):
     To register, you need to pass the UUID of the computation given on the interface and
     your PGP public key for your role on this computation.
     
-    To generate your PGP key, you can use `gpg` as follow: *TODO explicit gpg creation examples*
+    To generate your PGP key, you can use `gpg` as follow: 
+    ```
+    gpg --batch --passphrase --quick-generate-key "John Doe <john@example.org>" ed25519 cert never
+    gpg --export --armor john@example.org
+    ```
+
+    /!\/!\/!\ WARNING /!\/!\/!\
+
+    If you share multiple roles in the computation, you must use different PGP key for each role.
+    You can generate a new PGP key for an alias of your email address "john+data_provider@example.org".
+
+    /!\/!\/!\ WARNING /!\/!\/!\
     """
     public_key = "your_own_gpg_public_key"
 
@@ -173,40 +228,65 @@ def step_4_computation_owner_approves_participants(cosmian_token, computation_uu
     You need to check that the list of participants is correct. To do so, you can 
     fetch computation's status and read the enclave manifest.
 
-    TODO explain how Cosmian cannot change the participants list because
-    it's signed by the enclave / check enclave public key / check manifest signature.
-
-    TODO explain how to fetch the manifest.
+    The SGX enclave used for the computation provides a few information about the 
+    security of the process. You can access these informations from the computation
+    object.
     """
     computation_owner = ComputationOwner(cosmian_token)
 
     computation = computation_owner.get_computation(computation_uuid)
+    
+    manifest = computation.enclave.manifest
+    quote = computation.enclave.quote
+
+    """
+    Cosmian will provide a function to check the validity of these data by using DCAP
+    https://github.com/intel/SGXDataCenterAttestationPrimitives
+
+    For now, you can do your own checks or wait for us to provide the helpers.
+    """
 
     """
     To approve participants, you need to sign the enclave's manifest.
     After that, each participant will be able to see that you've approved this computation
     and check your signature with your provided public key.
 
-    TODO crypto stuff here / PGP sign with external run? / bytes or string for signature?
+    Right now, Cosmian doesn't provide a way to sign the manifest.
+    This operation is not required for the enclave to run in secure mode. It's only
+    to provide a way for all the participants to check that the computation owner
+    is ok with the parameters of this computation (the computation owner is the only 
+    participant with no role inside the SGX enclave).
+    If the computation owner is also code provider (or any other role), it's approval 
+    is already done when he sends his sealed symetric key.
+
+    If, as in the example, you send only the string "Missing Signature", the other participants
+    will see this. You can also sign the manifest and the quote with your PGP key and tell the other
+    participants to check this.
     """
-    computation_owner.approve_participants(computation.uuid, "TODO_compute_signature_here")
+    computation_owner.approve_participants(computation.uuid, "Missing Signature")
 
 def step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation_uuid, symetric_key):
     """
     You need to check that the computation is correct :
     > You can fetch computation's status and read the enclave manifest.
-    > You can check computation owner's signature from the manifest.
+    > You can check computation owner's signature from the manifest (not available yet).
 
-    TODO explain how Cosmian cannot change the participants list because
-    it's signed by the enclave / check enclave public key / check manifest signature.
-
-    TODO explain how to fetch the manifest.
+    The SGX enclave used for the computation provides a few information about the 
+    security of the process. You can access these informations from the computation
+    object.
     """
     code_provider = CodeProviderAPI(cosmian_token)
 
     computation = code_provider.get_computation(computation_uuid)
+    manifest = computation.enclave.manifest
+    quote = computation.enclave.quote
 
     """
+    Cosmian will provide a function to check the validity of these data by using DCAP
+    https://github.com/intel/SGXDataCenterAttestationPrimitives
+
+    For now, you can do your own checks or wait for us to provide the helpers.
+
     To approve the computation, send your symetric key sealed with enclave's public key.
 
     You need to use the same symetric key as in step 3 (code upload).
@@ -222,14 +302,22 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     > You can fetch computation's status and read the enclave manifest.
     > You can check computation owner's signature from the manifest.
 
-    TODO explain how Cosmian cannot change the participants list because
-    it's signed by the enclave / check enclave public key / check manifest signature.
-
-    TODO explain how to fetch the manifest.
+    The SGX enclave used for the computation provides a few information about the 
+    security of the process. You can access these informations from the computation
+    object.
     """
     data_provider = DataProviderAPI(cosmian_token)
 
     computation = data_provider.get_computation(computation_uuid)
+    manifest = computation.enclave.manifest
+    quote = computation.enclave.quote
+
+    """
+    Cosmian will provide a function to check the validity of these data by using DCAP
+    https://github.com/intel/SGXDataCenterAttestationPrimitives
+
+    For now, you can do your own checks or wait for us to provide the helpers.
+    """
 
     """
     As a data provider, you will send data to the enclave.
@@ -243,12 +331,12 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     """
     > Next, send your encrypted data to the enclave, specifying the different paths :
     """
-    data_provider.push_files(computation.uuid, symetric_key, [path_1, path_2])
+    data_provider.push_files(computation_uuid, symetric_key, [path_1, path_2])
 
     """
     When you're done uploading your files, notify the server so it knows that data are ready :
     """
-    data_provider.done(computation.uuid)
+    data_provider.done(computation_uuid)
 
     """
     > Finally, send your symetric key sealed with enclave's public key :
@@ -256,7 +344,7 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     from cosmian_client_sgx.crypto.helper import seal
     sealed_symetric_key = seal(symetric_key, computation.enclave.public_key)
 
-    data_provider.key_provisioning(computation.uuid, sealed_symetric_key)
+    data_provider.key_provisioning(computation_uuid, sealed_symetric_key)
 
 
 def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation_uuid):
@@ -265,14 +353,22 @@ def step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation
     > You can fetch computation's status and read the enclave manifest.
     > You can check computation owner's signature from the manifest.
 
-    TODO explain how Cosmian cannot change the participants list because
-    it's signed by the enclave / check enclave public key / check manifest signature.
-
-    TODO explain how to fetch the manifest.
+    The SGX enclave used for the computation provides a few information about the 
+    security of the process. You can access these informations from the computation
+    object.
     """
     result_consumer = ResultConsumerAPI(cosmian_token)
 
     computation = result_consumer.get_computation(computation_uuid)
+    manifest = computation.enclave.manifest
+    quote = computation.enclave.quote
+
+    """
+    Cosmian will provide a function to check the validity of these data by using DCAP
+    https://github.com/intel/SGXDataCenterAttestationPrimitives
+
+    For now, you can do your own checks or wait for us to provide the helpers.
+    """
 
     """
     As a result consumer, you will retrieve results after computation's run. But before,
@@ -305,12 +401,15 @@ def step_8_result_consumers_get_results(cosmian_token, computation_uuid, symetri
         """
         First we'll check that the computation ended and one computation is in previous runs.
         """
-        print("Waiting end of computation…")
-        time.sleep(2)
         computation = result_consumer.get_computation(computation_uuid)
 
         if computation.runs.current is None and len(computation.runs.previous) == 1:
             run = computation.runs.previous[0]
+
+            """
+            You can check a few information on the run to check
+            if everything worked.
+            """
             if run.exit_code != 0:
                 print("\n\n### Exit Code ###\n")
                 print(run.exit_code)
@@ -320,8 +419,11 @@ def step_8_result_consumers_get_results(cosmian_token, computation_uuid, symetri
                 print(run.stderr)
                 print("\n\n")
                 raise "Run fail."
-
-            break
+            else:
+                break
+        else:
+            print("Waiting 2s end of computation…")
+            time.sleep(2)
 
     encrypted_results = result_consumer.fetch_results(computation.uuid)
 
