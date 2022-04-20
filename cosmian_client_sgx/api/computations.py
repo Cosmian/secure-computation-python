@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict, Union, List, Tuple
 from enum import Enum
 from datetime import datetime
+import inspect
 
 class Role(Enum):
     ComputationOwner = 'ComputationOwner'
@@ -23,7 +24,7 @@ class PublicKey:
 
     @staticmethod
     def from_json_dict(json):
-        return PublicKey(**json)
+        return PublicKey(**filter_dict(json, PublicKey))
 
 @dataclass(frozen=True)
 class Owner:
@@ -36,7 +37,7 @@ class Owner:
     def from_json_dict(json):
         json['public_key'] = PublicKey.from_json_dict(json['public_key'])
 
-        return Owner(**json)
+        return Owner(**filter_dict(json, Owner))
 
 @dataclass(frozen=True)
 class CodeProvider:
@@ -50,7 +51,7 @@ class CodeProvider:
     def from_json_dict(json):
         json['public_key'] = None if json['public_key'] is None else PublicKey.from_json_dict(json['public_key'])
 
-        return CodeProvider(**json)
+        return CodeProvider(**filter_dict(json, CodeProvider))
 
 @dataclass(frozen=True)
 class DataProvider:
@@ -65,7 +66,7 @@ class DataProvider:
     def from_json_dict(json):
         json['public_key'] = None if json['public_key'] is None else PublicKey.from_json_dict(json['public_key'])
 
-        return DataProvider(**json)
+        return DataProvider(**filter_dict(json, DataProvider))
 
 @dataclass(frozen=True)
 class ResultConsumer:
@@ -79,7 +80,7 @@ class ResultConsumer:
     def from_json_dict(json):
         json['public_key'] = None if json['public_key'] is None else PublicKey.from_json_dict(json['public_key'])
 
-        return ResultConsumer(**json)
+        return ResultConsumer(**filter_dict(json, ResultConsumer))
 
 @dataclass(frozen=True)
 class Enclave:
@@ -91,7 +92,7 @@ class Enclave:
     def from_json_dict(json):
         json['public_key'] = None if json['public_key'] is None else bytes(json['public_key'])
 
-        return Enclave(**json)
+        return Enclave(**filter_dict(json, Enclave))
 
 @dataclass(frozen=True)
 class CurrentRun:
@@ -99,7 +100,7 @@ class CurrentRun:
 
     @staticmethod
     def from_json_dict(json):
-        return CurrentRun(**json)
+        return CurrentRun(**filter_dict(json, CurrentRun))
 
 @dataclass(frozen=True)
 class PreviousRun:
@@ -112,7 +113,7 @@ class PreviousRun:
 
     @staticmethod
     def from_json_dict(json):
-        return PreviousRun(**json)
+        return PreviousRun(**filter_dict(json, PreviousRun))
 
 
 @dataclass(frozen=True)
@@ -125,21 +126,21 @@ class Runs:
         json['current'] = None if json['current'] is None else CurrentRun.from_json_dict(json['current'])
         json['previous'] = list(map(PreviousRun.from_json_dict, json['previous']))
 
-        return Runs(**json)
+        return Runs(**filter_dict(json, Runs))
 
 
 @dataclass(frozen=True)
 class Computation:
-    uuid: str #: The unique identifier for the computation, required to run most of the API endpoints.
-    name: str #: User-defined name of the computation.
-    owner: Owner #: Information about the computation owner.
-    code_provider: CodeProvider #: Information about the computation provider.
-    data_providers: List[DataProvider] #: Information about the data providers.
-    result_consumers: List[ResultConsumer] #: Information about the result consumers.
-    enclave: Enclave #: Information about the enclave. The enclave is the place where the code is running.
-    runs: Runs #: List of the current and previous runs of this computation.
-    my_roles: List[Role] #: List of your roles in this computation
-    created_at: str #: Date of creation of the computation
+    uuid: str
+    name: str
+    owner: Owner
+    code_provider: CodeProvider
+    data_providers: List[DataProvider]
+    result_consumers: List[ResultConsumer]
+    enclave: Enclave
+    runs: Runs
+    my_roles: List[Role]
+    created_at: str
 
     @staticmethod
     def from_json_dict(json):
@@ -151,4 +152,11 @@ class Computation:
         json['runs'] = Runs.from_json_dict(json['runs'])
         json['my_roles'] = list(map(Role, json['my_roles']))
 
-        return Computation(**json)
+        return Computation(**filter_dict(json, Computation))
+
+
+def filter_dict(dict_to_filter, thing_with_kwargs):
+    sig = inspect.signature(thing_with_kwargs)
+    filter_keys = [param.name for param in sig.parameters.values() if param.kind == param.POSITIONAL_OR_KEYWORD]
+    filtered_dict = {filter_key:dict_to_filter[filter_key] for filter_key in filter_keys}
+    return filtered_dict

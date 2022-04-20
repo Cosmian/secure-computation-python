@@ -39,7 +39,7 @@ class ComputationOwner(CommonAPI):
 
         return Computation.from_json_dict(resp.json())
 
-    def approve_participants(self, computation_uuid: str, signature: str):
+    def approve_participants(self, computation_uuid: str, signature: str) -> Computation:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations/{computation_uuid}/approve/participants",
             json={
@@ -55,4 +55,4 @@ class ComputationOwner(CommonAPI):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        return resp.json()
+        return Computation.from_json_dict(resp.json())

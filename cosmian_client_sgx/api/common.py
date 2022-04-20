@@ -35,9 +35,9 @@ class CommonAPI(CryptoContext):
         content: Dict[str, str] = resp.json()
         return content["access_token"]
 
-    def register(self, computation_id: str, public_key: str) -> Dict[str, str]:
+    def register(self, computation_uuid: str, public_key: str) -> Computation:
         resp: requests.Response = self.session.post(
-            url=f"{self.url}/computations/{computation_id}/register",
+            url=f"{self.url}/computations/{computation_uuid}/register",
             json={
                 "public_key": public_key,
                 "side": str(self.side),
@@ -52,11 +52,11 @@ class CommonAPI(CryptoContext):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        return resp.json()
+        return Computation.from_json_dict(resp.json())
 
-    def get_computation(self, computation_id: str) -> Computation:
+    def get_computation(self, computation_uuid: str) -> Computation:
         resp: requests.Response = self.session.get(
-            url=f"{self.url}/computations/{computation_id}",
+            url=f"{self.url}/computations/{computation_uuid}",
             headers={
                 "Authorization": f"Bearer {self.access_token()}",
             },
@@ -69,7 +69,7 @@ class CommonAPI(CryptoContext):
 
         return Computation.from_json_dict(resp.json())
 
-    def key_provisioning(self, computation_uuid: str, sealed_symetric_key: bytes) -> Dict[str, str]:
+    def key_provisioning(self, computation_uuid: str, sealed_symetric_key: bytes) -> Computation:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations/{computation_uuid}/key/provisioning",
             json={
@@ -86,33 +86,4 @@ class CommonAPI(CryptoContext):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        return resp.json()
-
-    def remote_attestation(self, quote: Dict[str, str]) -> bool:
-        resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/remote_attestation",
-            json=quote,
-            auth=self.auth
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-
-        pems = unquote(resp.headers["x-iasreport-signing-certificate"])
-        m = re.findall(
-            r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----",
-            pems,
-            flags=re.DOTALL
-        )
-        intel_cert = x509.load_pem_x509_certificate(m[0].encode("utf-8"))
-        intel_pubkey = intel_cert.public_key()
-
-        intel_pubkey.verify(
-            resp.headers["x-iasreport-signature"].encode("utf-8"),
-            resp.content,
-            hashes.SHA256()
-        )
-
-        return True
+        return Computation.from_json_dict(resp.json())
