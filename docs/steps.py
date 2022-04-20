@@ -6,6 +6,7 @@ import os
 import subprocess
 from pathlib import Path
 import time
+import pprint
 
 def run_subprocess(command: List[str]) -> Optional[str]:
     process = subprocess.Popen(command, stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True)
@@ -436,7 +437,9 @@ def step_8_result_consumers_get_results(cosmian_token, computation_uuid, symetri
 def run(until = 12):
     print("### step_1_create_computation")
     computation = step_1_create_computation() if environ.get('SEED_EMAIL') is None else step_1_create_computation_seed()
-    print(computation)
+
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(computation)
 
     if until < 2: return
 
@@ -447,47 +450,47 @@ def run(until = 12):
     cosmian_token = environ.get('COSMIAN_TOKEN')
 
     print("### step_2_code_provider_registers")
-    step_2_code_provider_registers(cosmian_token, computation)
+    step_2_code_provider_registers(cosmian_token, computation.uuid)
 
     if until < 3: return
 
     print("### step_2_data_providers_register")
-    step_2_data_providers_register(cosmian_token, computation)
+    step_2_data_providers_register(cosmian_token, computation.uuid)
     
     if until < 4: return
 
     print("### step_2_result_consumers_register")
-    step_2_result_consumers_register(cosmian_token, computation)
+    step_2_result_consumers_register(cosmian_token, computation.uuid)
     
     if until < 5: return
 
     print("### step_3_code_provider_sends_code")
-    code_provider_symetric_key = step_3_code_provider_sends_code(cosmian_token, computation, Path(os.path.dirname(__file__) + "/../tests/data/cp/enclave-join"))
+    code_provider_symetric_key = step_3_code_provider_sends_code(cosmian_token, computation.uuid, Path(os.path.dirname(__file__) + "/../tests/data/cp/enclave-join"))
     
     if until < 6: return
 
     print("### step_4_computation_owner_approves_participants")
-    step_4_computation_owner_approves_participants(cosmian_token, computation)
+    step_4_computation_owner_approves_participants(cosmian_token, computation.uuid)
     
     if until < 7: return
 
     print("### step_5_code_provider_sends_sealed_symetric_key")
-    step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation, code_provider_symetric_key)
+    step_5_code_provider_sends_sealed_symetric_key(cosmian_token, computation.uuid, code_provider_symetric_key)
     
     if until < 8: return
 
     print("### step_6_data_providers_send_data_and_sealed_symetric_keys")
-    step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, computation, Path(os.path.dirname(__file__) + "/../tests/data/dp1/A.csv"), Path(os.path.dirname(__file__) + "/../tests/data/dp2/B.csv"))
+    step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, computation.uuid, Path(os.path.dirname(__file__) + "/../tests/data/dp1/A.csv"), Path(os.path.dirname(__file__) + "/../tests/data/dp2/B.csv"))
     
     if until < 9: return
 
     print("### step_7_result_consumers_send_sealed_symetric_keys")
-    result_consumer_symetric_key = step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation)
+    result_consumer_symetric_key = step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation.uuid)
     
     if until < 10: return
 
     print("### step_8_result_consumers_get_results")
-    step_8_result_consumers_get_results(cosmian_token, computation, result_consumer_symetric_key)
+    step_8_result_consumers_get_results(cosmian_token, computation.uuid, result_consumer_symetric_key)
 
 
 def run_all():
