@@ -340,10 +340,7 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     """
     > Next, send your encrypted data to the enclave, specifying the different paths :
     """
-    data_provider.push_data(computation_uuid, symetric_key, "A", struct.pack("f", 0.1))
-    data_provider.push_data(computation_uuid, symetric_key, "B", struct.pack("f", 0.2))
-    data_provider.push_data(computation_uuid, symetric_key, "C", struct.pack("f", 1.1))
-    data_provider.push_data(computation_uuid, symetric_key, "D", struct.pack("f", 1.2))
+    data_provider.push_files(computation_uuid, symetric_key, [path_1, path_2])
 
     """
     When you're done uploading your files, notify the server so it knows that data are ready :
