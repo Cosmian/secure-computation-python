@@ -1,12 +1,13 @@
 from typing import Optional, Dict, Union, List, Tuple
 
-from cosmian_client_sgx import Computation, ComputationOwner, CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
+from cosmian_client_sgx import Computation, ComputationOwnerAPI, CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
 from os import environ
 import os
 import subprocess
 from pathlib import Path
 import time
 import pprint
+import struct
 
 def run_subprocess(command: List[str]) -> Optional[str]:
     process = subprocess.Popen(command, stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True)
@@ -28,10 +29,10 @@ def step_1_create_computation():
     cosmian_token = environ.get('COSMIAN_TOKEN')
 
     """
-    To create your first computation, create the ComputationOwner object with your secret token.
+    To create your first computation, create the ComputationOwnerAPI object with your secret token.
     """
-    from cosmian_client_sgx import ComputationOwner
-    computation_owner = ComputationOwner(cosmian_token)
+    from cosmian_client_sgx import ComputationOwnerAPI
+    computation_owner = ComputationOwnerAPI(cosmian_token)
 
     """
     To create a computation, you need to pass :
@@ -52,7 +53,17 @@ def step_1_create_computation():
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = "your_own_gpg_public_key"
+    public_key = """
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mDMEYksDzBYJKwYBBAHaRw8BAQdA3ARj30Dc6+h+CpZBoh+gbRLqMQidUgSb15j6
+uI4gmsC0IVRoaWJhdWQgRG9lIDx0aGliYXVkQGV4YW1wbGUub3JnPoiQBBMWCAA4
+FiEEyTCpzMklYuj4MsIrH++EVqAxpd8FAmJLA8wCGwEFCwkIBwIGFQoJCAsCBBYC
+AwECHgECF4AACgkQH++EVqAxpd8tbgEAnVlpFCjhzaR3sg4R0wHe4Sf0BF94WzA1
+UQRy1f1YLP8A/jNjCWL1nlrTkHpKHG5d6N9ihdpRaGvM/QhteS5Z+FAH
+=HqGK
+-----END PGP PUBLIC KEY BLOCK-----
+    """
 
     """
     Create your computation :
@@ -61,9 +72,9 @@ def step_1_create_computation():
     computation = computation_owner.create_computation(
         'computation name',
         owner_public_key=public_key,
-        code_provider_email="code.provider@example.org",
-        data_providers_emails=["data.provider@example.org"],
-        result_consumers_emails=["result.consumer@example.org"]
+        code_provider_email="thibaud.dauce@cosmian.com",
+        data_providers_emails=["thibaud.dauce@cosmian.com"],
+        result_consumers_emails=["thibaud.dauce@cosmian.com"]
     )
 
     return computation
@@ -77,10 +88,10 @@ def step_1_create_computation_seed():
     cosmian_token = environ.get('COSMIAN_TOKEN')
 
     """
-    To create your first computation, create the ComputationOwner object with your secret token.
+    To create your first computation, create the ComputationOwnerAPI object with your secret token.
     """
-    from cosmian_client_sgx import ComputationOwner
-    computation_owner = ComputationOwner(cosmian_token)
+    from cosmian_client_sgx import ComputationOwnerAPI
+    computation_owner = ComputationOwnerAPI(cosmian_token)
 
     """
     To create a computation, you need to pass :
@@ -104,7 +115,17 @@ def step_1_create_computation_seed():
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = "your_own_gpg_public_key"
+    public_key = """
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mDMEYksDzBYJKwYBBAHaRw8BAQdA3ARj30Dc6+h+CpZBoh+gbRLqMQidUgSb15j6
+uI4gmsC0IVRoaWJhdWQgRG9lIDx0aGliYXVkQGV4YW1wbGUub3JnPoiQBBMWCAA4
+FiEEyTCpzMklYuj4MsIrH++EVqAxpd8FAmJLA8wCGwEFCwkIBwIGFQoJCAsCBBYC
+AwECHgECF4AACgkQH++EVqAxpd8tbgEAnVlpFCjhzaR3sg4R0wHe4Sf0BF94WzA1
+UQRy1f1YLP8A/jNjCWL1nlrTkHpKHG5d6N9ihdpRaGvM/QhteS5Z+FAH
+=HqGK
+-----END PGP PUBLIC KEY BLOCK-----
+    """
 
     """
     Create your computation :
@@ -145,7 +166,18 @@ def step_2_code_provider_registers(cosmian_token, computation_uuid):
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = "your_own_gpg_public_key"
+    public_key = """
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mDMEYk1S+RYJKwYBBAHaRw8BAQdA+VDkJGp6qVxh/4T2dpEUklXIISmXJiwrdivp
+uYVrpNe0L1RoaWJhdWQgRG9lIDx0aGliYXVkK2NvZGVfcHJvdmlkZXJAZXhhbXBs
+ZS5vcmc+iJAEExYIADgWIQTpIgxK3InT95bDpzKMdEHyAiaBsQUCYk1S+QIbAQUL
+CQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRCMdEHyAiaBsWLxAP9A0ewYV31r1DK/
+2tKUs9YrVviAXYmaxuIIe6i9sSXE2AEAqw/CUMXQ4Zzc7whl9jjFShTl7+C7HS+G
+DHNRnGIH6QI=
+=WNuo
+-----END PGP PUBLIC KEY BLOCK-----
+    """
 
     computation = code_provider.register(computation_uuid, public_key)
 
@@ -173,7 +205,18 @@ def step_2_data_providers_register(cosmian_token, computation_uuid):
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = "your_own_gpg_public_key"
+    public_key = """
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mDMEYk1S+hYJKwYBBAHaRw8BAQdA48hxvxb4BkadoWu9puAzgvpNfoACr2lkofbC
+ZKnjEr60L1RoaWJhdWQgRG9lIDx0aGliYXVkK2RhdGFfcHJvdmlkZXJAZXhhbXBs
+ZS5vcmc+iJAEExYIADgWIQRrFoMhI0RLogfK9Vrl25B3ixK0eQUCYk1S+gIbAQUL
+CQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRDl25B3ixK0eb0QAQCNLTP+4rFTftDy
+h3xBNL13paB8OQH+JLlWPAE9x306HQEA+aoDB71PlrN1SwOcw4O6jr2LOEODy/Gj
+0MEG2ZPJUAI=
+=/4oo
+-----END PGP PUBLIC KEY BLOCK-----
+    """
 
     computation = data_provider.register(computation_uuid, public_key)
 
@@ -201,7 +244,18 @@ def step_2_result_consumers_register(cosmian_token, computation_uuid):
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = "your_own_gpg_public_key"
+    public_key = """
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mDMEYk1S+xYJKwYBBAHaRw8BAQdAatwSPGAK8j1HBTQjHKFDCm2+KaDz1fJPBIjX
+pgUmwVS0MVRoaWJhdWQgRG9lIDx0aGliYXVkK3Jlc3VsdF9jb25zdW1lckBleGFt
+cGxlLm9yZz6IkAQTFggAOBYhBCEEpkOFVeXMXfkvU/UjPZ2e1dlFBQJiTVL7AhsB
+BQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJEPUjPZ2e1dlF7LkA/1QUz9dKjAbD
+fkz02A4i7Lw6RVRVAx3oWppXUVuh29jrAQDCvjksDI0O0guspHed5Y0Aax9vefHg
++hfz9O5GiLm2Bg==
+=TGEi
+-----END PGP PUBLIC KEY BLOCK-----
+    """
 
     computation = result_consumer.register(computation_uuid, public_key)
 
@@ -239,8 +293,8 @@ def step_4_computation_owner_approves_participants(cosmian_token, computation_uu
     security of the process. You can access these informations from the computation
     object.
     """
-    from cosmian_client_sgx import ComputationOwner
-    computation_owner = ComputationOwner(cosmian_token)
+    from cosmian_client_sgx import ComputationOwnerAPI
+    computation_owner = ComputationOwnerAPI(cosmian_token)
 
     computation = computation_owner.get_computation(computation_uuid)
     
@@ -341,7 +395,10 @@ def step_6_data_providers_send_data_and_sealed_symetric_keys(cosmian_token, comp
     """
     > Next, send your encrypted data to the enclave, specifying the different paths :
     """
-    data_provider.push_files(computation_uuid, symetric_key, [path_1, path_2])
+    data_provider.push_data(computation_uuid, symetric_key, "A", struct.pack("f", 0.1))
+    data_provider.push_data(computation_uuid, symetric_key, "B", struct.pack("f", 0.2))
+    data_provider.push_data(computation_uuid, symetric_key, "C", struct.pack("f", 1.1))
+    data_provider.push_data(computation_uuid, symetric_key, "D", struct.pack("f", 1.2))
 
     """
     When you're done uploading your files, notify the server so it knows that data are ready :

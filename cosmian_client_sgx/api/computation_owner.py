@@ -11,7 +11,7 @@ from cosmian_client_sgx.api.common import CommonAPI
 from cosmian_client_sgx.api.computations import Computation
 
 
-class ComputationOwner(CommonAPI):
+class ComputationOwnerAPI(CommonAPI):
     def __init__(self, token: str) -> None:
         super().__init__(Side.Owner, token)
 
