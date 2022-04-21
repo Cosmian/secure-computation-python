@@ -3,22 +3,10 @@ from typing import Optional, Dict, Union, List, Tuple
 from cosmian_client_sgx import Computation, ComputationOwnerAPI, CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
 from os import environ
 import os
-import subprocess
 from pathlib import Path
 import time
 import pprint
 import struct
-
-def run_subprocess(command: List[str]) -> Optional[str]:
-    process = subprocess.Popen(command, stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True)
-    stdout, stderr = process.communicate()
-
-    # if stderr != "":
-    #     print("Non empty stderr during command:")
-    #     print(stderr)
-    #     return None
-
-    return stdout
 
 def step_1_create_computation():
     """
@@ -53,17 +41,9 @@ def step_1_create_computation():
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = """
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-mDMEYksDzBYJKwYBBAHaRw8BAQdA3ARj30Dc6+h+CpZBoh+gbRLqMQidUgSb15j6
-uI4gmsC0IVRoaWJhdWQgRG9lIDx0aGliYXVkQGV4YW1wbGUub3JnPoiQBBMWCAA4
-FiEEyTCpzMklYuj4MsIrH++EVqAxpd8FAmJLA8wCGwEFCwkIBwIGFQoJCAsCBBYC
-AwECHgECF4AACgkQH++EVqAxpd8tbgEAnVlpFCjhzaR3sg4R0wHe4Sf0BF94WzA1
-UQRy1f1YLP8A/jNjCWL1nlrTkHpKHG5d6N9ihdpRaGvM/QhteS5Z+FAH
-=HqGK
------END PGP PUBLIC KEY BLOCK-----
-    """
+    import subprocess
+    subprocess.Popen(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'John Doe <john@example.org>', 'ed25519', 'cert', 'never'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
+    public_key, stderr = subprocess.Popen(['gpg', '--export', '--armor', 'john@example.org'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
 
     """
     Create your computation :
@@ -72,9 +52,9 @@ UQRy1f1YLP8A/jNjCWL1nlrTkHpKHG5d6N9ihdpRaGvM/QhteS5Z+FAH
     computation = computation_owner.create_computation(
         'computation name',
         owner_public_key=public_key,
-        code_provider_email="thibaud.dauce@cosmian.com",
-        data_providers_emails=["thibaud.dauce@cosmian.com"],
-        result_consumers_emails=["thibaud.dauce@cosmian.com"]
+        code_provider_email="john@example.org",
+        data_providers_emails=["john@example.org"],
+        result_consumers_emails=["john@example.org"]
     )
 
     return computation
@@ -115,17 +95,9 @@ def step_1_create_computation_seed():
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = """
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-mDMEYksDzBYJKwYBBAHaRw8BAQdA3ARj30Dc6+h+CpZBoh+gbRLqMQidUgSb15j6
-uI4gmsC0IVRoaWJhdWQgRG9lIDx0aGliYXVkQGV4YW1wbGUub3JnPoiQBBMWCAA4
-FiEEyTCpzMklYuj4MsIrH++EVqAxpd8FAmJLA8wCGwEFCwkIBwIGFQoJCAsCBBYC
-AwECHgECF4AACgkQH++EVqAxpd8tbgEAnVlpFCjhzaR3sg4R0wHe4Sf0BF94WzA1
-UQRy1f1YLP8A/jNjCWL1nlrTkHpKHG5d6N9ihdpRaGvM/QhteS5Z+FAH
-=HqGK
------END PGP PUBLIC KEY BLOCK-----
-    """
+    import subprocess
+    subprocess.Popen(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'John Doe <john@example.org>', 'ed25519', 'cert', 'never'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
+    public_key, stderr = subprocess.Popen(['gpg', '--export', '--armor', 'john@example.org'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
 
     """
     Create your computation :
@@ -162,22 +134,13 @@ def step_2_code_provider_registers(cosmian_token, computation_uuid):
     /!\/!\/!\ WARNING /!\/!\/!\
 
     If you share multiple roles in the computation, you must use different PGP key for each role.
-    You can generate a new PGP key for an alias of your email address "john+data_provider@example.org".
+    You can generate a new PGP key for an alias of your email address "john+code_provider@example.org".
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = """
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-mDMEYk1S+RYJKwYBBAHaRw8BAQdA+VDkJGp6qVxh/4T2dpEUklXIISmXJiwrdivp
-uYVrpNe0L1RoaWJhdWQgRG9lIDx0aGliYXVkK2NvZGVfcHJvdmlkZXJAZXhhbXBs
-ZS5vcmc+iJAEExYIADgWIQTpIgxK3InT95bDpzKMdEHyAiaBsQUCYk1S+QIbAQUL
-CQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRCMdEHyAiaBsWLxAP9A0ewYV31r1DK/
-2tKUs9YrVviAXYmaxuIIe6i9sSXE2AEAqw/CUMXQ4Zzc7whl9jjFShTl7+C7HS+G
-DHNRnGIH6QI=
-=WNuo
------END PGP PUBLIC KEY BLOCK-----
-    """
+    import subprocess
+    subprocess.Popen(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'John Doe <john+code_provider@example.org>', 'ed25519', 'cert', 'never'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
+    public_key, stderr = subprocess.Popen(['gpg', '--export', '--armor', 'john+code_provider@example.org'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
 
     computation = code_provider.register(computation_uuid, public_key)
 
@@ -205,18 +168,9 @@ def step_2_data_providers_register(cosmian_token, computation_uuid):
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = """
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-mDMEYk1S+hYJKwYBBAHaRw8BAQdA48hxvxb4BkadoWu9puAzgvpNfoACr2lkofbC
-ZKnjEr60L1RoaWJhdWQgRG9lIDx0aGliYXVkK2RhdGFfcHJvdmlkZXJAZXhhbXBs
-ZS5vcmc+iJAEExYIADgWIQRrFoMhI0RLogfK9Vrl25B3ixK0eQUCYk1S+gIbAQUL
-CQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRDl25B3ixK0eb0QAQCNLTP+4rFTftDy
-h3xBNL13paB8OQH+JLlWPAE9x306HQEA+aoDB71PlrN1SwOcw4O6jr2LOEODy/Gj
-0MEG2ZPJUAI=
-=/4oo
------END PGP PUBLIC KEY BLOCK-----
-    """
+    import subprocess
+    subprocess.Popen(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'John Doe <john+data_provider@example.org>', 'ed25519', 'cert', 'never'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
+    public_key, stderr = subprocess.Popen(['gpg', '--export', '--armor', 'john+data_provider@example.org'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
 
     computation = data_provider.register(computation_uuid, public_key)
 
@@ -240,22 +194,13 @@ def step_2_result_consumers_register(cosmian_token, computation_uuid):
     /!\/!\/!\ WARNING /!\/!\/!\
 
     If you share multiple roles in the computation, you must use different PGP key for each role.
-    You can generate a new PGP key for an alias of your email address "john+data_provider@example.org".
+    You can generate a new PGP key for an alias of your email address "john+result_consumer@example.org".
 
     /!\/!\/!\ WARNING /!\/!\/!\
     """
-    public_key = """
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-mDMEYk1S+xYJKwYBBAHaRw8BAQdAatwSPGAK8j1HBTQjHKFDCm2+KaDz1fJPBIjX
-pgUmwVS0MVRoaWJhdWQgRG9lIDx0aGliYXVkK3Jlc3VsdF9jb25zdW1lckBleGFt
-cGxlLm9yZz6IkAQTFggAOBYhBCEEpkOFVeXMXfkvU/UjPZ2e1dlFBQJiTVL7AhsB
-BQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJEPUjPZ2e1dlF7LkA/1QUz9dKjAbD
-fkz02A4i7Lw6RVRVAx3oWppXUVuh29jrAQDCvjksDI0O0guspHed5Y0Aax9vefHg
-+hfz9O5GiLm2Bg==
-=TGEi
------END PGP PUBLIC KEY BLOCK-----
-    """
+    import subprocess
+    subprocess.Popen(['gpg', '--batch', '--passphrase', '', '--quick-generate-key', 'John Doe <john+result_consumer@example.org>', 'ed25519', 'cert', 'never'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
+    public_key, stderr = subprocess.Popen(['gpg', '--export', '--armor', 'john+result_consumer@example.org'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, universal_newlines=True).communicate()
 
     computation = result_consumer.register(computation_uuid, public_key)
 
