@@ -1,36 +1,37 @@
 """run module."""
 
 from io import BytesIO
-import struct
 from typing import Iterator
+
+import pandas as pd
 
 from cosmian_lib_sgx import Enclave
 
+SEP: str = ";"
 
-def input_reader(datas: Iterator[BytesIO]) -> Iterator[float]:
+
+def input_reader(datas: Iterator[BytesIO]) -> Iterator[pd.DataFrame]:
+    """Transform input data bytes to pandas DataFrame."""
     for data in datas:  # type: BytesIO
-        x, *_ = struct.unpack("f", data)
-        yield x
+        yield pd.read_csv(data, sep=SEP)
 
 
 def main() -> int:
+    """Entrypoint of your code."""
     with Enclave() as enclave:
-        datas: Iterator[float] = input_reader(enclave.read())
+        # import your ciphered module normally
+        import merge
 
-        data_0_1: float = next(datas)
-        data_0_2: float = next(datas)
+        # convert input data bytes from DataProviders
+        datas: Iterator[pd.DataFrame] = input_reader(enclave.read())
 
-        data_1_1: float = next(datas)
-        data_1_2: float = next(datas)
+        # apply your secret function coded by the CodeProvider
+        dataframe: pd.DataFrame = merge.merge_all(datas=datas, on="siren")
 
-        result: bytes = struct.pack(
-            "ffff",
-            data_0_1,
-            data_0_2,
-            data_1_1,
-            data_1_2
-        )
+        # convert output result
+        result: bytes = dataframe.to_csv(index=False, sep=SEP).encode("utf-8")
 
+        # write result for ResultConsumers
         enclave.write(result)
 
     return 0
