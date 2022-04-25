@@ -414,7 +414,35 @@ def step_8_result_consumers_get_results(cosmian_token, computation_uuid, symetri
         """
         computation = result_consumer.get_computation(computation_uuid)
 
-        if computation.runs.current is None and len(computation.runs.previous) == 1:
+        if computation.runs.current is None and len(computation.runs.previous) == 0:
+            """
+            The computation didn't start running. Maybe you miss one of the previous states?
+            You can check the UI or check if everything is set in the computation with Python.
+            Right now it's a manual (and tedious) process, maybe in the future the API will
+            provide a list of messages for the missing steps.
+            """
+            if computation.code_provider.public_key is None:
+                print("Code Provider didn't register.")
+            if computation.code_provider.code_uploaded_at is None:
+                print("Code Provider didn't provide its code.")
+            if computation.code_provider.symetric_key_uploaded_at is None:
+                print("Code Provider didn't send its sealed symetric key.")
+
+            for data_provider in computation.data_providers:
+                if data_provider.public_key is None:
+                    print(f"Data Provider {data_provider.email} didn't register.")
+                if data_provider.done_uploading_at is None:
+                    print(f"Data Provider {data_provider.email} is not done uploading data.")
+                if data_provider.symetric_key_uploaded_at is None:
+                    print(f"Data Provider {data_provider.email} didn't send its sealed symetric key.")
+
+            for result_consumer in computation.result_consumers:
+                if result_consumer.public_key is None:
+                    print(f"Result Consumer {result_consumer.email} didn't register.")
+                if result_consumer.symetric_key_uploaded_at is None:
+                    print(f"Result Consumer {result_consumer.email} didn't send its sealed symetric key.")
+
+            return
             run = computation.runs.previous[0]
 
             """
