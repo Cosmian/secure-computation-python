@@ -32,6 +32,11 @@ class CommonAPI(CryptoContext):
             },
         )
 
+        if not resp.ok:
+            raise Exception(
+                f"Invalid token. Please check that your token."
+            )
+
         content: Dict[str, str] = resp.json()
         return content["access_token"]
 
