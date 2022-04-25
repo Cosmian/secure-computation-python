@@ -35,8 +35,6 @@ class ComputationOwnerAPI(CommonAPI):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        print(resp.json())
-
         return Computation.from_json_dict(resp.json())
 
     def approve_participants(self, computation_uuid: str, signature: str) -> Computation:

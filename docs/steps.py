@@ -57,6 +57,21 @@ def step_1_create_computation():
         result_consumers_emails=["john@example.org"]
     )
 
+    """
+    If you put emails of persons outside Cosmian, they will need to create an account 
+    with the exact same email to join the computation.
+    """
+    if computation.code_provider.uuid is None:
+        print(f"Code Provider {computation.code_provider.email} does not have a Cosmian account. Please invite him to create an account.")
+    for data_provider in computation.data_providers:
+        if data_provider.uuid is None:
+            print(f"Data Provider {data_provider.email} does not have a Cosmian account. Please invite him to create an account.")
+
+    for result_consumer in computation.result_consumers:
+        if result_consumer.uuid is None:
+            print(f"Result Consumer {result_consumer.email} does not have a Cosmian account. Please invite him to create an account.")
+    
+
     return computation
 
 def step_1_create_computation_seed():
@@ -443,6 +458,8 @@ def step_8_result_consumers_get_results(cosmian_token, computation_uuid, symetri
                     print(f"Result Consumer {result_consumer.email} didn't send its sealed symetric key.")
 
             return
+
+        if len(computation.runs.previous) == 1:
             run = computation.runs.previous[0]
 
             """
@@ -524,7 +541,7 @@ def run(until = 12):
 
     print("### step_7_result_consumers_send_sealed_symetric_keys")
     result_consumer_symetric_key = step_7_result_consumers_send_sealed_symetric_keys(cosmian_token, computation.uuid)
-    
+
     if until < 10: return
 
     print("### step_8_result_consumers_get_results")
