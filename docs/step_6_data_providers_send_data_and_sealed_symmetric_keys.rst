@@ -1,8 +1,8 @@
 ************************************************************
-Step 7: Result Consumers Send Sealed Symetric Keys
+Step 6: Data Providers Send Data And Sealed Symmetric Keys
 ************************************************************
 
 .. literalinclude:: steps.py
-    :pyobject: step_7_result_consumers_send_sealed_symetric_keys
+    :pyobject: step_6_data_providers_send_data_and_sealed_symmetric_keys
     :lines: 2-
     :dedent: 4

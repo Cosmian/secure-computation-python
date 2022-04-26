@@ -74,12 +74,12 @@ class CommonAPI(CryptoContext):
 
         return Computation.from_json_dict(resp.json())
 
-    def key_provisioning(self, computation_uuid: str, sealed_symetric_key: bytes) -> Computation:
+    def key_provisioning(self, computation_uuid: str, sealed_symmetric_key: bytes) -> Computation:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations/{computation_uuid}/key/provisioning",
             json={
                 "role": str(self.side),
-                "sealed_symetric_key": list(sealed_symetric_key),
+                "sealed_symmetric_key": list(sealed_symmetric_key),
             },
             headers={
                 "Authorization": f"Bearer {self.access_token()}",

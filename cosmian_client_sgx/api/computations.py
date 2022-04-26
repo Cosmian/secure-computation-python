@@ -45,7 +45,7 @@ class CodeProvider:
     email: str
     public_key: Optional[PublicKey]
     code_uploaded_at: Optional[str]
-    symetric_key_uploaded_at: Optional[str]
+    symmetric_key_uploaded_at: Optional[str]
 
     @staticmethod
     def from_json_dict(json):
@@ -60,7 +60,7 @@ class DataProvider:
     public_key: Optional[PublicKey]
     starting_uploading_at: Optional[str]
     done_uploading_at: Optional[str]
-    symetric_key_uploaded_at: Optional[str]
+    symmetric_key_uploaded_at: Optional[str]
 
     @staticmethod
     def from_json_dict(json):
@@ -73,7 +73,7 @@ class ResultConsumer:
     uuid: str
     email: str
     public_key: Optional[PublicKey]
-    symetric_key_uploaded_at: Optional[str]
+    symmetric_key_uploaded_at: Optional[str]
     result_downloaded_at: Optional[str]
 
     @staticmethod
