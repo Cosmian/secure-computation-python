@@ -1,0 +1,9 @@
+stages:
+  - deploy
+
+doc:
+  image: gitlab.cosmian.com:5000/core/docker_doc_ci_image:latest
+  stage: deploy
+  script:
+    - apt-get install python3-sphinx
+    - sphinx-build -b doctest docs docs/_build -j 1 -E
