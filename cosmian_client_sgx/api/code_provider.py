@@ -45,13 +45,13 @@ class CodeProviderAPI(CommonAPI):
 
         return resp.json()
 
-    def upload(self, computation_uuid: str, symetric_key: bytes, directory_path: Path, patterns: List[str] = ["*"], files_exceptions: List[str] = [], directories_exceptions: List[str] = [".git"]):
+    def upload(self, computation_uuid: str, symmetric_key: bytes, directory_path: Path, patterns: List[str] = ["*"], files_exceptions: List[str] = [], directories_exceptions: List[str] = [".git"]):
         # TODO rename files_exceptions and directories_exceptions to better reflect it's encryption exceptions and not upload exceptions
 
         encrypted_directory_path: Path = Path(tempfile.gettempdir()) / directory_path.name
         encrypt_directory(
             dir_path = directory_path,
-            key = symetric_key,
+            key = symmetric_key,
             patterns = patterns,
             exceptions = files_exceptions + ["run.py"],
             dir_exceptions = directories_exceptions,
