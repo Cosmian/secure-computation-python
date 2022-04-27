@@ -1,17 +1,19 @@
 """cosmian_client_sgx.api.common module."""
 
-import re
-from typing import Optional, Dict, Union, List, Tuple
-
-from urllib.parse import unquote
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes
-import requests
+import base64
 import os
+from typing import Optional, Dict, Any
+
+from cryptography import x509
+import requests
+from cryptography.hazmat.primitives.serialization import (Encoding,
+                                                          PublicFormat)
+import jwt
 
 from cosmian_client_sgx.crypto.context import CryptoContext
 from cosmian_client_sgx.api.side import Side
 from cosmian_client_sgx.api.computations import Computation
+from cosmian_client_sgx.util.base64url import base64url_encode, base64url_decode
 
 
 class CommonAPI(CryptoContext):
@@ -92,3 +94,60 @@ class CommonAPI(CryptoContext):
             )
 
         return Computation.from_json_dict(resp.json())
+
+    @staticmethod
+    def microsoft_azure_attestation(quote: str, enclave_held_data: Optional[bytes]) -> Dict[str, Any]:
+        raw_quote: bytes = base64.b64decode(quote)
+        payload: Dict[str, Any] = {"quote": base64url_encode(raw_quote)}
+
+        if enclave_held_data is not None:
+            payload["runtimeData"] = {
+                "data": base64url_encode(enclave_held_data),
+                "dataType": "Binary"
+            }
+
+        response = requests.post(
+            url="https://sharedneu.neu.attest.azure.net/attest/SgxEnclave",
+            params={
+                "api-version": "2020-10-01"
+            },
+            json=payload
+        )
+
+        return response.json()
+
+    @staticmethod
+    def microsoft_signing_certs() -> Dict[str, Any]:
+        response = requests.get(
+            url="https://sharedneu.neu.attest.azure.net/certs",
+        )
+
+        return response.json()
+
+    @staticmethod
+    def verify_jws(jws: str, jwks: Dict[str, Any]) -> Dict[str, Any]:
+        header = jwt.get_unverified_header(jws)
+        kid = header["kid"]
+
+        for jwk in jwks["keys"]:
+            if jwk["kid"] == kid:
+                x5c, *_ = jwk["x5c"]
+                assert jwk["kty"] == "RSA"
+                raw_cert: bytes = base64url_decode(x5c)
+                cert = x509.load_der_x509_certificate(raw_cert)
+                return jwt.decode(
+                    jws,
+                    cert.public_key().public_bytes(
+                        Encoding.PEM,
+                        PublicFormat.PKCS1
+                    ),
+                    algorithms="RS256"
+                )
+
+        raise Exception("can't verify MAA signature")
+
+    def remote_attestation(self, quote: str) -> Dict[str, Any]:
+        token = self.microsoft_azure_attestation(quote=quote, enclave_held_data=None)["token"]
+        certs: Dict[str, Any] = self.microsoft_signing_certs()
+
+        return self.verify_jws(token, certs)
