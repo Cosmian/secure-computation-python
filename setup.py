@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cosmian_client_sgx",
-    version="0.1.3",
+    version="1.0.0",
     url="https://cosmian.com",
     license="MIT",
     author="Cosmian Tech",
@@ -26,7 +26,8 @@ setup(
     install_requires=[
         "requests>=2.27.0,<3.0.0",
         "pynacl>=1.5.0,<1.6.0",
-        "cryptography>=36.0.2,<37.0.0"
+        "cryptography>=36.0.2,<37.0.0",
+        "pyjwt>=2.3.0,<2.4.0"
     ],
     test_requires=[
         "pytest>=7.0.1,<8.0.0"

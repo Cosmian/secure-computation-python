@@ -9,31 +9,15 @@ from cosmian_client_sgx.api.common import CommonAPI
 
 
 class ResultConsumerAPI(CommonAPI):
-    def __init__(self,
-                 hostname: str,
-                 port: int,
-                 ssl: bool = False,
-                 auth: Optional[Tuple[str, str]] = None
-                 ) -> None:
-        super().__init__(Side.ResultConsumer, hostname, port, ssl, auth)
+    def __init__(self, token: str) -> None:
+        super().__init__(Side.ResultConsumer, token)
 
-    def run(self, code_name: str) -> bool:
-        resp: requests.Response = self.session.post(
-            url=f"{self.url}/enclave/run/{code_name}/{self.fingerprint.hex()}",
-            auth=self.auth
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Unexpected response ({resp.status_code}): {resp.content}"
-            )
-
-        return "success" in resp.json()
-
-    def fetch_result(self, code_name: str) -> Optional[bytes]:
+    def fetch_results(self, computation_uuid: str) -> Optional[bytes]:
         resp: requests.Response = self.session.get(
-            url=f"{self.url}/enclave/result/{code_name}/{self.fingerprint.hex()}",
-            auth=self.auth
+            url=f"{self.url}/computations/{computation_uuid}/results",
+            headers={
+                "Authorization": f"Bearer {self.access_token()}",
+            },
         )
 
         if not resp.ok:
@@ -41,7 +25,4 @@ class ResultConsumerAPI(CommonAPI):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        if "success" not in resp.json():
-            return None
-
-        return self.decrypt(bytes.fromhex(resp.json()["success"]))
+        return bytes.fromhex(resp.json()["message"])

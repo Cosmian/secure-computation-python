@@ -4,6 +4,7 @@ from enum import Enum
 
 
 class Side(Enum):
+    Owner = 0
     Enclave = 1
     CodeProvider = 2
     DataProvider = 3
