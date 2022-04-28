@@ -2,7 +2,7 @@
 
 import base64
 import os
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 from cryptography import x509
 import requests
@@ -75,6 +75,21 @@ class CommonAPI(CryptoContext):
             )
 
         return Computation.from_json_dict(resp.json())
+
+    def get_computations(self) -> List[Computation]:
+        resp: requests.Response = self.session.get(
+            url=f"{self.url}/computations",
+            headers={
+                "Authorization": f"Bearer {self.access_token()}",
+            },
+        )
+
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
+
+        return list(map(Computation.from_json_dict, resp.json()))
 
     def key_provisioning(self, computation_uuid: str, sealed_symmetric_key: bytes) -> Computation:
         resp: requests.Response = self.session.post(
