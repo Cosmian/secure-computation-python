@@ -48,6 +48,10 @@ class CodeProviderAPI(CommonAPI):
     def upload(self, computation_uuid: str, symmetric_key: bytes, directory_path: Path, patterns: List[str] = ["*"], files_exceptions: List[str] = [], directories_exceptions: List[str] = [".git"]):
         # TODO rename files_exceptions and directories_exceptions to better reflect it's encryption exceptions and not upload exceptions
 
+        entrypoint = directory_path / "run.py"
+        if not entrypoint.exists():
+            raise FileNotFoundError(f"Can't upload {directory_path.resolve()} as code because `run.py` is missing.")
+
         encrypted_directory_path: Path = Path(tempfile.gettempdir()) / directory_path.name
         encrypt_directory(
             dir_path = directory_path,
