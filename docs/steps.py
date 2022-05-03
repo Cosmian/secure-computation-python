@@ -319,7 +319,7 @@ def step_5_code_provider_sends_sealed_symmetric_key(cosmian_token, computation_u
     You need to use the same symmetric key as in step 3 (code upload).
     """
     from cosmian_secure_computation_client.crypto.helper import seal
-    sealed_symmetric_key = seal(symmetric_key, computation.enclave.public_key)
+    sealed_symmetric_key = seal(symmetric_key, computation.enclave.identity.public_key)
 
     code_provider.key_provisioning(computation.uuid, sealed_symmetric_key)
 
@@ -370,7 +370,7 @@ def step_6_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, com
     > Finally, send your symmetric key sealed with enclave's public key :
     """
     from cosmian_secure_computation_client.crypto.helper import seal
-    sealed_symmetric_key = seal(symmetric_key, computation.enclave.public_key)
+    sealed_symmetric_key = seal(symmetric_key, computation.enclave.identity.public_key)
 
     data_provider.key_provisioning(computation_uuid, sealed_symmetric_key)
 
@@ -413,7 +413,7 @@ def step_7_result_consumers_send_sealed_symmetric_keys(cosmian_token, computatio
     > Next, send your symmetric key sealed with enclave's public key :
     """
     from cosmian_secure_computation_client.crypto.helper import seal
-    sealed_symmetric_key = seal(symmetric_key, computation.enclave.public_key)
+    sealed_symmetric_key = seal(symmetric_key, computation.enclave.identity.public_key)
 
     result_consumer.key_provisioning(computation.uuid, sealed_symmetric_key)
 
