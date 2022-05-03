@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name="cosmian_client_sgx",
+    name="cosmian_secure_computation_client",
     version="1.0.0",
     url="https://cosmian.com",
     license="MIT",
@@ -20,7 +20,7 @@ setup(
     zip_safe=True,
     entry_points={
         "console_scripts": [
-            "csmutil = cosmian_client_sgx.cli.main:main"
+            "csmutil = cosmian_secure_computation_client.cli.main:main"
         ]
     },
     install_requires=[

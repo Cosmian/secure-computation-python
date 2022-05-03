@@ -1,15 +1,15 @@
-"""cosmian_client_sgx.api.data_provider module."""
+"""cosmian_secure_computation_client.api.data_provider module."""
 
 from pathlib import Path
 from typing import Dict, Iterable, Optional, Tuple
 
 import requests
 
-from cosmian_client_sgx.api.side import Side
-from cosmian_client_sgx.api.common import CommonAPI
-from cosmian_client_sgx.api.computations import Computation
+from cosmian_secure_computation_client.api.side import Side
+from cosmian_secure_computation_client.api.common import CommonAPI
+from cosmian_secure_computation_client.api.computations import Computation
 
-from cosmian_client_sgx.crypto.helper import encrypt
+from cosmian_secure_computation_client.crypto.helper import encrypt
 
 class DataProviderAPI(CommonAPI):
     def __init__(self, token: str) -> None:

@@ -1,4 +1,4 @@
-from cosmian_client_sgx.crypto.helper import *
+from cosmian_secure_computation_client.crypto.helper import *
 
 from keys import *
 

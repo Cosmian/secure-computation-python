@@ -1,4 +1,4 @@
-"""cosmian_client_sgx.api.code_provider module."""
+"""cosmian_secure_computation_client.api.code_provider module."""
 
 from pathlib import Path
 import tempfile
@@ -6,11 +6,10 @@ from typing import Optional, Dict, List, Tuple
 
 import requests
 
-from cosmian_client_sgx.util.fs import tar
-from cosmian_client_sgx.api.side import Side
-from cosmian_client_sgx.api.common import CommonAPI
-from cosmian_client_sgx.crypto.helper import encrypt_directory
-
+from cosmian_secure_computation_client.util.fs import tar
+from cosmian_secure_computation_client.api.side import Side
+from cosmian_secure_computation_client.api.common import CommonAPI
+from cosmian_secure_computation_client.crypto.helper import encrypt_directory
 
 
 class CodeProviderAPI(CommonAPI):

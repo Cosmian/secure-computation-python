@@ -1,11 +1,11 @@
-"""cosmian_client_sgx.api.result_consumer module."""
+"""cosmian_secure_computation_client.api.result_consumer module."""
 
 from typing import Optional, Tuple
 
 import requests
 
-from cosmian_client_sgx.api.side import Side
-from cosmian_client_sgx.api.common import CommonAPI
+from cosmian_secure_computation_client.api.side import Side
+from cosmian_secure_computation_client.api.common import CommonAPI
 
 
 class ResultConsumerAPI(CommonAPI):

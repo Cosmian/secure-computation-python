@@ -1,12 +1,13 @@
-"""cosmian_client_sgx.cli.encrypt module."""
+"""cosmian_secure_computation_client.cli.encrypt module."""
 
 from argparse import Namespace
 from pathlib import Path
 import shutil
 import tempfile
 
-from cosmian_client_sgx.crypto.helper import encrypt_directory, encrypt_file
-from cosmian_client_sgx.util.fs import tar
+from cosmian_secure_computation_client.crypto.helper import (encrypt_directory,
+                                                             encrypt_file)
+from cosmian_secure_computation_client.util.fs import tar
 
 
 def parse_encrypt(args: Namespace) -> None:

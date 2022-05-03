@@ -1,4 +1,4 @@
-"""cosmian_client_sgx.api.computation_owner module."""
+"""cosmian_secure_computation_client.api.computation_owner module."""
 
 from pathlib import Path
 import tempfile
@@ -6,9 +6,9 @@ from typing import Optional, Dict, List, Tuple
 
 import requests
 
-from cosmian_client_sgx.api.side import Side
-from cosmian_client_sgx.api.common import CommonAPI
-from cosmian_client_sgx.api.computations import Computation
+from cosmian_secure_computation_client.api.side import Side
+from cosmian_secure_computation_client.api.common import CommonAPI
+from cosmian_secure_computation_client.api.computations import Computation
 
 
 class ComputationOwnerAPI(CommonAPI):

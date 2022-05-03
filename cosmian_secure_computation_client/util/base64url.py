@@ -1,4 +1,4 @@
-"""cosmian_client_sgx.util.base64url module."""
+"""cosmian_secure_computation_client.util.base64url module."""
 
 import base64
 
