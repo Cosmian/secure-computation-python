@@ -18,11 +18,6 @@ setup(
     description="Python client library for Cosmian Secure Computation",
     packages=find_packages(),
     zip_safe=True,
-    entry_points={
-        "console_scripts": [
-            "csmutil = cosmian_secure_computation_client.cli.main:main"
-        ]
-    },
     install_requires=[
         "requests>=2.27.0,<3.0.0",
         "pynacl>=1.5.0,<1.6.0",
