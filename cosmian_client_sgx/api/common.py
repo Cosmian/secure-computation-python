@@ -23,9 +23,13 @@ class CommonAPI(CryptoContext):
         self.session: requests.Session = requests.Session()
         self.url: str = os.getenv('COSMIAN_BASE_URL', default="https://backend.cosmian.com")
         self.token = token
+        self.access_token_cache = None
         super().__init__()
 
-    def access_token(self) -> str: 
+    def access_token(self) -> str:
+        if self.access_token_cache is not None:
+            return self.access_token_cache
+
         resp: requests.Response = self.session.post(
             url=f"{self.url}/oauth/token",
             json={
@@ -40,6 +44,7 @@ class CommonAPI(CryptoContext):
             )
 
         content: Dict[str, str] = resp.json()
+        self.access_token_cache = content["access_token"] 
         return content["access_token"]
 
     def register(self, computation_uuid: str, public_key: str) -> Computation:
