@@ -83,14 +83,24 @@ class ResultConsumer:
         return ResultConsumer(**filter_dict(json, ResultConsumer))
 
 @dataclass(frozen=True)
-class Enclave:
-    public_key: Optional[bytes]
+class EnclaveIdentity:
+    public_key: bytes
     manifest: Optional[str]
-    quote: Optional[str]
+    quote: str
 
     @staticmethod
     def from_json_dict(json):
-        json['public_key'] = None if json['public_key'] is None else bytes(json['public_key'])
+        json['public_key'] = bytes(json['public_key'])
+
+        return EnclaveIdentity(**filter_dict(json, EnclaveIdentity))
+
+@dataclass(frozen=True)
+class Enclave:
+    identity: Optional[EnclaveIdentity]
+
+    @staticmethod
+    def from_json_dict(json):
+        json['identity'] = None if json['identity'] is None else EnclaveIdentity.from_json_dict(json['identity'])
 
         return Enclave(**filter_dict(json, Enclave))
 
