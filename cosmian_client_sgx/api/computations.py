@@ -24,7 +24,7 @@ class PublicKey:
 
     @staticmethod
     def from_json_dict(json):
-        return PublicKey(**filter_dict(json, PublicKey))
+        return construct_dataclass(PublicKey, json)
 
 @dataclass(frozen=True)
 class Owner:
@@ -37,7 +37,7 @@ class Owner:
     def from_json_dict(json):
         json['public_key'] = PublicKey.from_json_dict(json['public_key'])
 
-        return Owner(**filter_dict(json, Owner))
+        return construct_dataclass(Owner, json)
 
 @dataclass(frozen=True)
 class CodeProvider:
@@ -51,7 +51,7 @@ class CodeProvider:
     def from_json_dict(json):
         json['public_key'] = None if json['public_key'] is None else PublicKey.from_json_dict(json['public_key'])
 
-        return CodeProvider(**filter_dict(json, CodeProvider))
+        return construct_dataclass(CodeProvider, json)
 
 @dataclass(frozen=True)
 class DataProvider:
@@ -66,7 +66,7 @@ class DataProvider:
     def from_json_dict(json):
         json['public_key'] = None if json['public_key'] is None else PublicKey.from_json_dict(json['public_key'])
 
-        return DataProvider(**filter_dict(json, DataProvider))
+        return construct_dataclass(DataProvider, json)
 
 @dataclass(frozen=True)
 class ResultConsumer:
@@ -80,7 +80,7 @@ class ResultConsumer:
     def from_json_dict(json):
         json['public_key'] = None if json['public_key'] is None else PublicKey.from_json_dict(json['public_key'])
 
-        return ResultConsumer(**filter_dict(json, ResultConsumer))
+        return construct_dataclass(ResultConsumer, json)
 
 @dataclass(frozen=True)
 class EnclaveIdentity:
@@ -92,7 +92,7 @@ class EnclaveIdentity:
     def from_json_dict(json):
         json['public_key'] = bytes(json['public_key'])
 
-        return EnclaveIdentity(**filter_dict(json, EnclaveIdentity))
+        return construct_dataclass(EnclaveIdentity, json)
 
 @dataclass(frozen=True)
 class Enclave:
@@ -102,7 +102,7 @@ class Enclave:
     def from_json_dict(json):
         json['identity'] = None if json['identity'] is None else EnclaveIdentity.from_json_dict(json['identity'])
 
-        return Enclave(**filter_dict(json, Enclave))
+        return construct_dataclass(Enclave, json)
 
 @dataclass(frozen=True)
 class CurrentRun:
@@ -110,7 +110,7 @@ class CurrentRun:
 
     @staticmethod
     def from_json_dict(json):
-        return CurrentRun(**filter_dict(json, CurrentRun))
+        return construct_dataclass(CurrentRun, json)
 
 @dataclass(frozen=True)
 class PreviousRun:
@@ -123,7 +123,7 @@ class PreviousRun:
 
     @staticmethod
     def from_json_dict(json):
-        return PreviousRun(**filter_dict(json, PreviousRun))
+        return construct_dataclass(PreviousRun, json)
 
 
 @dataclass(frozen=True)
@@ -136,7 +136,7 @@ class Runs:
         json['current'] = None if json['current'] is None else CurrentRun.from_json_dict(json['current'])
         json['previous'] = list(map(PreviousRun.from_json_dict, json['previous']))
 
-        return Runs(**filter_dict(json, Runs))
+        return construct_dataclass(Runs, json)
 
 
 @dataclass(frozen=True)
@@ -162,11 +162,11 @@ class Computation:
         json['runs'] = Runs.from_json_dict(json['runs'])
         json['my_roles'] = list(map(Role, json['my_roles']))
 
-        return Computation(**filter_dict(json, Computation))
+        return construct_dataclass(Computation, json)
 
 
-def filter_dict(dict_to_filter, thing_with_kwargs):
-    sig = inspect.signature(thing_with_kwargs)
+def construct_dataclass(dataclass, json):
+    sig = inspect.signature(dataclass)
     filter_keys = [param.name for param in sig.parameters.values() if param.kind == param.POSITIONAL_OR_KEYWORD]
-    filtered_dict = {filter_key:dict_to_filter[filter_key] for filter_key in filter_keys}
-    return filtered_dict
+    filtered_dict = {filter_key:json.get(filter_key, None) for filter_key in filter_keys}
+    return dataclass(**filtered_dict)
