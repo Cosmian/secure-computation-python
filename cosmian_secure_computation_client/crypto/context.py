@@ -1,13 +1,20 @@
-"""cosmian_client_sgx.crypto.context module."""
+"""cosmian_secure_computation_client.crypto.context module."""
 
 from pathlib import Path
 from typing import Optional, List
 
-from cosmian_client_sgx.crypto.helper import (x25519_keypair, x25519_pubkey_from_privkey,
-                                              client_shared_key, encrypt, decrypt,
-                                              encrypt_file, decrypt_file,
-                                              encrypt_directory, decrypt_directory,
-                                              random_symkey, pubkey_fingerprint, seal)
+from cosmian_secure_computation_client.crypto.helper import (x25519_keypair,
+                                                             x25519_pubkey_from_privkey,
+                                                             client_shared_key,
+                                                             encrypt,
+                                                             decrypt,
+                                                             encrypt_file,
+                                                             decrypt_file,
+                                                             encrypt_directory,
+                                                             decrypt_directory,
+                                                             random_symkey,
+                                                             pubkey_fingerprint,
+                                                             seal)
 
 
 class CryptoContext:

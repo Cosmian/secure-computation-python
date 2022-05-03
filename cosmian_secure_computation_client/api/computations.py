@@ -1,4 +1,4 @@
-"""cosmian_client_sgx.api.computations module."""
+"""cosmian_secure_computation_client.api.computations module."""
 
 from dataclasses import dataclass
 from typing import Optional, Dict, Union, List, Tuple

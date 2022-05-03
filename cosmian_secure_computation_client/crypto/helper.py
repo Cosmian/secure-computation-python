@@ -1,4 +1,4 @@
-"""cosmian_client_sgx.crypto.helper module."""
+"""cosmian_secure_computation_client.crypto.helper module."""
 
 import hashlib
 from pathlib import Path

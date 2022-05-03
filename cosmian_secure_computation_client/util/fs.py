@@ -1,4 +1,4 @@
-"""cosmian_client_sgx.util.fs module."""
+"""cosmian_secure_computation_client.util.fs module."""
 
 from pathlib import Path
 import tarfile

@@ -1,6 +1,10 @@
 from typing import Optional, Dict, Union, List, Tuple
 
-from cosmian_client_sgx import Computation, ComputationOwnerAPI, CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
+from cosmian_secure_computation_client import (Computation,
+                                               ComputationOwnerAPI,
+                                               CodeProviderAPI,
+                                               DataProviderAPI,
+                                               ResultConsumerAPI)
 from os import environ
 import os
 from pathlib import Path
@@ -19,7 +23,7 @@ def step_1_create_computation():
     """
     To create your first computation, create the ComputationOwnerAPI object with your secret token.
     """
-    from cosmian_client_sgx import ComputationOwnerAPI
+    from cosmian_secure_computation_client import ComputationOwnerAPI
     computation_owner = ComputationOwnerAPI(cosmian_token)
 
     """
@@ -85,7 +89,7 @@ def step_1_create_computation_seed():
     """
     To create your first computation, create the ComputationOwnerAPI object with your secret token.
     """
-    from cosmian_client_sgx import ComputationOwnerAPI
+    from cosmian_secure_computation_client import ComputationOwnerAPI
     computation_owner = ComputationOwnerAPI(cosmian_token)
 
     """
@@ -133,7 +137,7 @@ def step_2_code_provider_registers(cosmian_token, computation_uuid):
     """
     You need to create the CodeProvider object to register as a code provider.
     """
-    from cosmian_client_sgx import CodeProviderAPI
+    from cosmian_secure_computation_client import CodeProviderAPI
     code_provider = CodeProviderAPI(cosmian_token)
 
     """
@@ -163,7 +167,7 @@ def step_2_data_providers_register(cosmian_token, computation_uuid):
     """
     You need to create the DataProvider object to register as a data provider.
     """
-    from cosmian_client_sgx import DataProviderAPI
+    from cosmian_secure_computation_client import DataProviderAPI
     data_provider = DataProviderAPI(cosmian_token)
 
     """
@@ -193,7 +197,7 @@ def step_2_result_consumers_register(cosmian_token, computation_uuid):
     """
     You need to create the ResultConsumer object to register as a result consumer.
     """
-    from cosmian_client_sgx import ResultConsumerAPI
+    from cosmian_secure_computation_client import ResultConsumerAPI
     result_consumer = ResultConsumerAPI(cosmian_token)
 
     """
@@ -229,7 +233,7 @@ def step_3_code_provider_sends_code(cosmian_token, computation_uuid, path):
     You need to store this symmetric key somewhere safe. It'll be required later for you to send it to 
     the enclave.
     """
-    from cosmian_client_sgx.crypto.helper import random_symkey
+    from cosmian_secure_computation_client.crypto.helper import random_symkey
     symmetric_key = random_symkey()
 
     """
@@ -237,7 +241,7 @@ def step_3_code_provider_sends_code(cosmian_token, computation_uuid, path):
     This folder should contains a `run.py` file.
     The `run.py` file will not be encrypted, everything else will be.
     """
-    from cosmian_client_sgx import CodeProviderAPI
+    from cosmian_secure_computation_client import CodeProviderAPI
     code_provider = CodeProviderAPI(cosmian_token)
 
     code_provider.upload(computation_uuid, symmetric_key, path)
@@ -253,7 +257,7 @@ def step_4_computation_owner_approves_participants(cosmian_token, computation_uu
     security of the process. You can access these informations from the computation
     object.
     """
-    from cosmian_client_sgx import ComputationOwnerAPI
+    from cosmian_secure_computation_client import ComputationOwnerAPI
     computation_owner = ComputationOwnerAPI(cosmian_token)
 
     computation = computation_owner.get_computation(computation_uuid)
@@ -297,7 +301,7 @@ def step_5_code_provider_sends_sealed_symmetric_key(cosmian_token, computation_u
     security of the process. You can access these informations from the computation
     object.
     """
-    from cosmian_client_sgx import CodeProviderAPI
+    from cosmian_secure_computation_client import CodeProviderAPI
     code_provider = CodeProviderAPI(cosmian_token)
 
     computation = code_provider.get_computation(computation_uuid)
@@ -314,8 +318,8 @@ def step_5_code_provider_sends_sealed_symmetric_key(cosmian_token, computation_u
 
     You need to use the same symmetric key as in step 3 (code upload).
     """
-    from cosmian_client_sgx.crypto.helper import seal
-    sealed_symmetric_key = seal(symmetric_key, computation.enclave.identity.public_key)
+    from cosmian_secure_computation_client.crypto.helper import seal
+    sealed_symmetric_key = seal(symmetric_key, computation.enclave.public_key)
 
     code_provider.key_provisioning(computation.uuid, sealed_symmetric_key)
 
@@ -329,7 +333,7 @@ def step_6_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, com
     security of the process. You can access these informations from the computation
     object.
     """
-    from cosmian_client_sgx import DataProviderAPI
+    from cosmian_secure_computation_client import DataProviderAPI
     data_provider = DataProviderAPI(cosmian_token)
 
     computation = data_provider.get_computation(computation_uuid)
@@ -349,7 +353,7 @@ def step_6_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, com
     provides a function for that, but you can also use whatever suit's your security needs.
     *TODO explain what type of key is required*
     """
-    from cosmian_client_sgx.crypto.helper import random_symkey
+    from cosmian_secure_computation_client.crypto.helper import random_symkey
     symmetric_key = random_symkey()
 
     """
@@ -365,8 +369,8 @@ def step_6_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, com
     """
     > Finally, send your symmetric key sealed with enclave's public key :
     """
-    from cosmian_client_sgx.crypto.helper import seal
-    sealed_symmetric_key = seal(symmetric_key, computation.enclave.identity.public_key)
+    from cosmian_secure_computation_client.crypto.helper import seal
+    sealed_symmetric_key = seal(symmetric_key, computation.enclave.public_key)
 
     data_provider.key_provisioning(computation_uuid, sealed_symmetric_key)
 
@@ -381,7 +385,7 @@ def step_7_result_consumers_send_sealed_symmetric_keys(cosmian_token, computatio
     security of the process. You can access these informations from the computation
     object.
     """
-    from cosmian_client_sgx import ResultConsumerAPI
+    from cosmian_secure_computation_client import ResultConsumerAPI
     result_consumer = ResultConsumerAPI(cosmian_token)
 
     computation = result_consumer.get_computation(computation_uuid)
@@ -402,14 +406,14 @@ def step_7_result_consumers_send_sealed_symmetric_keys(cosmian_token, computatio
     provides a function for that, but you can also use whatever suit's your security needs.
     *TODO explain what type of key is required*
     """
-    from cosmian_client_sgx.crypto.helper import random_symkey
+    from cosmian_secure_computation_client.crypto.helper import random_symkey
     symmetric_key = random_symkey()
 
     """
     > Next, send your symmetric key sealed with enclave's public key :
     """
-    from cosmian_client_sgx.crypto.helper import seal
-    sealed_symmetric_key = seal(symmetric_key, computation.enclave.identity.public_key)
+    from cosmian_secure_computation_client.crypto.helper import seal
+    sealed_symmetric_key = seal(symmetric_key, computation.enclave.public_key)
 
     result_consumer.key_provisioning(computation.uuid, sealed_symmetric_key)
 
@@ -420,7 +424,7 @@ def step_8_result_consumers_get_results(cosmian_token, computation_uuid, symmetr
     """
     When the computation is over, you can fetch results.
     """
-    from cosmian_client_sgx import ResultConsumerAPI
+    from cosmian_secure_computation_client import ResultConsumerAPI
     result_consumer = ResultConsumerAPI(cosmian_token)
 
     while True:
@@ -484,7 +488,7 @@ def step_8_result_consumers_get_results(cosmian_token, computation_uuid, symmetr
 
     encrypted_results = result_consumer.fetch_results(computation.uuid)
 
-    from cosmian_client_sgx.crypto.helper import decrypt
+    from cosmian_secure_computation_client.crypto.helper import decrypt
     results = decrypt(encrypted_results, symmetric_key)
 
     print(results)

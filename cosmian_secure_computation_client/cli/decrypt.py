@@ -1,9 +1,10 @@
-"""cosmian_client_sgx.cli.decrypt module."""
+"""cosmian_secure_computation_client.cli.decrypt module."""
 
 from argparse import Namespace
 from pathlib import Path
 
-from cosmian_client_sgx.crypto.helper import decrypt_directory, decrypt_file
+from cosmian_secure_computation_client.crypto.helper import (decrypt_directory,
+                                                             decrypt_file)
 
 
 def parse_decrypt(args: Namespace):

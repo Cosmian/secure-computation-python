@@ -1,4 +1,4 @@
-"""cosmian_client_sgx.api.side module."""
+"""cosmian_secure_computation_client.api.side module."""
 
 from enum import Enum
 

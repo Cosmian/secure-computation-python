@@ -1,6 +1,6 @@
 import pytest
 
-from cosmian_client_sgx.api.side import Side
+from cosmian_secure_computation_client.api.side import Side
 
 from keys import *
 

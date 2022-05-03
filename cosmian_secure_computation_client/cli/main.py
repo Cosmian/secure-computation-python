@@ -1,9 +1,9 @@
-"""cosmian_client_sgx.cli.main module."""
+"""cosmian_secure_computation_client.cli.main module."""
 
 import argparse
 
-from cosmian_client_sgx.cli.encrypt import parse_encrypt
-from cosmian_client_sgx.cli.decrypt import parse_decrypt
+from cosmian_secure_computation_client.cli.encrypt import parse_encrypt
+from cosmian_secure_computation_client.cli.decrypt import parse_decrypt
 
 
 def main() -> int:

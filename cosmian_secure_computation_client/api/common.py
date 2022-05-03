@@ -1,4 +1,4 @@
-"""cosmian_client_sgx.api.common module."""
+"""cosmian_secure_computation_client.api.common module."""
 
 import base64
 import os
@@ -10,10 +10,11 @@ from cryptography.hazmat.primitives.serialization import (Encoding,
                                                           PublicFormat)
 import jwt
 
-from cosmian_client_sgx.crypto.context import CryptoContext
-from cosmian_client_sgx.api.side import Side
-from cosmian_client_sgx.api.computations import Computation
-from cosmian_client_sgx.util.base64url import base64url_encode, base64url_decode
+from cosmian_secure_computation_client.crypto.context import CryptoContext
+from cosmian_secure_computation_client.api.side import Side
+from cosmian_secure_computation_client.api.computations import Computation
+from cosmian_secure_computation_client.util.base64url import (base64url_encode,
+                                                              base64url_decode)
 
 
 class CommonAPI(CryptoContext):

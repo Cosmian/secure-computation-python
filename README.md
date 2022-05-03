@@ -1,4 +1,4 @@
-# Cosmian Client SGX
+# Cosmian Secure Computation Client
 
 ## Overview
 
@@ -17,7 +17,7 @@ from pathlib import Path
 import time
 from typing import Optional
 
-from cosmian_client_sgx import CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
+from cosmian_secure_computation_client import CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
 
 host: str = "localhost"
 port: Optional[int] = None

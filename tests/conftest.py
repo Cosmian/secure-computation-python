@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 import pytest
-from cosmian_client_sgx import CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
+from cosmian_secure_computation_client import CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
 
 from keys import *
 
