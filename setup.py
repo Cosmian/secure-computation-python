@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cosmian_secure_computation_client",
-    version="1.0.0",
+    version="0.2.0",
     url="https://cosmian.com",
     license="MIT",
     author="Cosmian Tech",
