@@ -260,7 +260,13 @@ def step_4_computation_owner_approves_participants(cosmian_token, computation_uu
     from cosmian_secure_computation_client import ComputationOwnerAPI
     computation_owner = ComputationOwnerAPI(cosmian_token)
 
-    computation = computation_owner.get_computation(computation_uuid)
+    while True:
+        computation = computation_owner.get_computation(computation_uuid)
+        if computation.enclave.identity is None:
+            print("Waiting 5s the generation of the enclave identity…")
+            time.sleep(5)
+        else:
+            break
     
     manifest = computation.enclave.identity.manifest
     quote = computation.enclave.identity.quote
@@ -304,7 +310,14 @@ def step_5_code_provider_sends_sealed_symmetric_key(cosmian_token, computation_u
     from cosmian_secure_computation_client import CodeProviderAPI
     code_provider = CodeProviderAPI(cosmian_token)
 
-    computation = code_provider.get_computation(computation_uuid)
+    while True:
+        computation = code_provider.get_computation(computation_uuid)
+        if computation.enclave.identity is None:
+            print("Waiting 5s the generation of the enclave identity…")
+            time.sleep(5)
+        else:
+            break
+
     manifest = computation.enclave.identity.manifest
     quote = computation.enclave.identity.quote
 
@@ -336,7 +349,14 @@ def step_6_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, com
     from cosmian_secure_computation_client import DataProviderAPI
     data_provider = DataProviderAPI(cosmian_token)
 
-    computation = data_provider.get_computation(computation_uuid)
+    while True:
+        computation = data_provider.get_computation(computation_uuid)
+        if computation.enclave.identity is None:
+            print("Waiting 5s the generation of the enclave identity…")
+            time.sleep(5)
+        else:
+            break
+
     manifest = computation.enclave.identity.manifest
     quote = computation.enclave.identity.quote
 
@@ -388,7 +408,14 @@ def step_7_result_consumers_send_sealed_symmetric_keys(cosmian_token, computatio
     from cosmian_secure_computation_client import ResultConsumerAPI
     result_consumer = ResultConsumerAPI(cosmian_token)
 
-    computation = result_consumer.get_computation(computation_uuid)
+    while True:
+        computation = result_consumer.get_computation(computation_uuid)
+        if computation.enclave.identity is None:
+            print("Waiting 5s the generation of the enclave identity…")
+            time.sleep(5)
+        else:
+            break
+
     manifest = computation.enclave.identity.manifest
     quote = computation.enclave.identity.quote
 
