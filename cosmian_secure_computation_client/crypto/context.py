@@ -5,6 +5,7 @@ from typing import Optional, List
 
 from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              ed25519_seed_keygen,
+                                                             ed25519_to_x25519_keypair,
                                                              encrypt,
                                                              decrypt,
                                                              encrypt_file,
@@ -17,28 +18,29 @@ from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              sign)
 
 
-# from cosmian_client_sgx.crypto.helper import (x25519_keypair, x25519_pubkey_from_privkey,
-#                                               ed25519_keygen, ed25519_seed_keygen, ed25519_to_x25519,
-#                                               client_shared_key, encrypt, decrypt,
-#                                               encrypt_file, decrypt_file,
-#                                               encrypt_directory, decrypt_directory,
-#                                               random_symkey, pubkey_fingerprint, seal, sign)
-
-
 class CryptoContext:
-    def __init__(self, private_key: Optional[bytes] = None):
-        self.pubkey, self.seed, self.privkey = (
-            ed25519_keygen() if private_key is None else
-            ed25519_seed_keygen(private_key)
+    def __init__(self, seed: Optional[bytes] = None):
+        self.ed25519_pk, self.ed25519_seed, self.ed25519_sk = (
+            ed25519_keygen() if seed is None else
+            ed25519_seed_keygen(seed)
         )  # type: bytes, bytes, bytes
-        self.fingerprint: bytes = pubkey_fingerprint(self.pubkey)
-        self.remote_pubkey: Optional[bytes] = None
+        self.x25519_pk, self.x25519_sk = ed25519_to_x25519_keypair(
+            self.ed25519_pk,
+            self.ed25519_seed
+        )  # type: bytes, bytes
+        self.fingerprint: bytes = pubkey_fingerprint(self.ed25519_pk)
+        self.ed25519_remote_pk: Optional[bytes] = None
+        self.x25519_remote_pk: Optional[bytes] = None
         self._symkey: bytes = random_symkey()
 
     def set_keypair(self, public_key: bytes, private_key: bytes) -> None:
-        self.pubkey = public_key
-        self.privkey = private_key
-        self.fingerprint = pubkey_fingerprint(self.pubkey)
+        self.ed25519_pk = public_key
+        self.ed25519_sk = private_key
+        self.x25519_pk, self.x25519_sk = ed25519_to_x25519_keypair(
+            self.ed25519_pk,
+            self.ed25519_seed
+        )
+        self.fingerprint = pubkey_fingerprint(self.ed25519_pk)
 
     def set_symkey(self, symkey: bytes) -> None:
         self._symkey = symkey
@@ -73,10 +75,10 @@ class CryptoContext:
         return decrypt_directory(dir_path, self._symkey)
 
     def sign(self, data: bytes) -> bytes:
-        return sign(data, self.seed)
+        return sign(data, self.ed25519_seed)
 
     def seal_symkey(self) -> bytes:
-        if self.remote_pubkey is None:
+        if self.ed25519_remote_pk is None:
             raise Exception("Remote public key must be setup first!")
 
-        return seal(self.sign(self._symkey), self.remote_pubkey)
+        return seal(self._symkey, self.ed25519_remote_pk)

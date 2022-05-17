@@ -40,7 +40,6 @@ def test_seal():
 
 
 def test_sign():
-    public_key, seed, _ = ed25519_keygen()
     assert (len(CP_ED25519_PUBKEY) == len(DP1_ED25519_PUBKEY) ==
             len(DP2_ED25519_PUBKEY) == len(RC_ED25519_PUBKEY) == 32)
     assert (len(CP_ED25519_PRIVKEY) == len(DP1_ED25519_PRIVKEY) ==
@@ -48,11 +47,16 @@ def test_sign():
     assert (len(CP_ED25519_SEED) == len(DP1_ED25519_SEED) ==
             len(DP2_ED25519_SEED) == len(RC_ED25519_SEED) == 32)
 
-    message: bytes = b"Hello World!"
+    test_keys: List[Tuple[bytes, bytes, bytes]] = [
+        (CP_SYMKEY, CP_ED25519_SEED, CP_ED25519_PUBKEY),
+        (DP1_SYMKEY, DP1_ED25519_SEED, DP1_ED25519_PUBKEY),
+        (DP2_SYMKEY, DP2_ED25519_SEED, DP2_ED25519_PUBKEY),
+        (RC_SYMKEY, RC_ED25519_SEED, RC_ED25519_PUBKEY)
+    ]
 
-    sig: bytes = sign(message, CP_ED25519_SEED)
-
-    assert verify(message, sig, CP_ED25519_PUBKEY) is True
+    for (msg, sk, pk) in test_keys:
+        sig: bytes = sign(msg, sk)
+        assert verify(msg, sig, pk) is True
 
 
 def test_sig_and_seal():
