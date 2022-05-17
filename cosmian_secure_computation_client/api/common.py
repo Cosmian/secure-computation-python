@@ -4,8 +4,11 @@ import base64
 import os
 from typing import Optional, Dict, Any, List
 
-from cryptography import x509
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+from cryptography import x509
 from cryptography.hazmat.primitives.serialization import (Encoding,
                                                           PublicFormat)
 import jwt
@@ -21,10 +24,27 @@ class CommonAPI(CryptoContext):
     def __init__(self, side: Side, token: str) -> None:
         assert side != Side.Enclave, "Can't control Enclave keypair!"
         self.side: Side = side
-        self.session: requests.Session = requests.Session()
+
         self.url: str = os.getenv('COSMIAN_BASE_URL', default="https://backend.cosmian.com")
+
+        self.session: requests.Session = requests.Session()
+        retry = Retry(
+            total=5,
+            read=5,
+            connect=5,
+            backoff_factor=0.3,
+            status_forcelist=(502, 503), # BadGateway from Nginx / Temporary unavailable
+            allowed_methods=None,
+            raise_on_status=False,
+            raise_on_redirect=False,
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        self.session.mount('http://', adapter)
+        self.session.mount('https://', adapter)
+
         self.token = token
         self.access_token_cache = None
+
         super().__init__()
 
     def access_token(self) -> str:
@@ -41,7 +61,7 @@ class CommonAPI(CryptoContext):
 
         if not resp.ok:
             raise Exception(
-                f"Invalid token. Please check that your token."
+                f"Cannot fetch the access token from your secret token. Status code was {resp.status_code}. {resp.content}"
             )
 
         content: Dict[str, str] = resp.json()
