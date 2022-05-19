@@ -20,6 +20,9 @@ class ResultConsumerAPI(CommonAPI):
             },
         )
 
+        if resp.status_code == requests.codes.accepted:
+            return None
+
         if not resp.ok:
             raise Exception(
                 f"Unexpected response ({resp.status_code}): {resp.content}"
