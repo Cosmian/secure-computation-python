@@ -31,4 +31,4 @@ class ResultConsumerAPI(CommonAPI):
             # This code should be remove in a few days when all the old computations are archived.
             return bytes.fromhex(resp.json()["message"])
         else:
-            return resp.content()
+            return resp.content
