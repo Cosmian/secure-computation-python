@@ -85,7 +85,7 @@ class ResultConsumer:
 @dataclass(frozen=True)
 class EnclaveIdentity:
     public_key: bytes
-    manifest: Optional[str]
+    manifest: Optional[str]  # Some endpoints omit the manifest in the response for performance reasons, please call `get_computation()` to fetch it
     quote: str
 
     @staticmethod
