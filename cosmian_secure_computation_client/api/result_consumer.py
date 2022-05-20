@@ -20,9 +20,18 @@ class ResultConsumerAPI(CommonAPI):
             },
         )
 
+        if resp.status_code == requests.codes.accepted:
+            return None
+
         if not resp.ok:
             raise Exception(
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        return bytes.fromhex(resp.json()["message"])
+        if resp.headers['content-type'] == 'application/json':
+            # The old version of the API could return a JSON response with the result hex encoded
+            # it should never be the case for new computations.
+            # This code should be remove in a few days when all the old computations are archived.
+            return bytes.fromhex(resp.json()["message"])
+        else:
+            return resp.content
