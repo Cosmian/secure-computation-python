@@ -4,7 +4,6 @@ from pathlib import Path
 
 from setuptools import setup, find_packages
 
-
 setup(
     name="cosmian_secure_computation_client",
     version="0.2.0",
