@@ -28,7 +28,7 @@ class ResultConsumerAPI(CommonAPI):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
-        if resp.headers['content-type'] == 'application/json':
+        if resp.headers.get('content-type', default='application/json') == 'application/json':
             # The old version of the API could return a JSON response with the result hex encoded
             # it should never be the case for new computations.
             # This code should be remove in a few days when all the old computations are archived.
