@@ -10,6 +10,7 @@ from cosmian_secure_computation_client.util.fs import tar
 from cosmian_secure_computation_client.api.side import Side
 from cosmian_secure_computation_client.api.common import CommonAPI
 from cosmian_secure_computation_client.crypto.helper import encrypt_directory
+from cosmian_secure_computation_client.api.computations import Computation
 
 
 class CodeProviderAPI(CommonAPI):
@@ -63,3 +64,21 @@ class CodeProviderAPI(CommonAPI):
         tar_path = tar(encrypted_directory_path, encrypted_directory_path / f"{encrypted_directory_path.name}.tar")
 
         return self.upload_tar(computation_uuid, tar_path, keep=False)
+
+    def reset(self, computation_uuid: str) -> Computation:
+        """Remove the uploaded code. This will reset the enclave identity so every participants will need to send their symetric keys again sealed with the new enclave public key. The data can be left untouch if the data providers resend the same symetric key."""
+
+        resp: requests.Response = self.session.delete(
+            url=f"{self.url}/computations/{computation_uuid}/code",
+            timeout=None,
+            headers={
+                "Authorization": f"Bearer {self.access_token()}",
+            },
+        )
+
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
+
+        return Computation.from_json_dict(resp.json())

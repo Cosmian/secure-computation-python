@@ -64,3 +64,21 @@ class DataProviderAPI(CommonAPI):
 
         return Computation.from_json_dict(resp.json())
 
+    def reset(self, computation_uuid: str) -> Computation:
+        """Remove all data already uploaded by you."""
+
+        resp: requests.Response = self.session.delete(
+            url=f"{self.url}/computations/{computation_uuid}/data",
+            timeout=None,
+            headers={
+                "Authorization": f"Bearer {self.access_token()}",
+            },
+        )
+
+        if not resp.ok:
+            raise Exception(
+                f"Unexpected response ({resp.status_code}): {resp.content}"
+            )
+
+        return Computation.from_json_dict(resp.json())
+
