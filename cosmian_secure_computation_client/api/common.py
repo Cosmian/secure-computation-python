@@ -7,6 +7,7 @@ from typing import Optional, Dict, Any, List
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from importlib.metadata import version
 
 from cryptography import x509
 from cryptography.hazmat.primitives.serialization import (Encoding,
@@ -29,6 +30,9 @@ class CommonAPI:
         self.url: str = os.getenv('COSMIAN_BASE_URL', default="https://backend.cosmian.com")
 
         self.session: requests.Session = requests.Session()
+        self.session.headers.update({
+            'user-agent': f"cscc-python/{version('cosmian_secure_computation_client')}",
+        })
         retry = Retry(
             total=5,
             read=5,
