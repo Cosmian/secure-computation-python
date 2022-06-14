@@ -1,7 +1,7 @@
 """cosmian_secure_computation_client.crypto.context module."""
 
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              ed25519_seed_keygen,
@@ -9,6 +9,7 @@ from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              ed25519_to_x25519_pubkey,
                                                              encrypt,
                                                              decrypt,
+                                                             derive_psk,
                                                              encrypt_file,
                                                              decrypt_file,
                                                              encrypt_directory,
@@ -17,10 +18,12 @@ from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              pubkey_fingerprint,
                                                              seal,
                                                              sign)
+from cosmian_secure_computation_client.util.mnemonic import random_words
 
 
 class CryptoContext:
     def __init__(self,
+                 words: Optional[Tuple[str, str, str]] = None,
                  ed25519_seed: Optional[bytes] = None,
                  symkey: Optional[bytes] = None) -> None:
         self.ed25519_pk, self.ed25519_seed, self.ed25519_sk = (
@@ -33,6 +36,8 @@ class CryptoContext:
         )  # type: bytes, bytes
         self.ed25519_fingerprint: bytes = pubkey_fingerprint(self.ed25519_pk)
         self._symkey: bytes = symkey if symkey else random_symkey()
+        self._words: Tuple[str, str, str] = words if words else random_words()
+        self.preshared_sk: bytes = derive_psk(self._words)
 
     @property
     def public_key(self) -> bytes:
@@ -45,6 +50,10 @@ class CryptoContext:
     @property
     def symkey(self) -> bytes:
         return self._symkey
+
+    @property
+    def words(self) -> Tuple[str, str, str]:
+        return self._words
 
     def encrypt(self, data: bytes) -> bytes:
         return encrypt(data, self._symkey)
@@ -72,7 +81,7 @@ class CryptoContext:
 
     def seal_symkey(self, ed25519_recipient_pk: bytes) -> bytes:
         x25519_recipient_pk: bytes = ed25519_to_x25519_pubkey(ed25519_recipient_pk)
-        seal_box: bytes = seal(self._symkey, x25519_recipient_pk)
+        seal_box: bytes = seal(self.preshared_sk + self._symkey, x25519_recipient_pk)
         sig: bytes = self.sign(seal_box)
 
         return sig + seal_box
