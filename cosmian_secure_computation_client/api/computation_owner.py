@@ -34,7 +34,7 @@ class ComputationOwnerAPI:
         self.session.mount('https://', adapter)
         self.token = Token(self.session, self.url, token)
 
-    def create_computation(self, name: str, owner_public_key: str, code_provider_email: str, data_providers_emails: List[str], result_consumers_emails: List[str]) -> Computation:
+    def create_computation(self, name: str, code_provider_email: str, data_providers_emails: List[str], result_consumers_emails: List[str]) -> Computation:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations",
             json={
@@ -42,7 +42,6 @@ class ComputationOwnerAPI:
                 "code_provider_email": code_provider_email,
                 "data_providers_emails": data_providers_emails,
                 "result_consumers_emails": result_consumers_emails,
-                "owner_public_key": owner_public_key,
             },
             headers={
                 "Authorization": f"Bearer {self.token.access_token}",

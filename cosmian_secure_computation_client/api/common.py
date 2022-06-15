@@ -48,7 +48,7 @@ class CommonAPI:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations/{computation_uuid}/register",
             json={
-                "public_key": self.ctx.public_key,
+                "public_key": self.ctx.public_key.hex(),
                 "side": str(self.side),
             },
             headers={
