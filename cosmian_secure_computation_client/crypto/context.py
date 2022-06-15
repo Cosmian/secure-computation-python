@@ -1,7 +1,7 @@
 """cosmian_secure_computation_client.crypto.context module."""
 
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import Optional, List
 
 from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              ed25519_seed_keygen,
@@ -72,7 +72,7 @@ class CryptoContext:
 
     def seal_symkey(self, ed25519_recipient_pk: bytes) -> bytes:
         x25519_recipient_pk: bytes = ed25519_to_x25519_pubkey(ed25519_recipient_pk)
-        seal_box: bytes = seal(self.preshared_sk + self._symkey, x25519_recipient_pk)
+        seal_box: bytes = seal(self._symkey, x25519_recipient_pk)
         sig: bytes = self.sign(seal_box)
 
         return sig + seal_box
