@@ -17,8 +17,8 @@ class DataProviderAPI(CommonAPI):
     def __init__(self, token: str, ctx: CryptoContext) -> None:
         super().__init__(Side.DataProvider, token, ctx)
 
-    def push_data(self, computation_uuid: str, symmetric_key: bytes, data_name: str, data: bytes) -> Computation:
-        encrypted_data: bytes = encrypt(data, symmetric_key)
+    def push_data(self, computation_uuid: str, data_name: str, data: bytes) -> Computation:
+        encrypted_data: bytes = self.ctx.encrypt(data)
 
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations/{computation_uuid}/data",
@@ -40,12 +40,12 @@ class DataProviderAPI(CommonAPI):
 
         return Computation.from_json_dict(resp.json())
 
-    def push_files(self, computation_uuid: str, symmetric_key: bytes, paths: Iterable[Path]) -> Computation:
+    def push_files(self, computation_uuid: str, paths: Iterable[Path]) -> Computation:
         for path in paths:
             if not path.is_file():
                 raise FileNotFoundError
 
-            resp = self.push_data(computation_uuid, symmetric_key, path.name, path.read_bytes())
+            resp = self.push_data(computation_uuid, path.name, path.read_bytes())
 
         return resp
 

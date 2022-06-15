@@ -54,9 +54,8 @@ class CodeProviderAPI(CommonAPI):
             raise FileNotFoundError(f"Can't upload {directory_path.resolve()} as code because `run.py` is missing.")
 
         encrypted_directory_path: Path = Path(tempfile.gettempdir()) / f"cosmian_{computation_uuid}" / directory_path.name
-        encrypt_directory(
+        self.ctx.encrypt_directory(
             dir_path = directory_path,
-            key = self.ctx.symkey,
             patterns = patterns,
             exceptions = files_exceptions + ["run.py"],
             dir_exceptions = directories_exceptions,

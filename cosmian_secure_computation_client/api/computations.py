@@ -30,13 +30,9 @@ class PublicKey:
 class Owner:
     uuid: str
     email: str
-    public_key: PublicKey
-    manifest_signature: Optional[str]
 
     @staticmethod
     def from_json_dict(json):
-        json['public_key'] = PublicKey.from_json_dict(json['public_key'])
-
         return construct_dataclass(Owner, json)
 
 @dataclass(frozen=True)
