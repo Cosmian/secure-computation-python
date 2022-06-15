@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.serialization import (Encoding,
                                                           PublicFormat)
 import jwt
 
+from cosmian_secure_computation_client.api.auth import Token
 from cosmian_secure_computation_client.crypto.context import CryptoContext
 from cosmian_secure_computation_client.api.side import Side
 from cosmian_secure_computation_client.api.computations import Computation
@@ -20,11 +21,11 @@ from cosmian_secure_computation_client.util.base64url import (base64url_encode,
                                                               base64url_decode)
 
 
-class CommonAPI(CryptoContext):
-    def __init__(self, side: Side, token: str) -> None:
+class CommonAPI:
+    def __init__(self, side: Side, token: str, ctx: CryptoContext) -> None:
         assert side != Side.Enclave, "Can't control Enclave keypair!"
         self.side: Side = side
-
+        self.ctx: CryptoContext = ctx
         self.url: str = os.getenv('COSMIAN_BASE_URL', default="https://backend.cosmian.com")
 
         self.session: requests.Session = requests.Session()
@@ -41,42 +42,17 @@ class CommonAPI(CryptoContext):
         adapter = HTTPAdapter(max_retries=retry)
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
+        self.token = Token(self.session, self.url, token)
 
-        self.token = token
-        self.access_token_cache = None
-
-        super().__init__()
-
-    def access_token(self) -> str:
-        if self.access_token_cache is not None:
-            return self.access_token_cache
-
-        resp: requests.Response = self.session.post(
-            url=f"{self.url}/oauth/token",
-            json={
-                "type": 'refresh_token',
-                "refresh_token": self.token,
-            },
-        )
-
-        if not resp.ok:
-            raise Exception(
-                f"Cannot fetch the access token from your secret token. Status code was {resp.status_code}. {resp.content}"
-            )
-
-        content: Dict[str, str] = resp.json()
-        self.access_token_cache = content["access_token"] 
-        return content["access_token"]
-
-    def register(self, computation_uuid: str, public_key: str) -> Computation:
+    def register(self, computation_uuid: str) -> Computation:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations/{computation_uuid}/register",
             json={
-                "public_key": public_key,
+                "public_key": self.ctx.public_key,
                 "side": str(self.side),
             },
             headers={
-                "Authorization": f"Bearer {self.access_token()}",
+                "Authorization": f"Bearer {self.token.access_token}",
             },
         )
 
@@ -91,7 +67,7 @@ class CommonAPI(CryptoContext):
         resp: requests.Response = self.session.get(
             url=f"{self.url}/computations/{computation_uuid}",
             headers={
-                "Authorization": f"Bearer {self.access_token()}",
+                "Authorization": f"Bearer {self.token.access_token}",
             },
         )
 
@@ -106,7 +82,7 @@ class CommonAPI(CryptoContext):
         resp: requests.Response = self.session.get(
             url=f"{self.url}/computations",
             headers={
-                "Authorization": f"Bearer {self.access_token()}",
+                "Authorization": f"Bearer {self.token.access_token}",
             },
         )
 
@@ -117,15 +93,15 @@ class CommonAPI(CryptoContext):
 
         return list(map(Computation.from_json_dict, resp.json()))
 
-    def key_provisioning(self, computation_uuid: str, sealed_symmetric_key: bytes) -> Computation:
+    def key_provisioning(self, computation_uuid: str, enclave_pubkey: bytes) -> Computation:
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations/{computation_uuid}/key/provisioning",
             json={
                 "role": str(self.side),
-                "sealed_symmetric_key": list(sealed_symmetric_key),
+                "sealed_symmetric_key": list(self.ctx.seal_symkey(enclave_pubkey)),
             },
             headers={
-                "Authorization": f"Bearer {self.access_token()}",
+                "Authorization": f"Bearer {self.token.access_token}",
             },
         )
 
