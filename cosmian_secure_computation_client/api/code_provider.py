@@ -9,13 +9,14 @@ import requests
 from cosmian_secure_computation_client.util.fs import tar
 from cosmian_secure_computation_client.api.side import Side
 from cosmian_secure_computation_client.api.common import CommonAPI
+from cosmian_secure_computation_client.crypto.context import CryptoContext
 from cosmian_secure_computation_client.crypto.helper import encrypt_directory
 from cosmian_secure_computation_client.api.computations import Computation
 
 
 class CodeProviderAPI(CommonAPI):
-    def __init__(self, token: str) -> None:
-        super().__init__(Side.CodeProvider, token)
+    def __init__(self, token: str, ctx: CryptoContext) -> None:
+        super().__init__(Side.CodeProvider, token, ctx)
 
     def upload_tar(self, computation_uuid: str, tar_path: Path, keep: bool = True) -> Dict[str, str]:
         if not tar_path.exists():
@@ -31,7 +32,7 @@ class CodeProviderAPI(CommonAPI):
                 },
                 timeout=None,
                 headers={
-                    "Authorization": f"Bearer {self.access_token()}",
+                    "Authorization": f"Bearer {self.token.access_token}",
                 },
             )
 
@@ -45,7 +46,7 @@ class CodeProviderAPI(CommonAPI):
 
         return resp.json()
 
-    def upload(self, computation_uuid: str, symmetric_key: bytes, directory_path: Path, patterns: List[str] = ["*"], files_exceptions: List[str] = [], directories_exceptions: List[str] = [".git"]):
+    def upload(self, computation_uuid: str, directory_path: Path, patterns: List[str] = ["*"], files_exceptions: List[str] = [], directories_exceptions: List[str] = [".git"]):
         # TODO rename files_exceptions and directories_exceptions to better reflect it's encryption exceptions and not upload exceptions
 
         entrypoint = directory_path / "run.py"
@@ -55,7 +56,7 @@ class CodeProviderAPI(CommonAPI):
         encrypted_directory_path: Path = Path(tempfile.gettempdir()) / f"cosmian_{computation_uuid}" / directory_path.name
         encrypt_directory(
             dir_path = directory_path,
-            key = symmetric_key,
+            key = self.ctx.symkey,
             patterns = patterns,
             exceptions = files_exceptions + ["run.py"],
             dir_exceptions = directories_exceptions,
@@ -72,7 +73,7 @@ class CodeProviderAPI(CommonAPI):
             url=f"{self.url}/computations/{computation_uuid}/code",
             timeout=None,
             headers={
-                "Authorization": f"Bearer {self.access_token()}",
+                "Authorization": f"Bearer {self.token.access_token}",
             },
         )
 

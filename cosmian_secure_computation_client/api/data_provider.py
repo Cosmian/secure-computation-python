@@ -7,13 +7,15 @@ import requests
 
 from cosmian_secure_computation_client.api.side import Side
 from cosmian_secure_computation_client.api.common import CommonAPI
+from cosmian_secure_computation_client.crypto.context import CryptoContext
 from cosmian_secure_computation_client.api.computations import Computation
 
 from cosmian_secure_computation_client.crypto.helper import encrypt
 
+
 class DataProviderAPI(CommonAPI):
-    def __init__(self, token: str) -> None:
-        super().__init__(Side.DataProvider, token)
+    def __init__(self, token: str, ctx: CryptoContext) -> None:
+        super().__init__(Side.DataProvider, token, ctx)
 
     def push_data(self, computation_uuid: str, symmetric_key: bytes, data_name: str, data: bytes) -> Computation:
         encrypted_data: bytes = encrypt(data, symmetric_key)
@@ -27,7 +29,7 @@ class DataProviderAPI(CommonAPI):
             },
             timeout=None,
             headers={
-                "Authorization": f"Bearer {self.access_token()}",
+                "Authorization": f"Bearer {self.token.access_token}",
             },
         )
 
@@ -37,7 +39,6 @@ class DataProviderAPI(CommonAPI):
             )
 
         return Computation.from_json_dict(resp.json())
-
 
     def push_files(self, computation_uuid: str, symmetric_key: bytes, paths: Iterable[Path]) -> Computation:
         for path in paths:
@@ -53,7 +54,7 @@ class DataProviderAPI(CommonAPI):
             url=f"{self.url}/computations/{computation_uuid}/data/done",
             timeout=None,
             headers={
-                "Authorization": f"Bearer {self.access_token()}",
+                "Authorization": f"Bearer {self.token.access_token}",
             },
         )
 
@@ -71,7 +72,7 @@ class DataProviderAPI(CommonAPI):
             url=f"{self.url}/computations/{computation_uuid}/data",
             timeout=None,
             headers={
-                "Authorization": f"Bearer {self.access_token()}",
+                "Authorization": f"Bearer {self.token.access_token}",
             },
         )
 

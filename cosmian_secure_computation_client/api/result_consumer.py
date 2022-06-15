@@ -6,17 +6,18 @@ import requests
 
 from cosmian_secure_computation_client.api.side import Side
 from cosmian_secure_computation_client.api.common import CommonAPI
+from cosmian_secure_computation_client.crypto.context import CryptoContext
 
 
 class ResultConsumerAPI(CommonAPI):
-    def __init__(self, token: str) -> None:
-        super().__init__(Side.ResultConsumer, token)
+    def __init__(self, token: str, ctx: CryptoContext) -> None:
+        super().__init__(Side.ResultConsumer, token, ctx)
 
     def fetch_results(self, computation_uuid: str) -> Optional[bytes]:
         resp: requests.Response = self.session.get(
             url=f"{self.url}/computations/{computation_uuid}/results",
             headers={
-                "Authorization": f"Bearer {self.access_token()}",
+                "Authorization": f"Bearer {self.token.access_token}",
             },
         )
 
