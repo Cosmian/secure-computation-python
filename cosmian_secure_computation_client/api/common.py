@@ -3,6 +3,7 @@
 import base64
 import os
 from typing import Optional, Dict, Any, List
+from uuid import UUID
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -94,11 +95,13 @@ class CommonAPI:
         return list(map(Computation.from_json_dict, resp.json()))
 
     def key_provisioning(self, computation_uuid: str, enclave_pubkey: bytes) -> Computation:
+        additional_data: bytes = UUID(computation_uuid).bytes
         resp: requests.Response = self.session.post(
             url=f"{self.url}/computations/{computation_uuid}/key/provisioning",
             json={
                 "role": str(self.side),
-                "sealed_symmetric_key": list(self.ctx.seal_symkey(enclave_pubkey)),
+                "sealed_symmetric_key": list(self.ctx.seal_symkey(additional_data,
+                                                                  enclave_pubkey)),
             },
             headers={
                 "Authorization": f"Bearer {self.token.access_token}",

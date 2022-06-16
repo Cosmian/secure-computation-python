@@ -79,9 +79,9 @@ class CryptoContext:
     def sign(self, data: bytes) -> bytes:
         return sign(data, self.ed25519_seed)
 
-    def seal_symkey(self, ed25519_recipient_pk: bytes) -> bytes:
+    def seal_symkey(self, additional_data: bytes, ed25519_recipient_pk: bytes) -> bytes:
         x25519_recipient_pk: bytes = ed25519_to_x25519_pubkey(ed25519_recipient_pk)
         seal_box: bytes = seal(self.preshared_sk + self._symkey, x25519_recipient_pk)
-        sig: bytes = self.sign(seal_box)
+        sig: bytes = self.sign(additional_data + seal_box)
 
         return sig + seal_box
