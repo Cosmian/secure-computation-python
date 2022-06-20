@@ -8,6 +8,7 @@ import os
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from importlib.metadata import version
 
 from cosmian_secure_computation_client.api.auth import Token
 from cosmian_secure_computation_client.api.side import Side
@@ -18,7 +19,11 @@ from cosmian_secure_computation_client.api.computations import Computation
 class ComputationOwnerAPI:
     def __init__(self, token: str) -> None:
         self.url: str = os.getenv('COSMIAN_BASE_URL', default="https://backend.cosmian.com")
+        
         self.session: requests.Session = requests.Session()
+        self.session.headers.update({
+            'user-agent': f"cscc-python/{version('cosmian_secure_computation_client')}",
+        })
         retry = Retry(
             total=5,
             read=5,
