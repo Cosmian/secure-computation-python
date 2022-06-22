@@ -80,6 +80,7 @@ class ResultConsumer:
 
 @dataclass(frozen=True)
 class EnclaveIdentity:
+    status: str
     public_key: bytes
     manifest: Optional[str]  # Some endpoints omit the manifest in the response for performance reasons, please call `get_computation()` to fetch it
     quote: str
@@ -91,12 +92,28 @@ class EnclaveIdentity:
         return construct_dataclass(EnclaveIdentity, json)
 
 @dataclass(frozen=True)
-class Enclave:
-    identity: Optional[EnclaveIdentity]
+class EnclaveIdentityLockError:
+    status: str
+    stdout: str
+    stderr: str
 
     @staticmethod
     def from_json_dict(json):
-        json['identity'] = None if json['identity'] is None else EnclaveIdentity.from_json_dict(json['identity'])
+        return construct_dataclass(EnclaveIdentityLockError, json)
+
+@dataclass(frozen=True)
+class Enclave:
+    identity: Optional[Union[EnclaveIdentity, EnclaveIdentityLockError]]
+
+    @staticmethod
+    def from_json_dict(json):
+        if json['identity'] is not None:
+            if json['identity']['status'] == "Locked":
+                json['identity'] = EnclaveIdentity.from_json_dict(json['identity'])
+            elif json['identity']['status'] == "Failed":
+                json['identity'] = EnclaveIdentityLockError.from_json_dict(json['identity'])
+            else:
+                raise ValueError(f"Invalid status {json['identity']['status']} for enclave identity ('Locked' or 'Failed' expected). Maybe update your client?")
 
         return construct_dataclass(Enclave, json)
 
