@@ -4,7 +4,10 @@ import hashlib
 from pathlib import Path
 import shutil
 from typing import Tuple, List
+from unicodedata import normalize
 
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import nacl.public
 import nacl.secret
 import nacl.signing
@@ -20,6 +23,8 @@ from nacl.bindings import (crypto_sign_keypair,
                            crypto_sign_ed25519_sk_to_curve25519,
                            crypto_sign_ed25519_pk_to_curve25519,
                            crypto_sign_SEEDBYTES)
+
+from cosmian_secure_computation_client.util.mnemonic import check_words
 
 ENC_EXT: str = ".enc"
 
@@ -465,3 +470,32 @@ def random_symkey() -> bytes:
 
     """
     return nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE)
+
+
+def derive_psk(words: Tuple[str, str, str]) -> bytes:
+    """Derive the pre-shared secret from BIP39 mnemonic.
+
+    Parameters
+    ----------
+    words: Tuple[str, str, str]
+        Triple of 3 words from BIP39 mnemonic.
+
+    Return
+    ------
+    bytes
+        32 bytes pre-shared secret.
+
+    """
+    if not check_words(words):
+        raise Exception("Words must be from BIP39 wordlists!")
+
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=b"csc",
+        iterations=390000,
+    )
+
+    return kdf.derive(
+        b"".join([normalize("NFKD", word).encode("utf-8") for word in words])
+    )
