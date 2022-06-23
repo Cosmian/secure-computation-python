@@ -487,7 +487,7 @@ def derive_psk(words: Tuple[str, str, str]) -> bytes:
 
     """
     if not check_words(words):
-        raise Exception("Words must be from BIP39 wordlists (french or english)")
+        raise Exception("Words must be from BIP39 wordlists!")
 
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
@@ -497,5 +497,5 @@ def derive_psk(words: Tuple[str, str, str]) -> bytes:
     )
 
     return kdf.derive(
-        b"".join([normalize("NFKD", word).encode("ascii", "ignore") for word in words])
+        b"".join([normalize("NFKD", word).encode("utf-8") for word in words])
     )
