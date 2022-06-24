@@ -3,6 +3,8 @@
 import secrets
 from typing import List, Tuple, cast
 
+# BIP39 mnemonic english wordlist from:
+# https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt
 BIP39_MNEMONIC: List[str] = [
     "abandon", "ability", "able", "about", "above", "absent", "absorb",
     "abstract", "absurd", "abuse", "access", "accident", "account", "accuse",
@@ -274,12 +276,14 @@ BIP39_MNEMONIC: List[str] = [
 
 
 def random_words() -> (str, str, str):
+    """Generate 3 random words from the BIP39 wordlist."""
     return (secrets.choice(BIP39_MNEMONIC),
             secrets.choice(BIP39_MNEMONIC),
             secrets.choice(BIP39_MNEMONIC))
 
 
 def check_words(words: Tuple[str, str, str]) -> bool:
+    """Check whether the 3 words belong to the BIP39 wordlist."""
     for word in words:  # type: str
         if word not in BIP39_MNEMONIC:
             return False
@@ -288,6 +292,7 @@ def check_words(words: Tuple[str, str, str]) -> bool:
 
 
 def parse_words(words: str) -> Tuple[str, str, str]:
+    """Split `words` and check that the 3 words belong to the BIP39 wordlist."""
     for sep in ("-", " "):  # type: str
         wordlist: Tuple[str, ...] = tuple(words.split(sep))
         if len(wordlist) == 3 and check_words(cast(Tuple[str, str, str], wordlist)):
