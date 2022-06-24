@@ -1,7 +1,7 @@
 """cosmian_secure_computation_client.util.mnemonic module."""
 
 import secrets
-from typing import List, Tuple
+from typing import List, Tuple, cast
 
 BIP39_MNEMONIC: List[str] = [
     "abandon", "ability", "able", "about", "above", "absent", "absorb",
@@ -280,8 +280,17 @@ def random_words() -> (str, str, str):
 
 
 def check_words(words: Tuple[str, str, str]) -> bool:
-    for word in words:
+    for word in words:  # type: str
         if word not in BIP39_MNEMONIC:
             return False
 
     return True
+
+
+def parse_words(words: str) -> Tuple[str, str, str]:
+    for sep in ("-", " "):  # type: str
+        wordlist: Tuple[str, ...] = tuple(words.split(sep))
+        if len(wordlist) == 3 and check_words(cast(Tuple[str, str, str], wordlist)):
+            return cast(Tuple[str, str, str], wordlist)
+
+    raise ValueError(f"can't parse the 3 words '{words}' (maybe check for typo?)")

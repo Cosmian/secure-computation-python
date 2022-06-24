@@ -1,7 +1,7 @@
 """cosmian_secure_computation_client.crypto.context module."""
 
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Union
 
 from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              ed25519_seed_keygen,
@@ -18,12 +18,12 @@ from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              pubkey_fingerprint,
                                                              seal,
                                                              sign)
-from cosmian_secure_computation_client.util.mnemonic import random_words
+from cosmian_secure_computation_client.util.mnemonic import parse_words
 
 
 class CryptoContext:
     def __init__(self,
-                 words: Optional[Tuple[str, str, str]] = None,
+                 words: Union[str, Tuple[str, str, str]],
                  ed25519_seed: Optional[bytes] = None,
                  symkey: Optional[bytes] = None) -> None:
         self.ed25519_pk, self.ed25519_seed, self.ed25519_sk = (
@@ -36,7 +36,8 @@ class CryptoContext:
         )  # type: bytes, bytes
         self.ed25519_fingerprint: bytes = pubkey_fingerprint(self.ed25519_pk)
         self._symkey: bytes = symkey if symkey else random_symkey()
-        self._words: Tuple[str, str, str] = words if words else random_words()
+        self._words: Tuple[str, str, str] = (parse_words(words)
+                                             if isinstance(words, str) else words)
         self.preshared_sk: bytes = derive_psk(self._words)
 
     @property
