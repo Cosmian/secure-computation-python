@@ -311,10 +311,7 @@ def step_7_result_consumers_get_results(cosmian_token, crypto_context, computati
             print("Waiting 2s end of computation…")
             time.sleep(2)
 
-    encrypted_results = result_consumer.fetch_results(computation.uuid)
-    results = result_consumer.ctx.decrypt(encrypted_results)
-
-    print(results)
+    print(result_consumer.fetch_results(computation.uuid))
 
 
 print("### step_1_create_computation")

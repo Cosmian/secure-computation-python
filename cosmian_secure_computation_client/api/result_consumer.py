@@ -1,6 +1,6 @@
 """cosmian_secure_computation_client.api.result_consumer module."""
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import requests
 
@@ -29,10 +29,13 @@ class ResultConsumerAPI(CommonAPI):
                 f"Unexpected response ({resp.status_code}): {resp.content}"
             )
 
+        result: bytes
         try:
             # The old version of the API could return a JSON response with the result hex encoded
             # it should never be the case for new computations.
             # This code should be remove in a few days when all the old computations are archived.
-            return bytes.fromhex(resp.json()["message"])
+            result = bytes.fromhex(resp.json()["message"])
         except requests.JSONDecodeError:
-            return resp.content
+            result = resp.content
+
+        return self.ctx.decrypt(result)
