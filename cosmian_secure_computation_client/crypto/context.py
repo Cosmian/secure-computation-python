@@ -5,7 +5,6 @@ from typing import Optional, List, Tuple, Union
 
 from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              ed25519_seed_keygen,
-                                                             ed25519_to_x25519_keypair,
                                                              ed25519_to_x25519_pubkey,
                                                              encrypt,
                                                              decrypt,
@@ -60,10 +59,6 @@ class CryptoContext:
             ed25519_keygen() if ed25519_seed is None else
             ed25519_seed_keygen(ed25519_seed)
         )  # type: bytes, bytes, bytes
-        self.x25519_pk, self.x25519_sk = ed25519_to_x25519_keypair(
-            self.ed25519_pk,
-            self.ed25519_seed
-        )  # type: bytes, bytes
         self.ed25519_fingerprint: bytes = pubkey_fingerprint(self.ed25519_pk)
         self._symkey: bytes = symkey if symkey else random_symkey()
         self._words: Tuple[str, str, str] = (parse_words(words)
