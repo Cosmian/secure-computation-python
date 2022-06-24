@@ -14,6 +14,7 @@ from cosmian_secure_computation_client.api.auth import Token
 from cosmian_secure_computation_client.api.side import Side
 from cosmian_secure_computation_client.api.common import CommonAPI
 from cosmian_secure_computation_client.api.computations import Computation
+from cosmian_secure_computation_client.util.mnemonic import random_words
 
 
 class ComputationOwnerAPI:
@@ -38,6 +39,10 @@ class ComputationOwnerAPI:
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
         self.token = Token(self.session, self.url, token)
+
+    @staticmethod
+    def random_words() -> Tuple[str, str, str]:
+        return random_words()
 
     def create_computation(self, name: str, code_provider_email: str, data_providers_emails: List[str], result_consumers_emails: List[str]) -> Computation:
         resp: requests.Response = self.session.post(
