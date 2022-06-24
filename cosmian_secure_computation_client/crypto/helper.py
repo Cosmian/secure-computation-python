@@ -115,7 +115,7 @@ def ed25519_seed_keygen(seed: bytes) -> Tuple[bytes, bytes, bytes]:
         ).digest()[:crypto_scalarmult_ed25519_SCALARBYTES]
     )
 
-    # see https://github.com/jedisct1/libsodium/blob/1.0.18/src/libsodium/crypto_sign/ed25519/ref10/keypair.c#L19
+    # see: src/libsodium/crypto_sign/ed25519/ref10/keypair.c#L19
     private_key[0] &= 248
     private_key[31] &= 127
     private_key[31] |= 64
@@ -244,8 +244,11 @@ def encrypt_file(path: Path, key: bytes) -> Path:
     return out_path
 
 
-def encrypt_directory(dir_path: Path, patterns: List[str], key: bytes,
-                      exceptions: List[str], dir_exceptions: List[str],
+def encrypt_directory(dir_path: Path,
+                      patterns: List[str],
+                      key: bytes,
+                      exceptions: List[str],
+                      dir_exceptions: List[str],
                       out_dir_path: Path) -> bool:
     """Encrypt the content of directory `dir_path` using XSalsa20-Poly1305.
 
@@ -473,17 +476,17 @@ def random_symkey() -> bytes:
 
 
 def derive_psk(words: Tuple[str, str, str]) -> bytes:
-    """Derive the pre-shared secret from BIP39 mnemonic.
+    """Derive the pre-shared secret from BIP39 mnemonic wordlist.
 
     Parameters
     ----------
     words: Tuple[str, str, str]
-        Triple of 3 words from BIP39 mnemonic.
+        Triple of 3 words from BIP39 mnemonic wordlist.
 
     Return
     ------
     bytes
-        32 bytes pre-shared secret.
+        32 bytes pre-shared key.
 
     """
     if not check_words(words):
