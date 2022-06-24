@@ -38,6 +38,14 @@ def step_1_create_computation():
     )
 
     """
+    Then generate three random words. They are you shared secret with all participants.
+    Cosmian will never ask for it.
+    Send them to your participants by mail, phone or any other mean.
+    """
+    from cosmian_secure_computation_client.util.mnemonic import random_words
+    words = random_words()
+
+    """
     If you put emails of persons outside Cosmian, they will need to create an account 
     with the exact same email to join the computation.
     """
@@ -52,48 +60,14 @@ def step_1_create_computation():
             print(f"Result Consumer {result_consumer.email} does not have a Cosmian account. Please invite him to create an account.")
     
 
-    return computation
+    return computation, words
 
-def step_1_create_computation_seed():
-    """
-    Fetch your Cosmian token from the web console: https://console.cosmian.com/secret-token
-    Store your token inside env variable, file, whatever suit's your security needs.
-    For the example, we'll fetch the token from an env variable.
-    """
-    cosmian_token = environ.get('COSMIAN_TOKEN')
-
-    """
-    To create your first computation, create the ComputationOwnerAPI object with your secret token.
-    """
-    from cosmian_secure_computation_client import ComputationOwnerAPI
-    computation_owner = ComputationOwnerAPI(cosmian_token)
-
-    """
-    To create a computation, you need to pass :
-    - the name of the computation
-    - the list of participants and their associated roles
-    """
-    
-    """
-    Create your computation :
-    You will be the Computation Owner of this computation.
-    """
-    computation = computation_owner.create_computation(
-        'computation name',
-        code_provider_email=environ.get('SEED_EMAIL'),
-        data_providers_emails=[environ.get('SEED_EMAIL')],
-        result_consumers_emails=[environ.get('SEED_EMAIL')]
-    )
-
-    return computation
-
-
-def step_2_code_provider_registers(cosmian_token, computation_uuid):
+def step_2_code_provider_registers(cosmian_token, computation_uuid, words):
     """
     You need to create the CodeProvider object to register as a code provider.
     """
     from cosmian_secure_computation_client import CodeProviderAPI
-    crypto_context = CryptoContext()
+    crypto_context = CryptoContext(words=words)
     code_provider = CodeProviderAPI(cosmian_token, crypto_context)
 
     """
@@ -105,12 +79,12 @@ def step_2_code_provider_registers(cosmian_token, computation_uuid):
 
     return crypto_context
 
-def step_2_data_providers_register(cosmian_token, computation_uuid):
+def step_2_data_providers_register(cosmian_token, computation_uuid, words):
     """
     You need to create the DataProvider object to register as a data provider.
     """
     from cosmian_secure_computation_client import DataProviderAPI
-    crypto_context = CryptoContext()
+    crypto_context = CryptoContext(words=words)
     data_provider = DataProviderAPI(cosmian_token, crypto_context)
 
     """
@@ -122,12 +96,12 @@ def step_2_data_providers_register(cosmian_token, computation_uuid):
 
     return crypto_context
 
-def step_2_result_consumers_register(cosmian_token, computation_uuid):
+def step_2_result_consumers_register(cosmian_token, computation_uuid, words):
     """
     You need to create the ResultConsumer object to register as a result consumer.
     """
     from cosmian_secure_computation_client import ResultConsumerAPI
-    crypto_context = CryptoContext()
+    crypto_context = CryptoContext(words=words)
     result_consumer = ResultConsumerAPI(cosmian_token, crypto_context)
 
     """
@@ -150,7 +124,7 @@ def step_3_code_provider_sends_code(cosmian_token, crypto_context, computation_u
 
     code_provider.upload(computation_uuid, path)
 
-def step_5_code_provider_sends_sealed_symmetric_key(cosmian_token, crypto_context, computation_uuid):
+def step_4_code_provider_sends_sealed_symmetric_key(cosmian_token, crypto_context, computation_uuid):
     """
     You need to check that the computation is correct :
     > You can fetch computation's status and read the enclave manifest.
@@ -186,7 +160,7 @@ def step_5_code_provider_sends_sealed_symmetric_key(cosmian_token, crypto_contex
     """
     code_provider.key_provisioning(computation.uuid, computation.enclave.identity.public_key)
 
-def step_6_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, crypto_context, computation_uuid, path_1, path_2):
+def step_5_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, crypto_context, computation_uuid, path_1, path_2):
     """
     You need to check that the computation is correct :
     > You can fetch computation's status and read the enclave manifest.
@@ -233,7 +207,7 @@ def step_6_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, cry
     data_provider.key_provisioning(computation_uuid, computation.enclave.identity.public_key)
 
 
-def step_7_result_consumers_send_sealed_symmetric_keys(cosmian_token, crypto_context, computation_uuid):
+def step_6_result_consumers_send_sealed_symmetric_keys(cosmian_token, crypto_context, computation_uuid):
     """
     You need to check that the computation is correct :
     > You can fetch computation's status and read the enclave manifest.
@@ -271,7 +245,7 @@ def step_7_result_consumers_send_sealed_symmetric_keys(cosmian_token, crypto_con
     result_consumer.key_provisioning(computation.uuid, computation.enclave.identity.public_key)
 
 
-def step_8_result_consumers_get_results(cosmian_token, crypto_context, computation_uuid):
+def step_7_result_consumers_get_results(cosmian_token, crypto_context, computation_uuid):
     """
     When the computation is over, you can fetch results.
     """
@@ -343,66 +317,38 @@ def step_8_result_consumers_get_results(cosmian_token, crypto_context, computati
     print(results)
 
 
-def run(until = 12):
-    print("### step_1_create_computation")
-    computation = step_1_create_computation() if environ.get('SEED_EMAIL') is None else step_1_create_computation_seed()
+print("### step_1_create_computation")
+computation, words = step_1_create_computation()
 
-    pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(computation)
+pp = pprint.PrettyPrinter(indent=2)
+pp.pprint(computation)
 
-    if until < 2: return
+print("Sleeping on Docker creation…")
+time.sleep(5)
 
-    print("Sleeping on Docker creation…")
-    time.sleep(5)
+print("Continuing…")
+cosmian_token = environ.get('COSMIAN_TOKEN')
 
-    print("Continuing…")
-    cosmian_token = environ.get('COSMIAN_TOKEN')
+print("### step_2_code_provider_registers")
+code_provider_crypto_context = step_2_code_provider_registers(cosmian_token, computation.uuid, words)
 
-    print("### step_2_code_provider_registers")
-    code_provider_crypto_context = step_2_code_provider_registers(cosmian_token, computation.uuid)
+print("### step_2_data_providers_register")
+data_provider_crypto_context = step_2_data_providers_register(cosmian_token, computation.uuid, words)
 
-    if until < 3: return
+print("### step_2_result_consumers_register")
+result_consumer_crypto_context = step_2_result_consumers_register(cosmian_token, computation.uuid, words)
 
-    print("### step_2_data_providers_register")
-    data_provider_crypto_context = step_2_data_providers_register(cosmian_token, computation.uuid)
-    
-    if until < 4: return
+print("### step_3_code_provider_sends_code")
+step_3_code_provider_sends_code(cosmian_token, code_provider_crypto_context, computation.uuid, Path(os.path.dirname(__file__) + "/../tests/data/cp/enclave-join"))
 
-    print("### step_2_result_consumers_register")
-    result_consumer_crypto_context = step_2_result_consumers_register(cosmian_token, computation.uuid)
-    
-    if until < 5: return
+print("### step_4_code_provider_sends_sealed_symmetric_key")
+step_4_code_provider_sends_sealed_symmetric_key(cosmian_token, code_provider_crypto_context, computation.uuid)
 
-    print("### step_3_code_provider_sends_code")
-    step_3_code_provider_sends_code(cosmian_token, code_provider_crypto_context, computation.uuid, Path(os.path.dirname(__file__) + "/../tests/data/cp/enclave-join"))
-    
-    if until < 6: return
+print("### step_5_data_providers_send_data_and_sealed_symmetric_keys")
+step_5_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, data_provider_crypto_context, computation.uuid, Path(os.path.dirname(__file__) + "/../tests/data/dp1/A.csv"), Path(os.path.dirname(__file__) + "/../tests/data/dp2/B.csv"))
 
-    if until < 7: return
+print("### step_6_result_consumers_send_sealed_symmetric_keys")
+step_6_result_consumers_send_sealed_symmetric_keys(cosmian_token, result_consumer_crypto_context, computation.uuid)
 
-    print("### step_5_code_provider_sends_sealed_symmetric_key")
-    step_5_code_provider_sends_sealed_symmetric_key(cosmian_token, code_provider_crypto_context, computation.uuid)
-    
-    if until < 8: return
-
-    print("### step_6_data_providers_send_data_and_sealed_symmetric_keys")
-    step_6_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token, data_provider_crypto_context, computation.uuid, Path(os.path.dirname(__file__) + "/../tests/data/dp1/A.csv"), Path(os.path.dirname(__file__) + "/../tests/data/dp2/B.csv"))
-    
-    if until < 9: return
-
-    print("### step_7_result_consumers_send_sealed_symmetric_keys")
-    step_7_result_consumers_send_sealed_symmetric_keys(cosmian_token, result_consumer_crypto_context, computation.uuid)
-
-    if until < 10: return
-
-    print("### step_8_result_consumers_get_results")
-    step_8_result_consumers_get_results(cosmian_token, result_consumer_crypto_context, computation.uuid)
-
-
-def run_all():
-    print(f"Seeding for {environ.get('SEED_EMAIL')}…\n\n")
-    for i in range(1,11):
-        print(f"\n\n###### Running until {i} ######\n")
-        run(i)
-
-run(10) if environ.get('SEED_EMAIL') is None else run_all()
+print("### step_7_result_consumers_get_results")
+step_7_result_consumers_get_results(cosmian_token, result_consumer_crypto_context, computation.uuid)
