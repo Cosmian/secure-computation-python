@@ -1,4 +1,8 @@
+image: python:3.8-slim
+
 stages:
+  - lint
+  - build
   - test
 
 test_e2e_dev:
@@ -23,3 +27,78 @@ test_e2e_prod:
   tags: [sgx]
   script:
     - secure_computation_e2e
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+code_style:
+  stage: lint
+  before_script:
+    - python --version
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
+    - pip install .
+  script:
+    - pycodestyle cosmian_secure_computation_client/
+
+doc_style:
+  stage: lint
+  before_script:
+    - python --version
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
+    - pip install .
+  script:
+    - pycodestyle cosmian_secure_computation_client/
+
+static_analysis:
+  stage: lint
+  before_script:
+    - python --version
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
+    - pip install .
+  script:
+    - pylint --rcfile=setup.cfg cosmian_secure_computation_client/
+
+type_check:
+  stage: lint
+  before_script:
+    - python --version
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
+    - pip install .
+  script:
+    - mypy cosmian_secure_computation_client/
+  allow_failure: true
+
+build_wheel:
+  stage: build
+  before_script:
+    - python --version
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+  script:
+    - python setup.py bdist_wheel
+  artifacts:
+    paths:
+      - dist/*.whl
