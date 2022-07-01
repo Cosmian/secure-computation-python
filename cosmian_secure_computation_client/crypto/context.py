@@ -50,6 +50,7 @@ class CryptoContext:
         Pre-shared key derived from the pre-shared secret.
 
     """
+
     def __init__(self,
                  words: Union[str, Tuple[str, str, str]],
                  ed25519_seed: Optional[bytes] = None,

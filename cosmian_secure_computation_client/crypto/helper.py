@@ -30,7 +30,7 @@ ENC_EXT: str = ".enc"
 
 
 def pubkey_fingerprint(public_key: bytes) -> bytes:
-    """Custom public key fingerprint.
+    """Compute custom public key fingerprint.
 
     Parameters
     ----------

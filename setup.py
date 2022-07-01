@@ -21,7 +21,8 @@ setup(
         "requests>=2.27.0,<3.0.0",
         "pynacl>=1.5.0,<1.6.0",
         "cryptography>=36.0.2,<37.0.0",
-        "pyjwt>=2.3.0,<2.4.0"
+        "pyjwt>=2.3.0,<2.4.0",
+        "urllib3>=1.26.9,<1.27.0"
     ],
     test_requires=[
         "pytest>=7.0.1,<8.0.0"

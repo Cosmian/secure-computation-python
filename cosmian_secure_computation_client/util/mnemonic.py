@@ -275,7 +275,7 @@ BIP39_MNEMONIC: List[str] = [
 ]
 
 
-def random_words() -> (str, str, str):
+def random_words() -> Tuple[str, str, str]:
     """Generate 3 random words from the BIP39 wordlist."""
     return (secrets.choice(BIP39_MNEMONIC),
             secrets.choice(BIP39_MNEMONIC),
