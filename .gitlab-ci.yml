@@ -89,16 +89,26 @@ type_check:
     - mypy cosmian_secure_computation_client/
   allow_failure: true
 
-build_wheel:
+release_wheel:
   stage: build
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+.\d+/'
   before_script:
     - python --version
     - pip install virtualenv
     - virtualenv venv
     - source venv/bin/activate
     - pip install -r requirements.txt
+    - pip install build twine
   script:
-    - python setup.py bdist_wheel
+    - |
+      if [ "$(python setup.py --version)" == "$CI_COMMIT_TAG" ]
+      then
+          python -m build --wheel && twine upload -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" dist/*
+      else
+          echo "Git tag version should be the same as in setup.py!"
+          exit 1
+      fi
   artifacts:
     paths:
       - dist/*.whl
