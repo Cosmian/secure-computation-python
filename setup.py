@@ -24,7 +24,7 @@ setup(
         "pyjwt>=2.3.0,<2.4.0",
         "urllib3>=1.26.9,<1.27.0"
     ],
-    test_requires=[
+    tests_require=[
         "pytest>=7.0.1,<8.0.0"
     ],
     classifiers=[
