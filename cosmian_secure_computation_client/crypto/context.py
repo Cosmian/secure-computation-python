@@ -94,8 +94,8 @@ class CryptoContext:
         data : bytes
             Data to be encrypted.
 
-        Return
-        ------
+        Returns
+        -------
         bytes
             Ciphertext of `data` encrypted using `self._symkey`.
 
@@ -110,8 +110,8 @@ class CryptoContext:
         path : Path
             Path to the data to be encrypted.
 
-        Return
-        ------
+        Returns
+        -------
         Path
             Path to the encrypted file `path` with `self._symkey`.
 
@@ -139,8 +139,8 @@ class CryptoContext:
         out_dir_path: Path
             Output directory path.
 
-        Return
-        ------
+        Returns
+        -------
         bool
             True if success, raise an exception otherwise.
 
@@ -160,8 +160,8 @@ class CryptoContext:
         encrypted_data : bytes
             Encrypted data to be decrypted.
 
-        Return
-        ------
+        Returns
+        -------
         bytes
             Cleartext of `encrypted_data` decrypted using `self._symkey`.
 
@@ -176,8 +176,8 @@ class CryptoContext:
         path : Path
             Path to the data to be decrypted.
 
-        Return
-        ------
+        Returns
+        -------
         Path
             Path to the decrypted file `path` with `self._symkey`.
 
@@ -192,28 +192,28 @@ class CryptoContext:
         dir_path : Path
             Path to the directory to be decrypted.
 
-        Return
-        ------
+        Returns
+        -------
         bool
             True if success, raise an exception otherwise.
 
-        Note
-        ----
+        Notes
+        -----
         It looks for files with extension ENC_EXT.
 
         """
         return decrypt_directory(dir_path, self._symkey)
 
     def sign(self, data: bytes) -> bytes:
-        """Sign `data` with `self.ed25519_seed`..
+        """Sign `data` with `self.ed25519_seed`.
 
         Parameters
         ----------
         data : bytes
             Data to be signed.
 
-        Return
-        ------
+        Returns
+        -------
         bytes
             64 bytes Ed25519 signature.
 
@@ -221,10 +221,7 @@ class CryptoContext:
         return sign(data, self.ed25519_seed)
 
     def seal_symkey(self, additional_data: bytes, ed25519_recipient_pk: bytes) -> bytes:
-        """Seal your symmetric key and sign.
-
-        sig = Sign(additional_data || seal_box, self.ed25519_seed) (64)
-        seal_box = SealBox(self.preshared_sk || self._symkey, x25519_recipient_pk) (112)
+        """Seal your symmetric key and sign the box.
 
         Parameters
         ----------
@@ -242,15 +239,19 @@ class CryptoContext:
         Notes
         -----
         Use seal box of libsodium (X25519 and XSalsa20-Poly1305) by converting the
-        Ed25519 public key into X25519 public key first:
+        Ed25519 public key into X25519 public key first::
+
             ephemeral_pk ‖ box(m,
                                recipient_pk,
                                ephemeral_sk,
-                               nonce=blake2b(ephemeral_pk ‖ x25519_recipient_pk))
+                               nonce=blake2b(ephemeral_pk ‖ x25519_recipient_pk)))
 
         """
         x25519_recipient_pk: bytes = ed25519_to_x25519_pubkey(ed25519_recipient_pk)
+        # seal_box = SealBox(self.preshared_sk || self._symkey,
+        #                    x25519_recipient_pk) (112)
         seal_box: bytes = seal(self.preshared_sk + self._symkey, x25519_recipient_pk)
+        # sig = Sign(additional_data || seal_box, self.ed25519_seed) (64)
         sig: bytes = self.sign(additional_data + seal_box)
 
         return sig + seal_box

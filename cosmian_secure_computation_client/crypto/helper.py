@@ -37,8 +37,8 @@ def pubkey_fingerprint(public_key: bytes) -> bytes:
     public_key: bytes
         Bytes of the public key.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         Least significant 8 bytes of SHA3-256(public_key).
 
@@ -49,8 +49,8 @@ def pubkey_fingerprint(public_key: bytes) -> bytes:
 def x25519_keypair() -> Tuple[bytes, bytes]:
     """Keygen for X25519 (DH using Curve25519 in Montgomery form).
 
-    Return
-    ------
+    Returns
+    -------
     Tuple[bytes, bytes]
         Keypair (public_key, private_key).
 
@@ -69,8 +69,8 @@ def x25519_pubkey_from_privkey(private_key: bytes) -> bytes:
     private_key: bytes
         Bytes of the X25519 private key.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         Bytes of the X25519 public key corresponding to `private_key`.
 
@@ -81,8 +81,8 @@ def x25519_pubkey_from_privkey(private_key: bytes) -> bytes:
 def ed25519_keygen() -> Tuple[bytes, bytes, bytes]:
     """Keygen for Ed25519 (signature system using the twisted Edwards curve).
 
-    Return
-    ------
+    Returns
+    -------
     Tuple[bytes, bytes, bytes]
         Triple (public_key, seed, private_key).
 
@@ -99,8 +99,8 @@ def ed25519_keygen() -> Tuple[bytes, bytes, bytes]:
 def ed25519_seed_keygen(seed: bytes) -> Tuple[bytes, bytes, bytes]:
     """Seeded keygen for Ed25519 (signature system using the twisted Edwards curve).
 
-    Return
-    ------
+    Returns
+    -------
     Tuple[bytes, bytes, bytes]
         Triple (public_key, seed, private_key).
 
@@ -131,8 +131,8 @@ def ed25519_pubkey_from_privkey(private_key: bytes) -> bytes:
     private_key: bytes
         Bytes of the Ed25519 private key.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         Bytes of the Ed25519 public key corresponding to `private_key`.
 
@@ -150,8 +150,8 @@ def ed25519_to_x25519_keypair(public_key: bytes, seed: bytes) -> Tuple[bytes, by
     seed : bytes
         Bytes of the Ed25519 seed.
 
-    Return
-    ------
+    Returns
+    -------
     Tuple[bytes, bytes]
         Keypair for X25519
 
@@ -170,8 +170,8 @@ def ed25519_to_x25519_pubkey(public_key: bytes) -> bytes:
     public_key: bytes
         Bytes of the Ed25519 public key.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         Public key for X25519.
 
@@ -189,8 +189,8 @@ def x25519(private_key: bytes, public_key: bytes) -> bytes:
     public_key: bytes
         Bytes of the point on the Curve25519.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         Point on the Curve25519 to be used as shared secret.
 
@@ -208,8 +208,8 @@ def encrypt(data: bytes, key: bytes) -> bytes:
     key : bytes
         Symmetric key used for encryption.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         Ciphertext of `data` using `key`.
 
@@ -229,8 +229,8 @@ def encrypt_file(path: Path, key: bytes) -> Path:
     key : bytes
         Symmetric key used for encryption.
 
-    Return
-    ------
+    Returns
+    -------
     Path
         Path to the encrypted file `path`.
 
@@ -267,8 +267,8 @@ def encrypt_directory(dir_path: Path,
     out_dir_path: Path
         Output directory path.
 
-    Return
-    ------
+    Returns
+    -------
     bool
         True if success, raise an exception otherwise.
 
@@ -301,8 +301,8 @@ def decrypt(encrypted_data: bytes, key: bytes) -> bytes:
     key : bytes
         Symmetric key used for encryption.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         Cleartext of `encrypted_data`.
 
@@ -322,8 +322,8 @@ def decrypt_file(path: Path, key: bytes) -> Path:
     key : bytes
         Symmetric key used for decryption.
 
-    Return
-    ------
+    Returns
+    -------
     Path
         Path to the decrypted file `path`.
 
@@ -347,13 +347,13 @@ def decrypt_directory(dir_path: Path, key: bytes) -> bool:
     key : bytes
         Symmetric key used for decryption.
 
-    Return
-    ------
+    Returns
+    -------
     bool
         True if success, raise an exception otherwise.
 
-    Note
-    ----
+    Notes
+    -----
     It looks for files with extension ENC_EXT.
 
     """
@@ -429,8 +429,8 @@ def sign(data: bytes, private_key: bytes) -> bytes:
     private_key : bytes
         Private key used to sign data.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         64 bytes Ed25519 signature.
 
@@ -452,8 +452,8 @@ def verify(data: bytes, sig: bytes, public_key: bytes) -> bytes:
     public_key : bytes
         Public key used to verify the signature.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         Original bytes of the message if the verification succeeded.
 
@@ -466,8 +466,8 @@ def verify(data: bytes, sig: bytes, public_key: bytes) -> bytes:
 def random_symkey() -> bytes:
     """Generate a random symmetric key for XSalsa20-Poly1305.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         32 bytes random symmetric key.
 
@@ -483,8 +483,8 @@ def derive_psk(words: Tuple[str, str, str]) -> bytes:
     words: Tuple[str, str, str]
         Triple of 3 words from BIP39 mnemonic wordlist.
 
-    Return
-    ------
+    Returns
+    -------
     bytes
         32 bytes pre-shared key.
 

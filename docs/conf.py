@@ -17,10 +17,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Cosmian Secure Computation'
-copyright = '2022, Cosmian'
+project = 'Cosmian Secure Computation Client'
+project_copyright = '2022, Cosmian Tech'
 author = 'Cosmian'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -29,18 +28,24 @@ author = 'Cosmian'
 # ones.
 extensions = [
     'sphinx.ext.doctest',
-    'sphinx.ext.autodoc',
-    'sphinx_rtd_theme'
+    'numpydoc',
+    'sphinx_mdinclude',
+    'sphinx_rtd_theme',
 ]
 
+numpydoc_show_class_members = False
+
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+# templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+python_use_unqualified_type_names = True
+add_module_names = False
+autodoc_typehints_format = 'short'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -48,8 +53,3 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
