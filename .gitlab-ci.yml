@@ -5,29 +5,6 @@ stages:
   - build
   - test
 
-test_e2e_dev:
-  image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
-  stage: test
-  variables:
-    BACKEND_BRANCH: develop
-    ENCLAVE_IMAGE: enclave-http_test:latest
-    PYTHON_CLIENT_BRANCH: $CI_COMMIT_REF_NAME
-  tags: [sgx]
-  script:
-    - secure_computation_e2e
-
-test_e2e_prod:
-  image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
-  stage: test
-  allow_failure: true
-  variables:
-    BACKEND_BRANCH: main
-    ENCLAVE_IMAGE: enclave-http:latest
-    PYTHON_CLIENT_BRANCH: $CI_COMMIT_REF_NAME
-  tags: [sgx]
-  script:
-    - secure_computation_e2e
-
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
@@ -89,6 +66,17 @@ type_check:
     - mypy cosmian_secure_computation_client/
   allow_failure: true
 
+doc:
+  stage: build
+  before_script:
+    - python --version
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements-dev.txt
+  script:
+    - sphinx-build docs docs/_build -E -a -W
+
 release_wheel:
   stage: build
   rules:
@@ -112,3 +100,26 @@ release_wheel:
   artifacts:
     paths:
       - dist/*.whl
+
+test_e2e_dev:
+  image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
+  stage: test
+  variables:
+    BACKEND_BRANCH: develop
+    ENCLAVE_IMAGE: enclave-http_test:latest
+    PYTHON_CLIENT_BRANCH: $CI_COMMIT_REF_NAME
+  tags: [sgx]
+  script:
+    - secure_computation_e2e
+
+test_e2e_prod:
+  image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
+  stage: test
+  allow_failure: true
+  variables:
+    BACKEND_BRANCH: main
+    ENCLAVE_IMAGE: enclave-http:latest
+    PYTHON_CLIENT_BRANCH: $CI_COMMIT_REF_NAME
+  tags: [sgx]
+  script:
+    - secure_computation_e2e
