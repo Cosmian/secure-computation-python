@@ -13,6 +13,16 @@ cache:
     - .cache/pip
     - venv/
 
+workflow:
+  rules:
+    # Run pipeline MR
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    # Remove pipeline branch if MR open
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    # Run pipeline branch
+    - if: $CI_COMMIT_BRANCH
+
 code_style:
   stage: lint
   before_script:
@@ -105,8 +115,13 @@ test_e2e_dev:
   image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
   stage: test
   rules:
-    - if: $CI_COMMIT_BRANCH == 'master' || $CI_PIPELINE_SOURCE == 'merge_request_event'
+    # Don't run on branch master
+    - if: $CI_COMMIT_BRANCH == 'master'
       when: never
+    # Don't run on MR targeting master
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == 'master'
+      when: never
+    # Otherwise, run
     - when: always
   variables:
     BACKEND_BRANCH: develop
@@ -120,7 +135,12 @@ test_e2e_prod:
   image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
   stage: test
   rules:
-    - if: $CI_COMMIT_BRANCH == 'master' || $CI_PIPELINE_SOURCE == 'merge_request_event'
+    # Run on MR targeting master
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == 'master'
+      allow_failure: false
+    # Manual on other MR
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != 'master'
+      when: manual
       allow_failure: true
   variables:
     BACKEND_BRANCH: main
