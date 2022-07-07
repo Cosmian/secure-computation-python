@@ -105,7 +105,9 @@ test_e2e_dev:
   image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
   stage: test
   rules:
-    - if: $CI_COMMIT_BRANCH != 'master'
+    - if: $CI_COMMIT_BRANCH == 'master' || $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: never
+    - when: always
   variables:
     BACKEND_BRANCH: develop
     ENCLAVE_IMAGE: enclave-http_test:latest
