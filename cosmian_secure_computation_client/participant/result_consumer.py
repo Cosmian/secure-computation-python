@@ -1,6 +1,7 @@
 """cosmian_secure_computation_client.participant.result_consumer module."""
 
-from typing import Optional
+import time
+from typing import Optional, cast
 
 import requests
 
@@ -47,3 +48,19 @@ class ResultConsumerAPI(BaseAPI):
             result = r.content
 
         return self.ctx.decrypt(result)
+
+    def wait_result(self,
+                    computation_uuid: str,
+                    sleep_duration: int = 30) -> bytes:
+        """Wait for the result to be available and fetch it."""
+        while True:
+            comp = self.get_computation(computation_uuid)
+
+            if comp.runs.current is None and len(comp.runs.previous) == 1:
+                run = comp.runs.previous[0]
+                if run.exit_code != 0:
+                    raise Exception("Execution failed: "
+                                    f"{(run.exit_code, run.stdout, run.stderr)}")
+                return cast(bytes, self.fetch_result(computation_uuid))
+
+            time.sleep(sleep_duration)
