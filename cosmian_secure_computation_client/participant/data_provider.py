@@ -33,12 +33,15 @@ class DataProviderAPI(BaseAPI):
                     data_name: str,
                     data: bytes) -> None:
         """Upload encrypted data on `computation_uuid`."""
+        encrypted_data_name: str = f"{data_name}.enc"
+        self.log.debug("Encrypting data '%s' to '%s'...", data_name, encrypted_data_name)
         r: requests.Response = upload_data(
             conn=self.conn,
             computation_uuid=computation_uuid,
-            name=f"{data_name}.enc",
+            name=encrypted_data_name,
             data=self.ctx.encrypt(data)
         )
+        self.log.info("Encrypted data '%s' sent", encrypted_data_name)
 
         if not r.ok:
             raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
@@ -58,6 +61,8 @@ class DataProviderAPI(BaseAPI):
             computation_uuid=computation_uuid
         )
 
+        self.log.info("Sending data done")
+
         if not r.ok:
             raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
 
@@ -65,6 +70,7 @@ class DataProviderAPI(BaseAPI):
 
     def reset(self, computation_uuid: str) -> Computation:
         """Remove all data sent for a specific `computation_uuid`."""
+        self.log.info("Reset data sent")
         r: requests.Response = reset_data(
             conn=self.conn,
             computation_uuid=computation_uuid
