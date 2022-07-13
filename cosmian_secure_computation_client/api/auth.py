@@ -106,25 +106,25 @@ class Connection(Session):
         self.auth.access_token = get_access_token(self.base_url, self.refresh_token)
 
     @AccessToken.auto_refresh
-    def get(self, url: str, **kwargs):
+    def get(self, url: str, **kwargs) -> Response:
         """Override method of `Session`."""
         kwargs.setdefault("allow_redirects", True)
         return self.request("GET", f"{self.base_url}{url}", auth=self.auth, **kwargs)
 
     @AccessToken.auto_refresh
-    def options(self, url: str, **kwargs):
+    def options(self, url: str, **kwargs) -> Response:
         """Override method of `Session`."""
         kwargs.setdefault("allow_redirects", True)
         return self.request("OPTIONS", f"{self.base_url}{url}", auth=self.auth, **kwargs)
 
     @AccessToken.auto_refresh
-    def head(self, url: str, **kwargs):
+    def head(self, url: str, **kwargs) -> Response:
         """Override method of `Session`."""
         kwargs.setdefault("allow_redirects", False)
         return self.request("HEAD", f"{self.base_url}{url}", auth=self.auth, **kwargs)
 
     @AccessToken.auto_refresh
-    def post(self, url: str, data=None, json=None, **kwargs):
+    def post(self, url: str, data=None, json=None, **kwargs) -> Response:
         """Override method of `Session`."""
         return self.request(
             "POST",
@@ -136,7 +136,7 @@ class Connection(Session):
         )
 
     @AccessToken.auto_refresh
-    def put(self, url: str, data=None, **kwargs):
+    def put(self, url: str, data=None, **kwargs) -> Response:
         """Override method of `Session`."""
         return self.request(
             "PUT",
@@ -147,7 +147,7 @@ class Connection(Session):
         )
 
     @AccessToken.auto_refresh
-    def patch(self, url: str, data=None, **kwargs):
+    def patch(self, url: str, data=None, **kwargs) -> Response:
         """Override method of `Session`."""
         return self.request(
             "PATCH",
@@ -158,7 +158,7 @@ class Connection(Session):
         )
 
     @AccessToken.auto_refresh
-    def delete(self, url: str, **kwargs):
+    def delete(self, url: str, **kwargs) -> Response:
         """Override method of `Session`."""
         return self.request("DELETE", f"{self.base_url}{url}", auth=self.auth, **kwargs)
 

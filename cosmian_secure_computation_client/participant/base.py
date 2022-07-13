@@ -1,6 +1,7 @@
 """cosmian_secure_computation_client.participant.common module."""
 
 import os
+import time
 from typing import List
 from uuid import UUID
 
@@ -13,7 +14,7 @@ from cosmian_secure_computation_client.api.provider import (register,
                                                             computation,
                                                             key_provisioning)
 from cosmian_secure_computation_client.crypto.context import CryptoContext
-from cosmian_secure_computation_client.computations import Computation
+from cosmian_secure_computation_client.computations import Computation, EnclaveIdentity
 from cosmian_secure_computation_client.side import Side
 
 
@@ -106,3 +107,21 @@ class BaseAPI:
             raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
 
         return Computation.from_json_dict(r.json())
+
+    def wait_for_enclave_identity(self,
+                                  computation_uuid: str,
+                                  sleep_duration: int = 10) -> bytes:
+        """Wait for enclave's public key to be available."""
+        comp = self.get_computation(computation_uuid)
+
+        while comp.enclave.identity is None:
+            time.sleep(float(sleep_duration))
+            comp = self.get_computation(computation_uuid)
+
+        enclave_public_key: bytes
+        if isinstance(comp.enclave.identity, EnclaveIdentity):
+            enclave_public_key = comp.enclave.identity.public_key
+        else:
+            raise Exception(f"Failed to lock enclave: {comp.enclave.identity}")
+
+        return enclave_public_key
