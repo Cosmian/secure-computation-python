@@ -86,6 +86,12 @@ doc:
     - pip install -r requirements-dev.txt
   script:
     - sphinx-build docs docs/_build -E -a -W
+    - mkdir html/ && mv docs/_build/* html/
+  artifacts:
+    name: "documentation"
+    paths:
+      - html/
+    expire_in: 1 mos
 
 release_wheel:
   stage: build

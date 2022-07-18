@@ -12,4 +12,14 @@ $ pip install cosmian-secure-computation-client
 
 ## Documentation
 
-See [https://docs.cosmian.com/secure_computation/](https://docs.cosmian.com/secure_computation/).
+Get started with [https://docs.cosmian.com/secure_computation/](https://docs.cosmian.com/secure_computation/) and generate the documentation of the Python client:
+
+```console
+$ pip install sphinx numpydoc sphinx_rtd_theme sphinx_mdinclude
+```
+
+then
+
+```console
+$ sphinx-build docs docs/_build -E -a -W
+```
