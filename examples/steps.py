@@ -33,7 +33,7 @@ def step_1_create_computation():
     You will be the Computation Owner of this computation.
     """
     computation = computation_owner.create_computation(
-        'computation name',
+        'my-computation',
         code_provider_email="john@example.org",
         data_providers_emails=["john@example.org"],
         result_consumers_emails=["john@example.org"]
@@ -72,7 +72,7 @@ def step_2_code_provider_registers(cosmian_token, computation_uuid, words):
     """
     from cosmian_secure_computation_client import CodeProviderAPI
     crypto_context = CryptoContext(words=words)
-    code_provider = CodeProviderAPI(cosmian_token, crypto_context)
+    code_provider = CodeProviderAPI(token=cosmian_token, ctx=crypto_context)
 
     """
     To register, pass the UUID of the computation given on the interface and
@@ -90,7 +90,7 @@ def step_2_data_providers_register(cosmian_token, computation_uuid, words):
     """
     from cosmian_secure_computation_client import DataProviderAPI
     crypto_context = CryptoContext(words=words)
-    data_provider = DataProviderAPI(cosmian_token, crypto_context)
+    data_provider = DataProviderAPI(token=cosmian_token, ctx=crypto_context)
 
     """
     To register, you need to pass the UUID of the computation given on the interface 
@@ -108,7 +108,7 @@ def step_2_result_consumers_register(cosmian_token, computation_uuid, words):
     """
     from cosmian_secure_computation_client import ResultConsumerAPI
     crypto_context = CryptoContext(words=words)
-    result_consumer = ResultConsumerAPI(cosmian_token, crypto_context)
+    result_consumer = ResultConsumerAPI(token=cosmian_token, ctx=crypto_context)
 
     """
     To register, you need to pass the UUID of the computation given on the interface 
@@ -130,7 +130,7 @@ def step_3_code_provider_sends_code(cosmian_token,
     The `run.py` file will not be encrypted, everything else will be.
     """
     from cosmian_secure_computation_client import CodeProviderAPI
-    code_provider = CodeProviderAPI(cosmian_token, crypto_context)
+    code_provider = CodeProviderAPI(token=cosmian_token, ctx=crypto_context)
 
     code_provider.upload_code(computation_uuid, path)
 
@@ -148,16 +148,12 @@ def step_4_code_provider_sends_sealed_symmetric_key(cosmian_token,
     object.
     """
     from cosmian_secure_computation_client import CodeProviderAPI
-    code_provider = CodeProviderAPI(cosmian_token, crypto_context)
+    code_provider = CodeProviderAPI(token=cosmian_token, ctx=crypto_context)
 
-    while True:
-        computation = code_provider.get_computation(computation_uuid)
-        if computation.enclave.identity is None:
-            print("Waiting 5s the generation of the enclave identity…")
-            time.sleep(5)
-        else:
-            break
+    enclave_public_key: bytes = code_provider.wait_for_enclave_identity(computation_uuid)
 
+    computation = code_provider.get_computation(computation_uuid)
+    assert enclave_public_key == computation.enclave.identity.public_key
     manifest = computation.enclave.identity.manifest
     quote = computation.enclave.identity.quote
 
@@ -190,16 +186,12 @@ def step_5_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token,
     object.
     """
     from cosmian_secure_computation_client import DataProviderAPI
-    data_provider = DataProviderAPI(cosmian_token, crypto_context)
+    data_provider = DataProviderAPI(token=cosmian_token, ctx=crypto_context)
 
-    while True:
-        computation = data_provider.get_computation(computation_uuid)
-        if computation.enclave.identity is None:
-            print("Waiting 5s the generation of the enclave identity…")
-            time.sleep(5)
-        else:
-            break
+    enclave_public_key: bytes = data_provider.wait_for_enclave_identity(computation_uuid)
 
+    computation = data_provider.get_computation(computation_uuid)
+    assert enclave_public_key == computation.enclave.identity.public_key
     manifest = computation.enclave.identity.manifest
     quote = computation.enclave.identity.quote
 
@@ -241,13 +233,10 @@ def step_6_result_consumers_send_sealed_symmetric_keys(cosmian_token,
     from cosmian_secure_computation_client import ResultConsumerAPI
     result_consumer = ResultConsumerAPI(cosmian_token, crypto_context)
 
-    while True:
-        computation = result_consumer.get_computation(computation_uuid)
-        if computation.enclave.identity is None:
-            print("Waiting 5s the generation of the enclave identity…")
-            time.sleep(5)
-        else:
-            break
+    enclave_public_key: bytes = result_consumer.wait_for_enclave_identity(computation_uuid)
+
+    computation = result_consumer.get_computation(computation_uuid)
+    assert enclave_public_key == computation.enclave.identity.public_key
 
     manifest = computation.enclave.identity.manifest
     quote = computation.enclave.identity.quote
@@ -272,74 +261,9 @@ def step_7_result_consumers_get_results(cosmian_token, crypto_context, computati
     When the computation is over, you can fetch results.
     """
     from cosmian_secure_computation_client import ResultConsumerAPI
-    result_consumer = ResultConsumerAPI(cosmian_token, crypto_context)
+    result_consumer = ResultConsumerAPI(token=cosmian_token, ctx=crypto_context)
 
-    while True:
-        """
-        First we'll check that the computation ended and one computation is in 
-        previous runs.
-        """
-        computation = result_consumer.get_computation(computation_uuid)
-
-        if computation.runs.current is None and len(computation.runs.previous) == 0:
-            """
-            The computation didn't start running. Maybe you miss one of the previous 
-            states?
-            You can check the UI or check if everything is set in the computation 
-            with Python.
-            Right now it's a manual (and tedious) process, maybe in the future the 
-            API will provide a list of messages for the missing steps.
-            """
-            if computation.code_provider.public_key is None:
-                print("Code Provider didn't register.")
-            if computation.code_provider.code_uploaded_at is None:
-                print("Code Provider didn't provide its code.")
-            if computation.code_provider.symmetric_key_uploaded_at is None:
-                print("Code Provider didn't send its sealed symmetric key.")
-
-            for data_provider in computation.data_providers:
-                if data_provider.public_key is None:
-                    print(f"Data Provider {data_provider.email} didn't register.")
-                if data_provider.done_uploading_at is None:
-                    print(f"Data Provider {data_provider.email} is not done "
-                          "uploading data.")
-                if data_provider.symmetric_key_uploaded_at is None:
-                    print(f"Data Provider {data_provider.email} didn't send its sealed "
-                          "symmetric key.")
-
-            for result_consumer in computation.result_consumers:
-                if result_consumer.public_key is None:
-                    print(f"Result Consumer {result_consumer.email} didn't register.")
-                if result_consumer.symmetric_key_uploaded_at is None:
-                    print(f"Result Consumer {result_consumer.email} didn't send its "
-                          "sealed symmetric key.")
-
-            return
-
-        if len(computation.runs.previous) == 1:
-            run = computation.runs.previous[0]
-
-            """
-            You can check a few information on the run to check
-            if everything worked.
-            """
-            print("\n\n### Exit Code ###\n")
-            print(run.exit_code)
-            print("\n\n### stdout ###\n")
-            print(run.stdout)
-            print("\n\n### stderr ###\n")
-            print(run.stderr)
-            print("\n\n")
-
-            if run.exit_code != 0:
-                raise Exception("Run fail.")
-            else:
-                break
-        else:
-            print("Waiting 2s end of computation…")
-            time.sleep(2)
-
-    print(result_consumer.fetch_result(computation.uuid))
+    print(result_consumer.wait_result(computation_uuid))
 
 
 print("### step_1_create_computation")
@@ -352,7 +276,8 @@ print("Sleeping on Docker creation…")
 time.sleep(5)
 
 print("Continuing…")
-cosmian_token = environ.get('COSMIAN_TOKEN')
+cosmian_token: str = os.getenv("COSMIAN_TOKEN", default="")
+assert cosmian_token, "Cosmian API Token not found in env 'COSMIAN_TOKEN'"
 
 print("### step_2_code_provider_registers")
 code_provider_crypto_context = step_2_code_provider_registers(
