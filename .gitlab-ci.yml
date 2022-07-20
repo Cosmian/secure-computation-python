@@ -123,8 +123,8 @@ test_e2e_dev:
   image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
   stage: test
   rules:
-    # Don't run on branch master
-    - if: $CI_COMMIT_BRANCH == 'master'
+    # Don't run on branch master and tags
+    - if: $CI_COMMIT_BRANCH == 'master' || $CI_COMMIT_TAG
       when: never
     # Don't run on MR targeting master
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == 'master'
