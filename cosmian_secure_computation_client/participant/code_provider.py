@@ -42,9 +42,13 @@ class CodeProviderAPI(BaseAPI):
             raise FileNotFoundError("Entrypoint 'run.py' not found!")
 
         enc_directory_path: Path = (Path(tempfile.gettempdir()) /
-                                    f"cosmian_{computation_uuid}" /
+                                    "cscc" /
+                                    f"{computation_uuid}" /
                                     directory_path.name)
 
+        self.log.debug("Encrypt code in %s to %s...",
+                       directory_path,
+                       enc_directory_path)
         self.ctx.encrypt_directory(
             dir_path=directory_path,
             patterns=(["*"]
@@ -62,12 +66,15 @@ class CodeProviderAPI(BaseAPI):
             dir_path=enc_directory_path,
             tar_path=enc_directory_path / f"{enc_directory_path.name}.tar"
         )
+        self.log.debug("Tar encrypted code in '%s'", tar_path.name)
 
         r: requests.Response = upload_code(
             conn=self.conn,
             computation_uuid=computation_uuid,
             tar_path=tar_path
         )
+
+        self.log.info("Encrypted code '%s' sent", tar_path.name)
 
         if not r.ok:
             raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
@@ -76,6 +83,7 @@ class CodeProviderAPI(BaseAPI):
 
     def reset(self, computation_uuid: str) -> Computation:
         """Delete the Python code of `computation_uuid` on Cosmian's backend ."""
+        self.log.info("Reset code sent")
         r: requests.Response = reset_code(
             conn=self.conn,
             computation_uuid=computation_uuid

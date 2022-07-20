@@ -4,6 +4,7 @@ pydocstyle>=6.1.1,<6.2.0
 mypy>=0.961,<1.0
 types-requests>=2.27.11,<3.0.0
 types-urllib3>=1.26.9,<1.27.0
+sphinx>=5.0.2,<5.1.0
 sphinx_rtd_theme>=1.0.0,<2.0.0
 sphinx_mdinclude>=0.5.1,<0.6.0
 numpydoc>=1.4.0,<1.5.0
