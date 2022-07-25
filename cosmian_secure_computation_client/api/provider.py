@@ -13,7 +13,8 @@ def create_computation(conn: Connection,
                        name: str,
                        cp_mail: str,
                        dps_mail: List[str],
-                       rcs_mail: List[str]) -> requests.Response:
+                       rcs_mail: List[str],
+                       dev_mode: bool) -> requests.Response:
     """POST `/computations` (for CO only)."""
     return conn.post(
         url="/computations",
@@ -22,6 +23,7 @@ def create_computation(conn: Connection,
             "code_provider_email": cp_mail,
             "data_providers_emails": dps_mail,
             "result_consumers_emails": rcs_mail,
+            "dev_mode": dev_mode
         }
     )
 

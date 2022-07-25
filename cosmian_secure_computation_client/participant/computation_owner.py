@@ -48,14 +48,16 @@ class ComputationOwnerAPI:
                            name: str,
                            code_provider_email: str,
                            data_providers_emails: List[str],
-                           result_consumers_emails: List[str]) -> Computation:
+                           result_consumers_emails: List[str],
+                           dev_mode: bool = True) -> Computation:
         """Invite participants to a new computation named `name`."""
         r: requests.Response = create_computation(
             conn=self.conn,
             name=name,
             cp_mail=code_provider_email,
             dps_mail=data_providers_emails,
-            rcs_mail=result_consumers_emails
+            rcs_mail=result_consumers_emails,
+            dev_mode=dev_mode
         )
 
         if not r.ok:

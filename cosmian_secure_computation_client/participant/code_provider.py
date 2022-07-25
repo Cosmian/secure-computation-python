@@ -82,7 +82,7 @@ class CodeProviderAPI(BaseAPI):
         return r.json()
 
     def reset(self, computation_uuid: str) -> Computation:
-        """Delete the Python code of `computation_uuid` on Cosmian's backend ."""
+        """Delete the Python code of `computation_uuid` on Cosmian's backend."""
         self.log.info("Reset code sent")
         r: requests.Response = reset_code(
             conn=self.conn,
