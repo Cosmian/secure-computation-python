@@ -13,3 +13,7 @@ class Side(Enum):
     def __str__(self) -> str:
         """Use name for string representation."""
         return f"{self.name}"
+
+    def __bytes__(self) -> bytes:
+        """Bytes representation."""
+        return bytes(self.value)

@@ -4,7 +4,7 @@ from pathlib import Path
 import time
 import pprint
 
-from cosmian_secure_computation_client import CryptoContext
+from cosmian_secure_computation_client import CryptoContext, Side
 
 
 def step_1_create_computation():
@@ -71,7 +71,7 @@ def step_2_code_provider_registers(cosmian_token, computation_uuid, words):
     You need to create the CodeProvider object to register as a code provider.
     """
     from cosmian_secure_computation_client import CodeProviderAPI
-    crypto_context = CryptoContext(words=words)
+    crypto_context = CryptoContext(computation_uuid, Side.CodeProvider, words)
     code_provider = CodeProviderAPI(token=cosmian_token, ctx=crypto_context)
 
     """
@@ -89,7 +89,7 @@ def step_2_data_providers_register(cosmian_token, computation_uuid, words):
     You need to create the DataProvider object to register as a data provider.
     """
     from cosmian_secure_computation_client import DataProviderAPI
-    crypto_context = CryptoContext(words=words)
+    crypto_context = CryptoContext(computation_uuid, Side.DataProvider, words)
     data_provider = DataProviderAPI(token=cosmian_token, ctx=crypto_context)
 
     """
@@ -107,7 +107,7 @@ def step_2_result_consumers_register(cosmian_token, computation_uuid, words):
     You need to create the ResultConsumer object to register as a result consumer.
     """
     from cosmian_secure_computation_client import ResultConsumerAPI
-    crypto_context = CryptoContext(words=words)
+    crypto_context = CryptoContext(computation_uuid, Side.ResultConsumer, words)
     result_consumer = ResultConsumerAPI(token=cosmian_token, ctx=crypto_context)
 
     """
