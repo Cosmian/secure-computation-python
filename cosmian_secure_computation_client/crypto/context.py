@@ -1,7 +1,11 @@
 """cosmian_secure_computation_client.crypto.context module."""
-
+import base64
+import json
 from pathlib import Path
-from typing import Optional, List, Tuple, Union
+from typing import Optional, List, Tuple, Union, Dict
+from uuid import UUID
+
+from cryptography.hazmat.primitives import serialization
 
 from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              ed25519_seed_keygen,
@@ -17,6 +21,7 @@ from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              pubkey_fingerprint,
                                                              seal,
                                                              sign)
+from cosmian_secure_computation_client.side import Side
 from cosmian_secure_computation_client.util.mnemonic import parse_words
 
 
@@ -25,6 +30,11 @@ class CryptoContext:
 
     Parameters
     ----------
+    computation_uuid : str
+        Computation UUID (Universally Unique IDentifier) of the computation.
+    side : Side
+        Role in the computation. Could be Side.CodeProvider, Side.DataProvider or
+        Side.ResultConsumer.
     words : Union[str, Tuple[str, str, str]]
         3 words used as the pre-shared secret between participants.
     ed25519_seed : Optional[bytes]
@@ -52,10 +62,14 @@ class CryptoContext:
     """
 
     def __init__(self,
+                 computation_uuid: str,
+                 side: Side,
                  words: Union[str, Tuple[str, str, str]],
                  ed25519_seed: Optional[bytes] = None,
                  symkey: Optional[bytes] = None) -> None:
         """Init constructor of CryptoContext."""
+        self.computation_uuid: UUID = UUID(computation_uuid)
+        self.side: Side = side
         self.ed25519_pk, self.ed25519_seed, self.ed25519_sk = (
             ed25519_keygen() if ed25519_seed is None else
             ed25519_seed_keygen(ed25519_seed)
@@ -65,6 +79,88 @@ class CryptoContext:
         self._words: Tuple[str, str, str] = (parse_words(words)
                                              if isinstance(words, str) else words)
         self.preshared_sk: bytes = derive_psk(self._words)
+
+    @classmethod
+    def from_path(cls,
+                  computation_uuid: str,
+                  side: Side,
+                  words: Union[str, Tuple[str, str, str]],
+                  private_key: Optional[Path],
+                  password: Optional[bytes],
+                  symmetric_key: Optional[Path]):
+        """Create `CryptoContext` from files.
+
+        Parameters
+        ----------
+        computation_uuid : str
+            Computation UUID (Universally Unique IDentifier) of the computation.
+        side : Side
+            Role in the computation. Could be Side.CodeProvider, Side.DataProvider or
+            Side.ResultConsumer.
+        words : Union[str, Tuple[str, str, str]]
+            3 words used as the pre-shared secret between participants.
+        private_key : Optional[Path]
+            Ed25519 private key file in PEM format for digital signature.
+        password :  Optional[bytes]
+            Password for PEM private key file.
+        symmetric_key :  Optional[Path]
+            XSalsa20-Poly1305 symmetric key used for encryption/decryption stored as
+            raw bytes in a file.
+
+        """
+        ed25519_seed: Optional[bytes] = None
+        symkey: Optional[bytes] = None
+
+        if private_key:
+            if not private_key.exists():
+                raise Exception(f"can't find private key file: {private_key}")
+
+            ed25519_seed = serialization.load_pem_private_key(
+                data=private_key.read_bytes(),
+                password=password
+            ).private_bytes(
+                encoding=serialization.Encoding.Raw,
+                format=serialization.PrivateFormat.Raw,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+
+        if symmetric_key:
+            if not symmetric_key.exists():
+                raise Exception(f"can't find symmetric key file: {symmetric_key}")
+
+            symkey = symmetric_key.read_bytes()
+
+        return cls(computation_uuid, side, words, ed25519_seed, symkey)
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, str]):
+        """Create `CryptoContext` from dict."""
+        return cls(
+            computation_uuid=d["computation_uuid"],
+            side=Side[d["side"]],
+            words=d["words"],
+            ed25519_seed=base64.b64decode(d["ed25519_seed"]),
+            symkey=base64.b64decode(d["symkey"])
+        )
+
+    @classmethod
+    def from_json(cls, value: str):
+        """Create `CryptoContext` from JSON string."""
+        return cls.from_dict(json.loads(value))
+
+    def to_dict(self) -> Dict[str, Union[str, bytes]]:
+        """Serialize to dict."""
+        return {
+            "computation_uuid": str(self.computation_uuid),
+            "side": str(self.side),
+            "words": "-".join(self.words),
+            "symkey": base64.b64encode(self._symkey),
+            "ed25519_seed": base64.b64encode(self.ed25519_seed)
+        }
+
+    def to_json(self) -> str:
+        """Serialize to JSON string."""
+        return json.dumps(self.to_dict())
 
     @property
     def public_key(self) -> bytes:
@@ -220,13 +316,11 @@ class CryptoContext:
         """
         return sign(data, self.ed25519_seed)
 
-    def seal_symkey(self, additional_data: bytes, ed25519_recipient_pk: bytes) -> bytes:
+    def seal_symkey(self, ed25519_recipient_pk: bytes) -> bytes:
         """Seal your symmetric key and sign the box.
 
         Parameters
         ----------
-        additional_data : bytes
-            Additional data prepend before signature of the seal box.
         ed25519_recipient_pk : bytes
             Recipent X25519 public key (32 bytes).
 
@@ -251,7 +345,7 @@ class CryptoContext:
         # seal_box = SealBox(self.preshared_sk || self._symkey,
         #                    x25519_recipient_pk) (112)
         seal_box: bytes = seal(self.preshared_sk + self._symkey, x25519_recipient_pk)
-        # sig = Sign(additional_data || seal_box, self.ed25519_seed) (64)
-        sig: bytes = self.sign(additional_data + seal_box)
+        # sig = Sign(computation_uuid || seal_box, self.ed25519_seed) (64)
+        sig: bytes = self.sign(self.computation_uuid.bytes + seal_box)
 
         return sig + seal_box

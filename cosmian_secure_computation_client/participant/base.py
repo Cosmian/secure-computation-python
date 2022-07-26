@@ -4,7 +4,6 @@ import logging
 import os
 import time
 from typing import List
-from uuid import UUID
 
 import requests
 
@@ -103,7 +102,6 @@ class BaseAPI:
         self.log.debug("Sealing symmetric key for %s and signing...",
                        enclave_public_key.hex()[:16])
         sealed_symmetric_key: bytes = self.ctx.seal_symkey(
-            additional_data=UUID(computation_uuid).bytes,
             ed25519_recipient_pk=enclave_public_key
         )
 
