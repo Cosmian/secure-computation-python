@@ -2,7 +2,7 @@
 import base64
 import json
 from pathlib import Path
-from typing import Optional, List, Tuple, Union, Dict
+from typing import Optional, List, Tuple, Union, Dict, Any, cast
 from uuid import UUID
 
 from cryptography.hazmat.primitives import serialization
@@ -22,6 +22,7 @@ from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
                                                              seal,
                                                              sign)
 from cosmian_secure_computation_client.side import Side
+from cosmian_secure_computation_client.util.base64 import Base64Encoder
 from cosmian_secure_computation_client.util.mnemonic import parse_words
 
 
@@ -133,20 +134,25 @@ class CryptoContext:
         return cls(computation_uuid, side, words, ed25519_seed, symkey)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, str]):
+    def from_dict(cls, d: Dict[str, Union[str, bytes]]):
         """Create `CryptoContext` from dict."""
         return cls(
-            computation_uuid=d["computation_uuid"],
-            side=Side[d["side"]],
-            words=d["words"],
-            ed25519_seed=base64.b64decode(d["ed25519_seed"]),
-            symkey=base64.b64decode(d["symkey"])
+            computation_uuid=cast(str, d["computation_uuid"]),
+            side=Side[cast(str, d["side"])],
+            words=cast(str, d["words"]),
+            ed25519_seed=cast(bytes, d["ed25519_seed"]),
+            symkey=cast(bytes, d["symkey"])
         )
 
     @classmethod
     def from_json(cls, value: str):
         """Create `CryptoContext` from JSON string."""
-        return cls.from_dict(json.loads(value))
+        d: Dict[str, Any] = json.loads(value)
+
+        d["ed25519_seed"] = base64.b64decode(d["ed25519_seed"])
+        d["symkey"] = base64.b64decode(d["symkey"])
+
+        return cls.from_dict(d)
 
     def to_dict(self) -> Dict[str, Union[str, bytes]]:
         """Serialize to dict."""
@@ -154,13 +160,13 @@ class CryptoContext:
             "computation_uuid": str(self.computation_uuid),
             "side": str(self.side),
             "words": "-".join(self.words),
-            "symkey": base64.b64encode(self._symkey),
-            "ed25519_seed": base64.b64encode(self.ed25519_seed)
+            "symkey": self._symkey,
+            "ed25519_seed": self.ed25519_seed
         }
 
     def to_json(self) -> str:
         """Serialize to JSON string."""
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), cls=Base64Encoder)
 
     @property
     def public_key(self) -> bytes:

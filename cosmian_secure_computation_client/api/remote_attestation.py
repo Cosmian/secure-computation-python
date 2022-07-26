@@ -10,8 +10,8 @@ from cryptography.hazmat.primitives.serialization import (Encoding,
                                                           PublicFormat)
 import jwt
 
-from cosmian_secure_computation_client.util.base64url import (base64url_encode,
-                                                              base64url_decode)
+from cosmian_secure_computation_client.util.base64 import (base64url_encode,
+                                                           base64url_decode)
 
 
 def microsoft_azure_attest(quote: str,
