@@ -2,6 +2,7 @@
 
 import logging
 import os
+from pathlib import Path
 import time
 from typing import List
 
@@ -11,7 +12,8 @@ from cosmian_secure_computation_client.api.auth import Connection
 from cosmian_secure_computation_client.api.provider import (register,
                                                             computations,
                                                             computation,
-                                                            key_provisioning)
+                                                            key_provisioning,
+                                                            download_code)
 from cosmian_secure_computation_client.crypto.context import CryptoContext
 from cosmian_secure_computation_client.computations import Computation, EnclaveIdentity
 from cosmian_secure_computation_client.log import LOGGER
@@ -139,3 +141,23 @@ class BaseAPI:
                       enclave_public_key.hex()[:16])
 
         return enclave_public_key
+
+    def download_code(self,
+                      computation_uuid: str,
+                      directory_path: Path,
+                      ) -> str:
+        """Send back your Python code encrypted on a specific `computation_uuid`."""
+        tar_path = directory_path / f"{computation_uuid}_code.tar"
+        self.log.debug("Tar encrypted code in '%s'", tar_path.name)
+
+        r: requests.Response = download_code(
+            conn=self.conn,
+            computation_uuid=computation_uuid,
+        )
+
+        if not r.ok:
+            raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
+
+        tar_path.write_bytes(r.content)
+
+        return tar_path

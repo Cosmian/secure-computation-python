@@ -119,6 +119,12 @@ def download_result(conn: Connection,
     return conn.get(url=f"/computations/{computation_uuid}/results")
 
 
+def download_code(conn: Connection,
+                  computation_uuid: str) -> requests.Response:
+    """GET `/computations/{computation_uuid}/code`."""
+    return conn.get(url=f"/computations/{computation_uuid}/code")
+
+
 def reset_code(conn: Connection,
                computation_uuid: str) -> requests.Response:
     """DELETE `/computations/{computation_uuid}/code` (for CP only)."""
