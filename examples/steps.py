@@ -175,7 +175,21 @@ def step_5_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token,
                                                               crypto_context,
                                                               computation_uuid,
                                                               path_1,
-                                                              path_2):
+                                                              path_2,
+                                                              path_tmp):
+    """
+    Any participants can download the provided code.
+    The result is an encrypted tarball which can't be read by anyone but the code provider.
+
+    By doing that, any participant can build on their own side the exact same docker image
+    than the one running inside the Cosmian enclave and therefore is able to check
+    the code integrity during the remote attestation process.
+    """
+    from cosmian_secure_computation_client import DataProviderAPI
+    data_provider = DataProviderAPI(token=cosmian_token, ctx=crypto_context)
+    
+    data_provider.download_code(computation_uuid, path_tmp)
+
     """
     You need to check that the computation is correct :
     > You can fetch computation's status and read the enclave manifest.
@@ -185,9 +199,6 @@ def step_5_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token,
     security of the process. You can access these informations from the computation
     object.
     """
-    from cosmian_secure_computation_client import DataProviderAPI
-    data_provider = DataProviderAPI(token=cosmian_token, ctx=crypto_context)
-
     enclave_public_key: bytes = data_provider.wait_for_enclave_identity(computation_uuid)
 
     computation = data_provider.get_computation(computation_uuid)
@@ -321,7 +332,8 @@ step_5_data_providers_send_data_and_sealed_symmetric_keys(
     data_provider_crypto_context,
     computation.uuid,
     Path(os.path.dirname(__file__) + "/../tests/data/dp1/A.csv"),
-    Path(os.path.dirname(__file__) + "/../tests/data/dp2/B.csv")
+    Path(os.path.dirname(__file__) + "/../tests/data/dp2/B.csv"),
+    Path(os.path.dirname(__file__) )
 )
 
 print("### step_6_result_consumers_send_sealed_symmetric_keys")
