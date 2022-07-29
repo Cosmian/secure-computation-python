@@ -76,7 +76,6 @@ type_check:
     - pip install .
   script:
     - mypy cosmian_secure_computation_client/
-  allow_failure: true
 
 doc:
   stage: build
