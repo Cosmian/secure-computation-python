@@ -182,7 +182,7 @@ def step_5_data_providers_send_data_and_sealed_symmetric_keys(cosmian_token,
     The result is an encrypted tarball which can't be read by anyone but the code provider.
 
     By doing that, any participant can build on their own side the exact same docker image
-    than the one running inside the cosmian enclave and therefore is able to check
+    than the one running inside the Cosmian enclave and therefore is able to check
     the code integrity during the remote attestation process.
     """
     from cosmian_secure_computation_client import DataProviderAPI
