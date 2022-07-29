@@ -49,7 +49,7 @@ class ComputationOwnerAPI:
                            code_provider_email: str,
                            data_providers_emails: List[str],
                            result_consumers_emails: List[str],
-                           dev_mode: bool = True) -> Computation:
+                           dev_mode: bool = False) -> Computation:
         """Invite participants to a new computation named `name`."""
         r: requests.Response = create_computation(
             conn=self.conn,
