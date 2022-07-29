@@ -80,7 +80,21 @@ type_check:
 
 doc:
   stage: build
+  rules:
+    # Deploy on prod on tag
+    - if: '$CI_COMMIT_TAG =~ /^\d+.\d+.\d+$/'
+      variables:
+        REMOTE_HOST: "ui.prod.sc.cosmian.com"
+    # Deploy on test on develop
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      variables:
+        REMOTE_HOST: "ui.test.sc.cosmian.com"
+        CI_COMMIT_TAG: "dev"
+    - when: always
+  allow_failure: false
   before_script:
+    - apt update -y
+    - apt install -y ssh
     - python --version
     - pip install virtualenv
     - virtualenv venv
@@ -89,6 +103,15 @@ doc:
   script:
     - sphinx-build docs docs/_build -E -a -W
     - mkdir html/ && mv docs/_build/* html/
+    - echo $CI_COMMIT_TAG
+    - echo $REMOTE_HOST
+    - >
+      if ! [ -z "$REMOTE_HOST" ]; then
+        ssh cosmian@$REMOTE_HOST "rm -fr /var/www/documentation_root/secure_computation/python-versions/${CI_COMMIT_TAG}"
+        scp -r html cosmian@$REMOTE_HOST:/var/www/documentation_root/secure_computation/python-versions/${CI_COMMIT_TAG}
+        ssh cosmian@$REMOTE_HOST "unlink /var/www/documentation_root/secure_computation/python || true"
+        ssh cosmian@$REMOTE_HOST "ln -s /var/www/documentation_root/secure_computation/python-versions/${CI_COMMIT_TAG} /var/www/documentation_root/secure_computation/python"
+      fi
   artifacts:
     name: "documentation"
     paths:
