@@ -60,7 +60,7 @@ class NodeVisitor(ast.NodeVisitor):
         return self._has_entrypoint
 
     def visit_ImportFrom(self, node: ImportFrom):
-        """Call used when node is a ImportFrom. Search for the `cosmian_lib_sgx` import."""
+        """Call used when node is a ImportFrom. Search for `cosmian_lib_sgx` import."""
         if self._has_import:
             return
 
@@ -129,14 +129,14 @@ def validate_run_py(run_py_path: Path):
     if not node_visitor.has_if_main:
         raise Exception(
             "Your run.py is malformed. "
-            f"The following section could not be find: {IF_MAIN_TEMPLATE}")
+            f"The following section could not be found: {IF_MAIN_TEMPLATE}")
 
     if not node_visitor.has_import:
         raise Exception(
             "Your run.py is malformed. "
-            f"The following section could not be find: {IMPORT_TEMPLATE}")
+            f"The following section could not be found: {IMPORT_TEMPLATE}")
 
     if not node_visitor.has_entrypoint:
         raise Exception(
             "Your run.py is malformed. "
-            f"The following section could not be find: {ENTRYPOINT_TEMPLATE}")
+            f"The following section could not be found: {ENTRYPOINT_TEMPLATE}")
