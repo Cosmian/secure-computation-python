@@ -60,9 +60,8 @@ class CodeProvider:
     @staticmethod
     def from_json_dict(json):
         """Construct dataclass from dict."""
-        json['public_key'] = (None
-                              if json['public_key'] is None
-                              else PublicKey.from_json_dict(json['public_key']))
+        json['public_key'] = (None if json['public_key'] is None else
+                              PublicKey.from_json_dict(json['public_key']))
 
         return construct_dataclass(CodeProvider, json)
 
@@ -81,9 +80,8 @@ class DataProvider:
     @staticmethod
     def from_json_dict(json):
         """Construct dataclass from dict."""
-        json['public_key'] = (None
-                              if json['public_key'] is None
-                              else PublicKey.from_json_dict(json['public_key']))
+        json['public_key'] = (None if json['public_key'] is None else
+                              PublicKey.from_json_dict(json['public_key']))
 
         return construct_dataclass(DataProvider, json)
 
@@ -101,9 +99,8 @@ class ResultConsumer:
     @staticmethod
     def from_json_dict(json):
         """Construct dataclass from dict."""
-        json['public_key'] = (None
-                              if json['public_key'] is None
-                              else PublicKey.from_json_dict(json['public_key']))
+        json['public_key'] = (None if json['public_key'] is None else
+                              PublicKey.from_json_dict(json['public_key']))
 
         return construct_dataclass(ResultConsumer, json)
 
@@ -152,11 +149,11 @@ class Enclave:
         """Construct dataclass from dict."""
         if json['identity'] is not None:
             if json['identity']['status'] == "Locked":
-                json['identity'] = EnclaveIdentity.from_json_dict(json['identity'])
+                json['identity'] = EnclaveIdentity.from_json_dict(
+                    json['identity'])
             elif json['identity']['status'] == "Failed":
                 json['identity'] = EnclaveIdentityLockError.from_json_dict(
-                    json['identity']
-                )
+                    json['identity'])
             else:
                 raise ValueError(
                     f"Invalid status {json['identity']['status']} for enclave identity "
@@ -205,10 +202,10 @@ class Runs:
     @staticmethod
     def from_json_dict(json):
         """Construct dataclass from dict."""
-        json['current'] = (None
-                           if json['current'] is None
-                           else CurrentRun.from_json_dict(json['current']))
-        json['previous'] = list(map(PreviousRun.from_json_dict, json['previous']))
+        json['current'] = (None if json['current'] is None else
+                           CurrentRun.from_json_dict(json['current']))
+        json['previous'] = list(
+            map(PreviousRun.from_json_dict, json['previous']))
 
         return construct_dataclass(Runs, json)
 
@@ -232,11 +229,12 @@ class Computation:
     def from_json_dict(json):
         """Construct dataclass from dict."""
         json['owner'] = Owner.from_json_dict(json['owner'])
-        json['code_provider'] = CodeProvider.from_json_dict(json['code_provider'])
-        json['data_providers'] = list(map(DataProvider.from_json_dict,
-                                          json['data_providers']))
-        json['result_consumers'] = list(map(ResultConsumer.from_json_dict,
-                                            json['result_consumers']))
+        json['code_provider'] = CodeProvider.from_json_dict(
+            json['code_provider'])
+        json['data_providers'] = list(
+            map(DataProvider.from_json_dict, json['data_providers']))
+        json['result_consumers'] = list(
+            map(ResultConsumer.from_json_dict, json['result_consumers']))
         json['enclave'] = Enclave.from_json_dict(json['enclave'])
         json['runs'] = Runs.from_json_dict(json['runs'])
         json['my_roles'] = list(map(Role, json['my_roles']))
@@ -247,7 +245,12 @@ class Computation:
 def construct_dataclass(dc, json):
     """Dataclass builder."""
     sig = inspect.signature(dc)
-    filter_keys = [param.name for param in sig.parameters.values() if
-                   param.kind == param.POSITIONAL_OR_KEYWORD]
-    filtered_dict = {filter_key: json.get(filter_key, None) for filter_key in filter_keys}
+    filter_keys = [
+        param.name
+        for param in sig.parameters.values()
+        if param.kind == param.POSITIONAL_OR_KEYWORD
+    ]
+    filtered_dict = {
+        filter_key: json.get(filter_key, None) for filter_key in filter_keys
+    }
     return dc(**filtered_dict)

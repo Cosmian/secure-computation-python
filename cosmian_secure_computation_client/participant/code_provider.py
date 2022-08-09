@@ -30,66 +30,54 @@ class CodeProviderAPI(BaseAPI):
         """Init constructor of CodeProviderAPI."""
         super().__init__(Side.CodeProvider, token, ctx)
 
-    def upload_code(self,
-                    computation_uuid: str,
-                    directory_path: Path,
-                    patterns: Optional[List[str]] = None,
-                    file_exceptions: Optional[List[str]] = None,
-                    dir_exceptions: Optional[List[str]] = None
-                    ) -> Dict[str, str]:
+    def upload_code(
+            self,
+            computation_uuid: str,
+            directory_path: Path,
+            patterns: Optional[List[str]] = None,
+            file_exceptions: Optional[List[str]] = None,
+            dir_exceptions: Optional[List[str]] = None) -> Dict[str, str]:
         """Send your Python code encrypted on a specific `computation_uuid`."""
         if not (directory_path / "run.py").exists():
             raise FileNotFoundError("Entrypoint 'run.py' not found!")
 
-        enc_directory_path: Path = (Path(tempfile.gettempdir()) /
-                                    "cscc" /
-                                    f"{computation_uuid}" /
-                                    directory_path.name)
+        enc_directory_path: Path = (Path(tempfile.gettempdir()) / "cscc" /
+                                    f"{computation_uuid}" / directory_path.name)
 
-        self.log.debug("Encrypt code in %s to %s...",
-                       directory_path,
+        self.log.debug("Encrypt code in %s to %s...", directory_path,
                        enc_directory_path)
         self.ctx.encrypt_directory(
             dir_path=directory_path,
-            patterns=(["*"]
-                      if patterns is None
-                      else patterns),
-            exceptions=(["run.py"]
-                        if file_exceptions is None
-                        else file_exceptions + ["run.py"]),
-            dir_exceptions=([]
-                            if dir_exceptions is None
-                            else dir_exceptions),
-            out_dir_path=enc_directory_path
-        )
-        tar_path = tar(
-            dir_path=enc_directory_path,
-            tar_path=enc_directory_path / f"{enc_directory_path.name}.tar"
-        )
+            patterns=(["*"] if patterns is None else patterns),
+            exceptions=(["run.py"] if file_exceptions is None else
+                        file_exceptions + ["run.py"]),
+            dir_exceptions=([] if dir_exceptions is None else dir_exceptions),
+            out_dir_path=enc_directory_path)
+        tar_path = tar(dir_path=enc_directory_path,
+                       tar_path=enc_directory_path /
+                       f"{enc_directory_path.name}.tar")
         self.log.debug("Tar encrypted code in '%s'", tar_path.name)
 
-        r: requests.Response = upload_code(
-            conn=self.conn,
-            computation_uuid=computation_uuid,
-            tar_path=tar_path
-        )
+        r: requests.Response = upload_code(conn=self.conn,
+                                           computation_uuid=computation_uuid,
+                                           tar_path=tar_path)
 
         self.log.info("Encrypted code '%s' sent", tar_path.name)
 
         if not r.ok:
-            raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
+            raise Exception(
+                f"Unexpected response ({r.status_code}): {r.content!r}")
 
         return r.json()
 
     def reset(self, computation_uuid: str) -> Computation:
         """Delete the Python code of `computation_uuid` on Cosmian's backend."""
         self.log.info("Reset code sent")
-        r: requests.Response = reset_code(
-            conn=self.conn,
-            computation_uuid=computation_uuid
-        )
+        r: requests.Response = reset_code(conn=self.conn,
+                                          computation_uuid=computation_uuid)
 
         if not r.ok:
-            raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
+            raise Exception(
+                f"Unexpected response ({r.status_code}): {r.content!r}")
 
         return Computation.from_json_dict(r.json())

@@ -15,11 +15,10 @@ import nacl.utils
 from nacl.public import PrivateKey, PublicKey, SealedBox
 from nacl.secret import SecretBox
 from nacl.signing import SigningKey, VerifyKey
-from nacl.bindings.crypto_scalarmult import (crypto_scalarmult,
-                                             crypto_scalarmult_ed25519_base,
-                                             crypto_scalarmult_ed25519_SCALARBYTES)
-from nacl.bindings import (crypto_sign_keypair,
-                           crypto_sign_seed_keypair,
+from nacl.bindings.crypto_scalarmult import (
+    crypto_scalarmult, crypto_scalarmult_ed25519_base,
+    crypto_scalarmult_ed25519_SCALARBYTES)
+from nacl.bindings import (crypto_sign_keypair, crypto_sign_seed_keypair,
                            crypto_sign_ed25519_sk_to_curve25519,
                            crypto_sign_ed25519_pk_to_curve25519,
                            crypto_sign_SEEDBYTES)
@@ -90,8 +89,7 @@ def ed25519_keygen() -> Tuple[bytes, bytes, bytes]:
     public_key, sk = crypto_sign_keypair()  # type: bytes, bytes
     seed: bytes = sk[:crypto_sign_SEEDBYTES]
     private_key: bytes = hashlib.sha512(
-        seed
-    ).digest()[:crypto_scalarmult_ed25519_SCALARBYTES]
+        seed).digest()[:crypto_scalarmult_ed25519_SCALARBYTES]
 
     return public_key, seed, private_key
 
@@ -110,10 +108,7 @@ def ed25519_seed_keygen(seed: bytes) -> Tuple[bytes, bytes, bytes]:
     assert seed == sk[:crypto_sign_SEEDBYTES]
 
     private_key: bytearray = bytearray(
-        hashlib.sha512(
-            seed
-        ).digest()[:crypto_scalarmult_ed25519_SCALARBYTES]
-    )
+        hashlib.sha512(seed).digest()[:crypto_scalarmult_ed25519_SCALARBYTES])
 
     # see: src/libsodium/crypto_sign/ed25519/ref10/keypair.c#L19
     private_key[0] &= 248
@@ -140,7 +135,8 @@ def ed25519_pubkey_from_privkey(private_key: bytes) -> bytes:
     return crypto_scalarmult_ed25519_base(private_key)
 
 
-def ed25519_to_x25519_keypair(public_key: bytes, seed: bytes) -> Tuple[bytes, bytes]:
+def ed25519_to_x25519_keypair(public_key: bytes,
+                              seed: bytes) -> Tuple[bytes, bytes]:
     """Map an edwards25519 keypair to a curve25519 keypair.
 
     Parameters
@@ -156,7 +152,8 @@ def ed25519_to_x25519_keypair(public_key: bytes, seed: bytes) -> Tuple[bytes, by
         Keypair for X25519
 
     """
-    x25519_privkey: bytes = crypto_sign_ed25519_sk_to_curve25519(seed + public_key)
+    x25519_privkey: bytes = crypto_sign_ed25519_sk_to_curve25519(seed +
+                                                                 public_key)
     x25519_pubkey: bytes = crypto_sign_ed25519_pk_to_curve25519(public_key)
 
     return x25519_pubkey, x25519_privkey
@@ -244,11 +241,8 @@ def encrypt_file(path: Path, key: bytes) -> Path:
     return out_path
 
 
-def encrypt_directory(dir_path: Path,
-                      patterns: List[str],
-                      key: bytes,
-                      exceptions: List[str],
-                      dir_exceptions: List[str],
+def encrypt_directory(dir_path: Path, patterns: List[str], key: bytes,
+                      exceptions: List[str], dir_exceptions: List[str],
                       out_dir_path: Path) -> bool:
     """Encrypt the content of directory `dir_path` using XSalsa20-Poly1305.
 
@@ -284,7 +278,8 @@ def encrypt_directory(dir_path: Path,
     for pattern in patterns:  # type: str
         for path in out_dir_path.rglob(pattern):  # type: Path
             if path.is_file() and path.name not in exceptions and all(
-                    directory not in path.parts for directory in dir_exceptions):
+                    directory not in path.parts
+                    for directory in dir_exceptions):
                 encrypt_file(path, key)
                 path.unlink()
 
@@ -460,7 +455,8 @@ def verify(data: bytes, sig: bytes, public_key: bytes) -> bytes:
     """
     verify_key: VerifyKey = VerifyKey(public_key)
 
-    return verify_key.verify(data, sig)  # raise nacl.exceptions.BadSignatureError
+    return verify_key.verify(data,
+                             sig)  # raise nacl.exceptions.BadSignatureError
 
 
 def random_symkey() -> bytes:
@@ -499,6 +495,5 @@ def derive_psk(words: Tuple[str, str, str]) -> bytes:
         iterations=390000,
     )
 
-    return kdf.derive(
-        b"".join([normalize("NFKD", word).encode("utf-8") for word in words])
-    )
+    return kdf.derive(b"".join(
+        [normalize("NFKD", word).encode("utf-8") for word in words]))

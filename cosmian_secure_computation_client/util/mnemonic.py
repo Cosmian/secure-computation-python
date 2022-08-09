@@ -277,8 +277,7 @@ BIP39_MNEMONIC: List[str] = [
 
 def random_words() -> Tuple[str, str, str]:
     """Generate 3 random words from the BIP39 wordlist."""
-    return (secrets.choice(BIP39_MNEMONIC),
-            secrets.choice(BIP39_MNEMONIC),
+    return (secrets.choice(BIP39_MNEMONIC), secrets.choice(BIP39_MNEMONIC),
             secrets.choice(BIP39_MNEMONIC))
 
 
@@ -295,7 +294,9 @@ def parse_words(words: str) -> Tuple[str, str, str]:
     """Split `words` and check that the 3 words belong to the BIP39 wordlist."""
     for sep in ("-", " "):  # type: str
         wordlist: Tuple[str, ...] = tuple(words.split(sep))
-        if len(wordlist) == 3 and check_words(cast(Tuple[str, str, str], wordlist)):
+        if len(wordlist) == 3 and check_words(
+                cast(Tuple[str, str, str], wordlist)):
             return cast(Tuple[str, str, str], wordlist)
 
-    raise ValueError(f"can't parse the 3 words '{words}' (maybe check for typo?)")
+    raise ValueError(
+        f"can't parse the 3 words '{words}' (maybe check for typo?)")

@@ -31,15 +31,14 @@ class ResultConsumerAPI(BaseAPI):
         """Download the result of the computation if available."""
         self.log.debug("Result available")
         r: requests.Response = download_result(
-            conn=self.conn,
-            computation_uuid=computation_uuid
-        )
+            conn=self.conn, computation_uuid=computation_uuid)
 
         if r.status_code == requests.codes["accepted"]:
             return None
 
         if not r.ok:
-            raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
+            raise Exception(
+                f"Unexpected response ({r.status_code}): {r.content!r}")
 
         encrypted_result: bytes
         try:
@@ -65,8 +64,9 @@ class ResultConsumerAPI(BaseAPI):
             if comp.runs.current is None and len(comp.runs.previous) == 1:
                 run = comp.runs.previous[0]
                 if run.exit_code != 0:
-                    raise Exception("Execution failed: "
-                                    f"{(run.exit_code, run.stdout, run.stderr)}")
+                    raise Exception(
+                        "Execution failed: "
+                        f"{(run.exit_code, run.stdout, run.stderr)}")
                 return cast(bytes, self.fetch_result(computation_uuid))
 
             time.sleep(sleep_duration)

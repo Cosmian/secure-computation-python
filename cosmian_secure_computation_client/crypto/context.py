@@ -7,20 +7,10 @@ from uuid import UUID
 
 from cryptography.hazmat.primitives import serialization
 
-from cosmian_secure_computation_client.crypto.helper import (ed25519_keygen,
-                                                             ed25519_seed_keygen,
-                                                             ed25519_to_x25519_pubkey,
-                                                             encrypt,
-                                                             decrypt,
-                                                             derive_psk,
-                                                             encrypt_file,
-                                                             decrypt_file,
-                                                             encrypt_directory,
-                                                             decrypt_directory,
-                                                             random_symkey,
-                                                             pubkey_fingerprint,
-                                                             seal,
-                                                             sign)
+from cosmian_secure_computation_client.crypto.helper import (
+    ed25519_keygen, ed25519_seed_keygen, ed25519_to_x25519_pubkey, encrypt,
+    decrypt, derive_psk, encrypt_file, decrypt_file, encrypt_directory,
+    decrypt_directory, random_symkey, pubkey_fingerprint, seal, sign)
 from cosmian_secure_computation_client.side import Side
 from cosmian_secure_computation_client.util.base64 import Base64Encoder
 from cosmian_secure_computation_client.util.mnemonic import parse_words
@@ -73,22 +63,18 @@ class CryptoContext:
         self.side: Side = side
         self.ed25519_pk, self.ed25519_seed, self.ed25519_sk = (
             ed25519_keygen() if ed25519_seed is None else
-            ed25519_seed_keygen(ed25519_seed)
-        )  # type: bytes, bytes, bytes
+            ed25519_seed_keygen(ed25519_seed))  # type: bytes, bytes, bytes
         self.ed25519_fingerprint: bytes = pubkey_fingerprint(self.ed25519_pk)
         self._symkey: bytes = symkey if symkey else random_symkey()
-        self._words: Tuple[str, str, str] = (parse_words(words)
-                                             if isinstance(words, str) else words)
+        self._words: Tuple[str, str, str] = (parse_words(words) if isinstance(
+            words, str) else words)
         self.preshared_sk: bytes = derive_psk(self._words)
 
     @classmethod
-    def from_path(cls,
-                  computation_uuid: str,
-                  side: Side,
-                  words: Union[str, Tuple[str, str, str]],
-                  private_key: Optional[Path],
-                  password: Optional[bytes],
-                  symmetric_key: Optional[Path]):
+    def from_path(cls, computation_uuid: str, side: Side,
+                  words: Union[str, Tuple[str, str,
+                                          str]], private_key: Optional[Path],
+                  password: Optional[bytes], symmetric_key: Optional[Path]):
         """Create `CryptoContext` from files.
 
         Parameters
@@ -117,17 +103,15 @@ class CryptoContext:
                 raise Exception(f"can't find private key file: {private_key}")
 
             ed25519_seed = serialization.load_pem_private_key(
-                data=private_key.read_bytes(),
-                password=password
-            ).private_bytes(
-                encoding=serialization.Encoding.Raw,
-                format=serialization.PrivateFormat.Raw,
-                encryption_algorithm=serialization.NoEncryption()
-            )
+                data=private_key.read_bytes(), password=password).private_bytes(
+                    encoding=serialization.Encoding.Raw,
+                    format=serialization.PrivateFormat.Raw,
+                    encryption_algorithm=serialization.NoEncryption())
 
         if symmetric_key:
             if not symmetric_key.exists():
-                raise Exception(f"can't find symmetric key file: {symmetric_key}")
+                raise Exception(
+                    f"can't find symmetric key file: {symmetric_key}")
 
             symkey = symmetric_key.read_bytes()
 
@@ -136,13 +120,11 @@ class CryptoContext:
     @classmethod
     def from_dict(cls, d: Dict[str, Union[str, bytes]]):
         """Create `CryptoContext` from dict."""
-        return cls(
-            computation_uuid=cast(str, d["computation_uuid"]),
-            side=Side[cast(str, d["side"])],
-            words=cast(str, d["words"]),
-            ed25519_seed=cast(bytes, d["ed25519_seed"]),
-            symkey=cast(bytes, d["symkey"])
-        )
+        return cls(computation_uuid=cast(str, d["computation_uuid"]),
+                   side=Side[cast(str, d["side"])],
+                   words=cast(str, d["words"]),
+                   ed25519_seed=cast(bytes, d["ed25519_seed"]),
+                   symkey=cast(bytes, d["symkey"]))
 
     @classmethod
     def from_json(cls, value: str):
@@ -220,11 +202,8 @@ class CryptoContext:
         """
         return encrypt_file(path, self._symkey)
 
-    def encrypt_directory(self,
-                          dir_path: Path,
-                          patterns: List[str],
-                          exceptions: List[str],
-                          dir_exceptions: List[str],
+    def encrypt_directory(self, dir_path: Path, patterns: List[str],
+                          exceptions: List[str], dir_exceptions: List[str],
                           out_dir_path: Path) -> bool:
         """Encrypt the content of directory `dir_path` using XSalsa20-Poly1305.
 
@@ -247,12 +226,8 @@ class CryptoContext:
             True if success, raise an exception otherwise.
 
         """
-        return encrypt_directory(dir_path,
-                                 patterns,
-                                 self._symkey,
-                                 exceptions,
-                                 dir_exceptions,
-                                 out_dir_path)
+        return encrypt_directory(dir_path, patterns, self._symkey, exceptions,
+                                 dir_exceptions, out_dir_path)
 
     def decrypt(self, encrypted_data: bytes) -> bytes:
         """Decrypt bytes `encrypted_data` using XSalsa20-Poly1305.
@@ -347,10 +322,12 @@ class CryptoContext:
                                nonce=blake2b(ephemeral_pk ‖ x25519_recipient_pk)))
 
         """
-        x25519_recipient_pk: bytes = ed25519_to_x25519_pubkey(ed25519_recipient_pk)
+        x25519_recipient_pk: bytes = ed25519_to_x25519_pubkey(
+            ed25519_recipient_pk)
         # seal_box = SealBox(self.preshared_sk || self._symkey,
         #                    x25519_recipient_pk) (112)
-        seal_box: bytes = seal(self.preshared_sk + self._symkey, x25519_recipient_pk)
+        seal_box: bytes = seal(self.preshared_sk + self._symkey,
+                               x25519_recipient_pk)
         # sig = Sign(computation_uuid || seal_box, self.ed25519_seed) (64)
         sig: bytes = self.sign(self.computation_uuid.bytes + seal_box)
 
