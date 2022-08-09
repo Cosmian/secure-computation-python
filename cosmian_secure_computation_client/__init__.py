@@ -10,39 +10,15 @@ from cosmian_secure_computation_client.participant.computation_owner import (
 from cosmian_secure_computation_client.participant.data_provider import DataProviderAPI
 from cosmian_secure_computation_client.participant.result_consumer import (
     ResultConsumerAPI)
-from cosmian_secure_computation_client.computations import (Computation,
-                                                            Owner,
-                                                            CodeProvider,
-                                                            DataProvider,
-                                                            ResultConsumer,
-                                                            Enclave,
-                                                            EnclaveIdentity,
-                                                            EnclaveIdentityLockError,
-                                                            Runs,
-                                                            CurrentRun,
-                                                            PreviousRun,
-                                                            PublicKey,
-                                                            Role)
+from cosmian_secure_computation_client.computations import (
+    Computation, Owner, CodeProvider, DataProvider, ResultConsumer, Enclave,
+    EnclaveIdentity, EnclaveIdentityLockError, Runs, CurrentRun, PreviousRun,
+    PublicKey, Role)
 
 __all__ = [
-    "azure_remote_attestation",
-    "CryptoContext",
-    "Side",
-    "CodeProviderAPI",
-    "ComputationOwnerAPI",
-    "DataProviderAPI",
-    "ResultConsumerAPI",
-    "Computation",
-    "Owner",
-    "CodeProvider",
-    "DataProvider",
-    "ResultConsumer",
-    "Enclave",
-    "EnclaveIdentity",
-    "EnclaveIdentityLockError",
-    "Runs",
-    "CurrentRun",
-    "PreviousRun",
-    "PublicKey",
-    "Role"
+    "azure_remote_attestation", "CryptoContext", "Side", "CodeProviderAPI",
+    "ComputationOwnerAPI", "DataProviderAPI", "ResultConsumerAPI",
+    "Computation", "Owner", "CodeProvider", "DataProvider", "ResultConsumer",
+    "Enclave", "EnclaveIdentity", "EnclaveIdentityLockError", "Runs",
+    "CurrentRun", "PreviousRun", "PublicKey", "Role"
 ]

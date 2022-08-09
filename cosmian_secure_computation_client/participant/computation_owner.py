@@ -30,11 +30,9 @@ class ComputationOwnerAPI:
 
     def __init__(self, token: str) -> None:
         """Init constructor of ComputationOwnerAPI."""
-        self.conn = Connection(
-            base_url=os.getenv("COSMIAN_BASE_URL",
-                               default="https://backend.cosmian.com"),
-            refresh_token=token
-        )
+        self.conn = Connection(base_url=os.getenv(
+            "COSMIAN_BASE_URL", default="https://backend.cosmian.com"),
+                               refresh_token=token)
 
     @staticmethod
     def random_words() -> Tuple[str, str, str]:
@@ -57,11 +55,11 @@ class ComputationOwnerAPI:
             cp_mail=code_provider_email,
             dps_mail=data_providers_emails,
             rcs_mail=result_consumers_emails,
-            dev_mode=dev_mode
-        )
+            dev_mode=dev_mode)
 
         if not r.ok:
-            raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
+            raise Exception(
+                f"Unexpected response ({r.status_code}): {r.content!r}")
 
         c: Computation = Computation.from_json_dict(r.json())
         LOGGER.info("Computation '%s' created: %s", c.name, c.uuid)
@@ -73,9 +71,13 @@ class ComputationOwnerAPI:
         r: requests.Response = computations(conn=self.conn)
 
         if not r.ok:
-            raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
+            raise Exception(
+                f"Unexpected response ({r.status_code}): {r.content!r}")
 
-        cs: List[Computation] = [Computation.from_json_dict(dct) for dct in r.json()]
-        LOGGER.info("Computations available: %s", [(c.name, c.uuid) for c in cs])
+        cs: List[Computation] = [
+            Computation.from_json_dict(dct) for dct in r.json()
+        ]
+        LOGGER.info("Computations available: %s",
+                    [(c.name, c.uuid) for c in cs])
 
         return cs
