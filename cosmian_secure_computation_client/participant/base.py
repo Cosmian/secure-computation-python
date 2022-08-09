@@ -56,7 +56,7 @@ class BaseAPI:
             f"cscc.{side}.{self.ctx.fingerprint.hex()}")
         self.log.setLevel(LOGGER.level)
 
-    def register(self, computation_uuid: str) -> Computation:
+    def register(self, computation_uuid: str) -> None:
         """Send your public key and role for a specific `computation_uuid`."""
         r: requests.Response = register(conn=self.conn,
                                         computation_uuid=computation_uuid,
@@ -69,8 +69,6 @@ class BaseAPI:
 
         self.log.info("Participant %s registered to the enclave",
                       self.ctx.public_key.hex()[:16])
-
-        return Computation.from_json_dict(r.json())
 
     def get_computation(self, computation_uuid: str) -> Computation:
         """Retrieve computation information related to `computation_uuid`."""
@@ -100,7 +98,7 @@ class BaseAPI:
         return cs
 
     def key_provisioning(self, computation_uuid: str,
-                         enclave_public_key: bytes) -> Computation:
+                         enclave_public_key: bytes) -> None:
         """Send your symmetric key sealed for `enclave_public_key`."""
         self.log.debug("Sealing symmetric key for %s and signing...",
                        enclave_public_key.hex()[:16])
@@ -117,8 +115,6 @@ class BaseAPI:
         if not r.ok:
             raise Exception(
                 f"Unexpected response ({r.status_code}): {r.content!r}")
-
-        return Computation.from_json_dict(r.json())
 
     def wait_for_enclave_identity(self,
                                   computation_uuid: str,
