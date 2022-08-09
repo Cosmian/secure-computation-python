@@ -6,7 +6,8 @@ from typing import List, Optional, Set
 
 import requests
 
-from cosmian_secure_computation_client.api.provider import upload_code, reset_code
+from cosmian_secure_computation_client.api.provider import (
+    upload_code, upload_code_from_git, reset_code)
 from cosmian_secure_computation_client.util.fs import tar
 from cosmian_secure_computation_client.participant.base import BaseAPI
 from cosmian_secure_computation_client.side import Side
@@ -77,6 +78,21 @@ class CodeProviderAPI(BaseAPI):
                 f"Unexpected response ({r.status_code}): {r.content!r}")
 
         return tar_path
+
+    def upload_code_from_git(self,
+                             computation_uuid: str,
+                             git_url: str,
+                             ref_name: Optional[str] = None) -> None:
+        """Send your Python code a from GitHub repository URL."""
+        r: requests.Response = upload_code_from_git(
+            conn=self.conn,
+            computation_uuid=computation_uuid,
+            git_url=git_url,
+            ref_name=ref_name)
+
+        if not r.ok:
+            raise Exception(
+                f"Unexpected response ({r.status_code}): {r.content!r}")
 
     def reset(self, computation_uuid: str) -> None:
         """Delete the Python code of `computation_uuid` on Cosmian's backend."""

@@ -1,7 +1,7 @@
 """cosmian_secure_computation_client.api.provider module."""
 
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import requests
 
@@ -68,6 +68,19 @@ def upload_code(conn: Connection,
 
     if not keep:
         tar_path.unlink()
+
+    return response
+
+
+def upload_code_from_git(conn: Connection, computation_uuid: str, git_url: str,
+                         ref_name: Optional[str]) -> requests.Response:
+    """POST `/computations/{computation_uuid}/repository` (for CP only)."""
+    response: requests.Response = conn.post(
+        url=f"/computations/{computation_uuid}/repository",
+        json={"github": {
+            "repository_url": git_url,
+            "ref_name": ref_name
+        }})
 
     return response
 
