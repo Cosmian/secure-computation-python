@@ -1,53 +1,37 @@
+import os
 from pathlib import Path
 from typing import Dict, Tuple
 
 import pytest
-from cosmian_secure_computation_client import CodeProviderAPI, DataProviderAPI, ResultConsumerAPI
+from cosmian_secure_computation_client import (ComputationOwnerAPI, CodeProviderAPI,
+                                               DataProviderAPI, ResultConsumerAPI, CryptoContext,
+                                               Side)
 
 from keys import *
 
 
 def pytest_addoption(parser):
-    parser.addoption("--host",
+    parser.addoption("--cosmian_api_token",
                      action="store",
-                     default="127.0.0.1")
-    parser.addoption("--port",
+                     default=os.getenv("COSMIAN_TOKEN", default=""))
+    parser.addoption("--cosmian_email_account",
                      action="store",
-                     default=None)
-    parser.addoption("--ssl",
-                     action="store_true",
-                     default=False)
-    parser.addoption("--user",
+                     default=os.getenv("COSMIAN_ACCOUNT",
+                                       default="alice@cosmian.com"))
+    parser.addoption("--url",
                      action="store",
-                     default=None)
-    parser.addoption("--pass",
-                     action="store",
-                     default=None)
+                     default=os.getenv("COSMIAN_BASE_URL",
+                                       default="https://backend.cosmian.com"))
 
 
 @pytest.fixture(scope="session")
-def host(pytestconfig):
-    return pytestconfig.getoption("host")
+def cosmian_api_token(pytestconfig):
+    return pytestconfig.getoption("cosmian_api_token")
 
 
 @pytest.fixture(scope="session")
-def port(pytestconfig):
-    return pytestconfig.getoption("port")
-
-
-@pytest.fixture(scope="session")
-def ssl(pytestconfig):
-    return pytestconfig.getoption("ssl")
-
-
-@pytest.fixture(scope="session")
-def user(pytestconfig):
-    return pytestconfig.getoption("user")
-
-
-@pytest.fixture(scope="session")
-def passwd(pytestconfig):
-    return pytestconfig.getoption("pass")
+def cosmian_email_account(pytestconfig):
+    return pytestconfig.getoption("cosmian_email_account")
 
 
 @pytest.fixture(scope="module")
@@ -58,11 +42,6 @@ def cp_root_path():
 @pytest.fixture(scope="module")
 def code_path():
     return Path(__file__).parent / "data" / "cp" / "enclave-join"
-
-
-@pytest.fixture(scope="module")
-def code_name():
-    return (Path(__file__).parent / "data" / "cp" / "enclave-join").name
 
 
 @pytest.fixture(scope="module")
@@ -81,69 +60,76 @@ def rc_root_path():
 
 
 @pytest.fixture(scope="module")
-def code_provider(host, port, ssl, user, passwd):
-    cp = CodeProviderAPI(
-        host,
-        port,
-        ssl,
-        (user, passwd) if user and passwd else None
-    )
-    cp.set_keypair(
-        public_key=CP_PUBKEY,
-        private_key=CP_PRIVKEY
-    )
-    cp.set_symkey(CP_SYMKEY)
+def words():
+    return ("cargo", "error", "thank")
+
+
+@pytest.fixture(scope="module")
+def co(cosmian_api_token):
+    yield ComputationOwnerAPI(token=cosmian_api_token)
+
+@pytest.fixture(scope="module")
+def computation_uuid(co, cosmian_email_account):
+    computation = co.create_computation(
+        name="test-e2e-secure-computation",
+        code_provider_email=f"{cosmian_email_account}",
+        data_providers_emails=[f"{cosmian_email_account}"],
+        result_consumers_emails=[f"{cosmian_email_account}"])
+
+    yield computation.uuid
+
+@pytest.fixture(scope="module")
+def cp(cosmian_api_token, words, computation_uuid):
+    cp_ctx = CryptoContext.from_dict({
+        "computation_uuid": computation_uuid,
+        "side": "CodeProvider",
+        "words": words,
+        "ed25519_seed": CP_ED25519_SEED,
+        "symkey": CP_SYMKEY
+    })
+    cp = CodeProviderAPI(token=cosmian_api_token, ctx=cp_ctx)
 
     yield cp
 
 
 @pytest.fixture(scope="module")
-def data_provider1(host, port, ssl, user, passwd):
-    dp = DataProviderAPI(
-        host,
-        port,
-        ssl,
-        (user, passwd) if user and passwd else None
-    )
-    dp.set_keypair(
-        public_key=DP1_PUBKEY,
-        private_key=DP1_PRIVKEY
-    )
-    dp.set_symkey(DP1_SYMKEY)
+def dp1(cosmian_api_token, words, computation_uuid):
+    dp1_ctx = CryptoContext.from_dict({
+        "computation_uuid": computation_uuid,
+        "side": "DataProvider",
+        "words": words,
+        "ed25519_seed": DP1_ED25519_SEED,
+        "symkey": DP1_SYMKEY
+    })
+    dp1 = DataProviderAPI(token=cosmian_api_token, ctx=dp1_ctx)
 
-    yield dp
+    yield dp1
 
 
 @pytest.fixture(scope="module")
-def data_provider2(host, port, ssl, user, passwd):
-    dp = DataProviderAPI(
-        host,
-        port,
-        ssl,
-        (user, passwd) if user and passwd else None
-    )
-    dp.set_keypair(
-        public_key=DP2_PUBKEY,
-        private_key=DP2_PRIVKEY
-    )
-    dp.set_symkey(DP2_SYMKEY)
+def dp2(cosmian_api_token, words, computation_uuid):
+    dp2_ctx = CryptoContext.from_dict({
+        "computation_uuid": computation_uuid,
+        "side": "DataProvider",
+        "words": words,
+        "ed25519_seed": DP2_ED25519_SEED,
+        "symkey": DP2_SYMKEY
+    })
+    dp2 = DataProviderAPI(token=cosmian_api_token, ctx=dp2_ctx)
 
-    yield dp
+    yield dp2
 
 
 @pytest.fixture(scope="module")
-def result_consumer(host, port, ssl, user, passwd):
-    rc = ResultConsumerAPI(
-        host,
-        port,
-        ssl,
-        (user, passwd) if user and passwd else None
-    )
-    rc.set_keypair(
-        public_key=RC_PUBKEY,
-        private_key=RC_PRIVKEY
-    )
-    rc.set_symkey(RC_SYMKEY)
+def rc(cosmian_api_token, words, computation_uuid):
+    rc_ctx = CryptoContext.from_dict({
+        "computation_uuid": computation_uuid,
+        "side": "ResultConsumer",
+        "words": words,
+        "ed25519_seed": RC_ED25519_SEED,
+        "symkey": RC_SYMKEY
+    })
+    rc = ResultConsumerAPI(token=cosmian_api_token, ctx=rc_ctx)
 
     yield rc
 

@@ -1,111 +1,111 @@
+from dataclasses import dataclass
+import hashlib
+# from pprint import pprint
 import pytest
+from typing import Optional
 
-from cosmian_secure_computation_client.side import Side
+from cosmian_secure_computation_client import EnclaveIdentity
+from cosmian_secure_computation_client import azure_remote_attestation
 
 from keys import *
+
+
+@dataclass
+class State:
+    enclave_public_key: Optional[bytes]
 
 
 @pytest.mark.incremental
 class TestAPI:
     @staticmethod
-    def create_computation(code_provider):
-        assert True is True
+    @pytest.fixture(autouse=True, scope="class")
+    def state() -> State:
+        return State(enclave_public_key=None)
 
-    # def test_first_status(self, code_provider):
-    #     assert code_provider.status() == {"pub_keys": {}}
+    @staticmethod
+    def test_register(computation_uuid, cp, dp1, dp2, rc):
+        cp.register(computation_uuid)
+        dp1.register(computation_uuid)
+        # dp2.register(computation_uuid)
+        rc.register(computation_uuid)
 
-    # @staticmethod
-    # def test_hello(code_provider,
-    #                data_provider1,
-    #                data_provider2,
-    #                result_consumer):
-    #     assert "success" in code_provider.hello()
-    #     assert "success" in data_provider1.hello()
-    #     assert "success" in data_provider2.hello()
-    #     assert "success" in result_consumer.hello()
+        computation = cp.get_computation(computation_uuid)
 
-    # @staticmethod
-    # def test_cp_upload(code_provider, code_path):
-    #     response = code_provider.upload(
-    #         dir_path=code_path,
-    #         exceptions=None,
-    #         encrypt=True
-    #     )
+        assert computation.code_provider.public_key is not None
+        assert computation.data_providers[0].public_key is not None  # dp1
+        # assert computation.data_providers[1].public_key is not None  # dp2
+        assert computation.result_consumers[0].public_key is not None
 
-    #     assert "success" in response
+        assert bytes.fromhex(computation.code_provider.public_key.content) == CP_ED25519_PUBKEY
+        assert bytes.fromhex(computation.data_providers[0].public_key.content) == DP1_ED25519_PUBKEY
+        # assert bytes.fromhex(
+        #     computation.data_providers[1].public_key.content) == DP2_ED25519_PUBKEY
+        assert bytes.fromhex(
+            computation.result_consumers[0].public_key.content) == RC_ED25519_PUBKEY
 
-    # def test_status(self, code_provider):
-    #     response = code_provider.status()
+    @staticmethod
+    def test_cp_upload(computation_uuid, cp, code_path):
+        cp.upload_code(
+            computation_uuid=computation_uuid,
+            directory_path=code_path)
 
-    #     assert "pub_keys" in response
+        computation = cp.get_computation(computation_uuid)
 
-    #     pubkeys = response["pub_keys"]
+        assert computation.code_provider.code_uploaded_at is not None
 
-    #     assert pubkeys == {
-    #         Side.CodeProvider: [CP_PUBKEY],
-    #         Side.DataProvider: [DP1_PUBKEY, DP2_PUBKEY],
-    #         Side.ResultConsumer: [RC_PUBKEY]
-    #     }
+    @staticmethod
+    def test_identity_and_remote_attestation(state, computation_uuid, cp):
+        enclave_public_key: bytes = cp.wait_for_enclave_identity(computation_uuid)
+        state.enclave_public_key = enclave_public_key
+        hash_enclave_pk: bytes = hashlib.sha256(enclave_public_key).digest()
 
-    # def test_key_finalize(self,
-    #                       code_provider,
-    #                       data_provider1,
-    #                       data_provider2,
-    #                       result_consumer):
-    #     cp_resp = code_provider.key_finalize()
+        computation = cp.get_computation(computation_uuid)
 
-    #     assert "pub_key" in cp_resp
-    #     assert "side" in cp_resp
-    #     assert cp_resp["side"] == Side.Enclave
+        assert computation.enclave.identity is not None
+        assert isinstance(computation.enclave.identity, EnclaveIdentity)
+        assert computation.enclave.identity.public_key == enclave_public_key
 
-    #     dp1_resp = data_provider1.key_finalize()
+        quote = computation.enclave.identity.quote
+        response = azure_remote_attestation(quote)
+        # pprint(response)
 
-    #     assert "pub_key" in dp1_resp
-    #     assert "side" in dp1_resp
-    #     assert dp1_resp["side"] == Side.Enclave
+        assert response["tee"] == "sgx"
+        assert response["x-ms-sgx-is-debuggable"] is False
+        assert response["x-ms-sgx-product-id"] == 0
+        assert response["x-ms-sgx-svn"] == 0
+        assert response["x-ms-attestation-type"] == "sgx"
 
-    #     dp2_resp = data_provider2.key_finalize()
+        print(f"MRENCLAVE: {response['x-ms-sgx-mrenclave']}")
+        print(f"MRSIGNER: {response['x-ms-sgx-mrsigner']}")
+        print(f"Enclave pk: {enclave_public_key.hex()}")
+        print(f"SHA-256(Enclave pk): {hash_enclave_pk.hex()}")
+        print(f"Report User Data: {response['x-ms-sgx-report-data']}")
 
-    #     assert "pub_key" in dp2_resp
-    #     assert "side" in dp2_resp
-    #     assert dp2_resp["side"] == Side.Enclave
+    def test_dp_upload(self, computation_uuid, dp1, dp1_root_path, dp2, dp2_root_path):
+        dp1.upload_files(computation_uuid=computation_uuid,
+                         paths=dp1_root_path.glob("*"))
+        dp1.upload_files(computation_uuid=computation_uuid,
+                         paths=dp2_root_path.glob("*"))
+        # dp2.upload_files(computation_uuid=computation_uuid,
+        #                  paths=dp2_root_path.glob("*"))
+        dp1.done(computation_uuid)
+        # dp2.done(computation_uuid)
 
-    #     rc_resp = result_consumer.key_finalize()
+    @staticmethod
+    def test_key_provisioning(state, computation_uuid, cp, dp1, dp2, rc):
+        assert state.enclave_public_key is not None
 
-    #     assert "pub_key" in rc_resp
-    #     assert "side" in rc_resp
-    #     assert rc_resp["side"] == Side.Enclave
+        cp.key_provisioning(computation_uuid=computation_uuid,
+                            enclave_public_key=state.enclave_public_key)
+        dp1.key_provisioning(computation_uuid=computation_uuid,
+                             enclave_public_key=state.enclave_public_key)
+        # dp2.key_provisioning(computation_uuid=computation_uuid,
+        #                      enclave_public_key=enclave_public_key)
+        rc.key_provisioning(computation_uuid=computation_uuid,
+                            enclave_public_key=state.enclave_public_key)
 
-    #     assert (cp_resp["pub_key"] == dp1_resp["pub_key"] ==
-    #             dp2_resp["pub_key"] == rc_resp["pub_key"])
+    @staticmethod
+    def test_run(computation_uuid, rc, rc_root_path):
+        result = rc.wait_result(computation_uuid)
 
-    # def test_dp_upload(self,
-    #                    data_provider1,
-    #                    dp1_root_path,
-    #                    data_provider2,
-    #                    dp2_root_path,
-    #                    code_name):
-    #     assert data_provider1.push_files(code_name,
-    #                                      dp1_root_path.glob("*.csv"))
-    #     assert data_provider1.list_data(code_name) == {"data": ["A.csv.enc"], "total": 1}
-    #     assert data_provider2.push_files(code_name,
-    #                                      dp2_root_path.glob("*.csv"))
-    #     assert data_provider2.list_data(code_name) =={"data": ["B.csv.enc"], "total": 1}
-
-    # @staticmethod
-    # def test_key_provisioning(code_provider,
-    #                           data_provider1,
-    #                           data_provider2,
-    #                           result_consumer):
-    #     assert "success" in code_provider.key_provisioning()
-    #     assert "success" in data_provider1.key_provisioning()
-    #     assert "success" in data_provider2.key_provisioning()
-    #     assert "success" in result_consumer.key_provisioning()
-
-    # @staticmethod
-    # def test_run(result_consumer, rc_root_path, code_name):
-    #     assert result_consumer.run(code_name)
-
-    #     result = result_consumer.fetch_result(code_name)
-    #     assert result is not None
-    #     assert result == (rc_root_path / "result.csv").read_bytes()
+        assert result == (rc_root_path / "result.csv").read_bytes()
