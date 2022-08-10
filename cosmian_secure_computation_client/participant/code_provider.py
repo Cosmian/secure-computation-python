@@ -11,8 +11,7 @@ from cosmian_secure_computation_client.util.fs import tar
 from cosmian_secure_computation_client.participant.base import BaseAPI
 from cosmian_secure_computation_client.side import Side
 from cosmian_secure_computation_client.crypto.context import CryptoContext
-from cosmian_secure_computation_client.computations import Computation
-from cosmian_secure_computation_client.util.run_py import validate_run_py
+from cosmian_secure_computation_client.util.entrypoint import validate_entrypoint
 
 
 class CodeProviderAPI(BaseAPI):
@@ -43,7 +42,7 @@ class CodeProviderAPI(BaseAPI):
             raise FileNotFoundError("Entrypoint 'run.py' not found!")
 
         self.log.debug("Checking run.py content...")
-        validate_run_py(directory_path / "run.py")
+        validate_entrypoint(directory_path / "run.py")
 
         enc_directory_path: Path = (Path(tempfile.gettempdir()) / "cscc" /
                                     f"{computation_uuid}" / directory_path.name)
@@ -74,7 +73,7 @@ class CodeProviderAPI(BaseAPI):
 
         return r.json()
 
-    def reset(self, computation_uuid: str) -> Computation:
+    def reset(self, computation_uuid: str) -> None:
         """Delete the Python code of `computation_uuid` on Cosmian's backend."""
         self.log.info("Reset code sent")
         r: requests.Response = reset_code(conn=self.conn,
@@ -83,5 +82,3 @@ class CodeProviderAPI(BaseAPI):
         if not r.ok:
             raise Exception(
                 f"Unexpected response ({r.status_code}): {r.content!r}")
-
-        return Computation.from_json_dict(r.json())
