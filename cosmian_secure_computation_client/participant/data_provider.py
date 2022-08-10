@@ -9,7 +9,6 @@ from cosmian_secure_computation_client.api.provider import upload_data, reset_da
 from cosmian_secure_computation_client.participant.base import BaseAPI
 from cosmian_secure_computation_client.side import Side
 from cosmian_secure_computation_client.crypto.context import CryptoContext
-from cosmian_secure_computation_client.computations import Computation
 
 
 class DataProviderAPI(BaseAPI):
@@ -53,7 +52,7 @@ class DataProviderAPI(BaseAPI):
 
             self.upload_data(computation_uuid, path.name, path.read_bytes())
 
-    def done(self, computation_uuid: str) -> Computation:
+    def done(self, computation_uuid: str) -> None:
         """Confirm that all data has been sent."""
         r: requests.Response = done(conn=self.conn,
                                     computation_uuid=computation_uuid)
@@ -64,9 +63,7 @@ class DataProviderAPI(BaseAPI):
             raise Exception(
                 f"Unexpected response ({r.status_code}): {r.content!r}")
 
-        return Computation.from_json_dict(r.json())
-
-    def reset(self, computation_uuid: str) -> Computation:
+    def reset(self, computation_uuid: str) -> None:
         """Remove all data sent for a specific `computation_uuid`."""
         self.log.info("Reset data sent")
         r: requests.Response = reset_data(conn=self.conn,
@@ -75,5 +72,3 @@ class DataProviderAPI(BaseAPI):
         if not r.ok:
             raise Exception(
                 f"Unexpected response ({r.status_code}): {r.content!r}")
-
-        return Computation.from_json_dict(r.json())

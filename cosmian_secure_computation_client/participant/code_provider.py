@@ -11,7 +11,6 @@ from cosmian_secure_computation_client.util.fs import tar
 from cosmian_secure_computation_client.participant.base import BaseAPI
 from cosmian_secure_computation_client.side import Side
 from cosmian_secure_computation_client.crypto.context import CryptoContext
-from cosmian_secure_computation_client.computations import Computation
 
 
 class CodeProviderAPI(BaseAPI):
@@ -70,7 +69,7 @@ class CodeProviderAPI(BaseAPI):
 
         return r.json()
 
-    def reset(self, computation_uuid: str) -> Computation:
+    def reset(self, computation_uuid: str) -> None:
         """Delete the Python code of `computation_uuid` on Cosmian's backend."""
         self.log.info("Reset code sent")
         r: requests.Response = reset_code(conn=self.conn,
@@ -79,5 +78,3 @@ class CodeProviderAPI(BaseAPI):
         if not r.ok:
             raise Exception(
                 f"Unexpected response ({r.status_code}): {r.content!r}")
-
-        return Computation.from_json_dict(r.json())
