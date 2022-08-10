@@ -11,6 +11,7 @@ from cosmian_secure_computation_client.util.fs import tar
 from cosmian_secure_computation_client.participant.base import BaseAPI
 from cosmian_secure_computation_client.side import Side
 from cosmian_secure_computation_client.crypto.context import CryptoContext
+from cosmian_secure_computation_client.util.entrypoint import validate_entrypoint
 
 
 class CodeProviderAPI(BaseAPI):
@@ -39,6 +40,9 @@ class CodeProviderAPI(BaseAPI):
         """Send your Python code encrypted on a specific `computation_uuid`."""
         if not (directory_path / "run.py").exists():
             raise FileNotFoundError("Entrypoint 'run.py' not found!")
+
+        self.log.debug("Checking run.py content...")
+        validate_entrypoint(directory_path / "run.py")
 
         enc_directory_path: Path = (Path(tempfile.gettempdir()) / "cscc" /
                                     f"{computation_uuid}" / directory_path.name)
