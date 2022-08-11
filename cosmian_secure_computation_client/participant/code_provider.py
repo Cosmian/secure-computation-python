@@ -2,7 +2,7 @@
 
 from pathlib import Path
 import tempfile
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import requests
 
@@ -34,13 +34,12 @@ class CodeProviderAPI(BaseAPI):
             )
         super().__init__(token, ctx)
 
-    def upload_code(
-            self,
-            computation_uuid: str,
-            directory_path: Path,
-            patterns: Optional[List[str]] = None,
-            file_exceptions: Optional[List[str]] = None,
-            dir_exceptions: Optional[List[str]] = None) -> Dict[str, str]:
+    def upload_code(self,
+                    computation_uuid: str,
+                    directory_path: Path,
+                    patterns: Optional[List[str]] = None,
+                    file_exceptions: Optional[List[str]] = None,
+                    dir_exceptions: Optional[List[str]] = None) -> None:
         """Send your Python code encrypted on a specific `computation_uuid`."""
         if not (directory_path / "run.py").exists():
             raise FileNotFoundError("Entrypoint 'run.py' not found!")
@@ -74,8 +73,6 @@ class CodeProviderAPI(BaseAPI):
         if not r.ok:
             raise Exception(
                 f"Unexpected response ({r.status_code}): {r.content!r}")
-
-        return r.json()
 
     def reset(self, computation_uuid: str) -> None:
         """Delete the Python code of `computation_uuid` on Cosmian's backend."""
