@@ -25,7 +25,11 @@ class ResultConsumerAPI(BaseAPI):
 
     def __init__(self, token: str, ctx: CryptoContext) -> None:
         """Init constructor of ResultConsumerAPI."""
-        super().__init__(Side.ResultConsumer, token, ctx)
+        if ctx.side != Side.ResultConsumer:
+            raise Exception(
+                f"Can't create {self.__class__} with CryptoContext side {ctx.side}"
+            )
+        super().__init__(token, ctx)
 
     def fetch_result(self, computation_uuid: str) -> Optional[bytes]:
         """Download the result of the computation if available."""

@@ -28,7 +28,11 @@ class CodeProviderAPI(BaseAPI):
 
     def __init__(self, token: str, ctx: CryptoContext) -> None:
         """Init constructor of CodeProviderAPI."""
-        super().__init__(Side.CodeProvider, token, ctx)
+        if ctx.side != Side.CodeProvider:
+            raise Exception(
+                f"Can't create {self.__class__} with CryptoContext side {ctx.side}"
+            )
+        super().__init__(token, ctx)
 
     def upload_code(
             self,

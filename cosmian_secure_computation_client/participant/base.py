@@ -17,7 +17,6 @@ from cosmian_secure_computation_client.computations import (Computation,
                                                             EnclaveIdentity)
 from cosmian_secure_computation_client.crypto.context import CryptoContext
 from cosmian_secure_computation_client.log import LOGGER
-from cosmian_secure_computation_client.side import Side
 
 
 class BaseAPI:
@@ -25,8 +24,6 @@ class BaseAPI:
 
     Parameters
     ----------
-    side : Side
-        Either Side.CodeProvider, Side.DataProvider or Side.ResultConsumer.
     token : str
         Refresh token to authenticate with Cosmian's backend.
     ctx : CryptoContext
@@ -34,8 +31,6 @@ class BaseAPI:
 
     Attributes
     ----------
-    side : Side
-        Either Side.CodeProvider, Side.DataProvider or Side.ResultConsumer.
     token : str
         Refresh token to authenticate with Cosmian's backend.
     ctx : CryptoContext
@@ -45,22 +40,21 @@ class BaseAPI:
 
     """
 
-    def __init__(self, side: Side, token: str, ctx: CryptoContext) -> None:
+    def __init__(self, token: str, ctx: CryptoContext) -> None:
         """Init constructor of BaseAPI."""
-        self.side: Side = side
         self.ctx: CryptoContext = ctx
         self.conn = Connection(base_url=os.getenv(
             'COSMIAN_BASE_URL', default="https://backend.cosmian.com"),
                                refresh_token=token)
         self.log = logging.getLogger(
-            f"cscc.{side}.{self.ctx.fingerprint.hex()}")
+            f"cscc.{ctx.side}.{self.ctx.fingerprint.hex()}")
         self.log.setLevel(LOGGER.level)
 
     def register(self, computation_uuid: str) -> None:
         """Send your public key and role for a specific `computation_uuid`."""
         r: requests.Response = register(conn=self.conn,
                                         computation_uuid=computation_uuid,
-                                        side=self.side,
+                                        side=self.ctx.side,
                                         public_key=self.ctx.public_key)
 
         if not r.ok:
@@ -108,7 +102,7 @@ class BaseAPI:
         r: requests.Response = key_provisioning(
             conn=self.conn,
             computation_uuid=computation_uuid,
-            side=self.side,
+            side=self.ctx.side,
             sealed_symmetric_key=sealed_symmetric_key)
         self.log.info("Key provisionning done")
 
