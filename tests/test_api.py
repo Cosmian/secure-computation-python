@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import hashlib
-# from pprint import pprint
 import pytest
 from typing import Optional
 
@@ -24,23 +23,19 @@ class TestAPI:
         return State(enclave_public_key=None)
 
     @staticmethod
-    def test_register(computation_uuid, cp, dp1, dp2, rc):
+    def test_register(computation_uuid, cp, dp1, rc):
         cp.register(computation_uuid)
         dp1.register(computation_uuid)
-        # dp2.register(computation_uuid)
         rc.register(computation_uuid)
 
         computation = cp.get_computation(computation_uuid)
 
         assert computation.code_provider.public_key is not None
         assert computation.data_providers[0].public_key is not None  # dp1
-        # assert computation.data_providers[1].public_key is not None  # dp2
         assert computation.result_consumers[0].public_key is not None
 
         assert bytes.fromhex(computation.code_provider.public_key.content) == CP_ED25519_PUBKEY
         assert bytes.fromhex(computation.data_providers[0].public_key.content) == DP1_ED25519_PUBKEY
-        # assert bytes.fromhex(
-        #     computation.data_providers[1].public_key.content) == DP2_ED25519_PUBKEY
         assert bytes.fromhex(
             computation.result_consumers[0].public_key.content) == RC_ED25519_PUBKEY
 
@@ -55,7 +50,7 @@ class TestAPI:
         assert computation.code_provider.code_uploaded_at is not None
 
     @staticmethod
-    def test_dp_download(tmp_path_factory, computation_uuid, dp1, dp2):
+    def test_dp_download(tmp_path_factory, computation_uuid, dp1):
         out_dir_path = tmp_path_factory.mktemp("code")
         tar_path = dp1.download_code(
             computation_uuid=computation_uuid,
@@ -77,7 +72,6 @@ class TestAPI:
 
         quote = computation.enclave.identity.quote
         response = azure_remote_attestation(quote)
-        # pprint(response)
 
         assert response["tee"] == "sgx"
         assert response["x-ms-sgx-is-debuggable"] is False
@@ -91,26 +85,21 @@ class TestAPI:
         print(f"SHA-256(Enclave pk): {hash_enclave_pk.hex()}")
         print(f"Report User Data: {response['x-ms-sgx-report-data']}")
 
-    def test_dp_upload(self, computation_uuid, dp1, dp1_root_path, dp2, dp2_root_path):
+    def test_dp_upload(self, computation_uuid, dp1, dp1_root_path, dp2_root_path):
         dp1.upload_files(computation_uuid=computation_uuid,
                          paths=dp1_root_path.glob("*"))
         dp1.upload_files(computation_uuid=computation_uuid,
                          paths=dp2_root_path.glob("*"))
-        # dp2.upload_files(computation_uuid=computation_uuid,
-        #                  paths=dp2_root_path.glob("*"))
         dp1.done(computation_uuid)
-        # dp2.done(computation_uuid)
 
     @staticmethod
-    def test_key_provisioning(state, computation_uuid, cp, dp1, dp2, rc):
+    def test_key_provisioning(state, computation_uuid, cp, dp1, rc):
         assert state.enclave_public_key is not None
 
         cp.key_provisioning(computation_uuid=computation_uuid,
                             enclave_public_key=state.enclave_public_key)
         dp1.key_provisioning(computation_uuid=computation_uuid,
                              enclave_public_key=state.enclave_public_key)
-        # dp2.key_provisioning(computation_uuid=computation_uuid,
-        #                      enclave_public_key=enclave_public_key)
         rc.key_provisioning(computation_uuid=computation_uuid,
                             enclave_public_key=state.enclave_public_key)
 
