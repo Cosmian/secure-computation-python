@@ -15,6 +15,7 @@ class State:
     enclave_public_key: Optional[bytes]
 
 
+@pytest.mark.slow
 @pytest.mark.incremental
 class TestAPI:
     @staticmethod

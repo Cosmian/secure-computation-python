@@ -165,7 +165,7 @@ test_unit:
     - pip install -r requirements-dev.txt
     - pip install .
   script:
-    - pytest 
+    - pytest -m "not slow"
 
 test_e2e:
   stage: test_e2e
