@@ -55,6 +55,15 @@ class TestAPI:
         assert computation.code_provider.code_uploaded_at is not None
 
     @staticmethod
+    def test_dp_download(tmp_path_factory, computation_uuid, dp1, dp2):
+        out_dir_path = tmp_path_factory.mktemp("code")
+        tar_path = dp1.download_code(
+            computation_uuid=computation_uuid,
+            directory_path=out_dir_path)
+
+        print(f"Code downloaded to: {tar_path}")
+
+    @staticmethod
     def test_identity_and_remote_attestation(state, computation_uuid, cp):
         enclave_public_key: bytes = cp.wait_for_enclave_identity(computation_uuid)
         state.enclave_public_key = enclave_public_key
