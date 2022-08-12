@@ -39,7 +39,7 @@ class CodeProviderAPI(BaseAPI):
                     directory_path: Path,
                     patterns: Optional[List[str]] = None,
                     file_exceptions: Optional[List[str]] = None,
-                    dir_exceptions: Optional[List[str]] = None) -> None:
+                    dir_exceptions: Optional[List[str]] = None) -> Path:
         """Send your Python code encrypted on a specific `computation_uuid`."""
         if not (directory_path / "run.py").exists():
             raise FileNotFoundError("Entrypoint 'run.py' not found!")
@@ -73,6 +73,8 @@ class CodeProviderAPI(BaseAPI):
         if not r.ok:
             raise Exception(
                 f"Unexpected response ({r.status_code}): {r.content!r}")
+
+        return tar_path
 
     def reset(self, computation_uuid: str) -> None:
         """Delete the Python code of `computation_uuid` on Cosmian's backend."""
