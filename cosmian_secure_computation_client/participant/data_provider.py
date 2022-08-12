@@ -25,7 +25,11 @@ class DataProviderAPI(BaseAPI):
 
     def __init__(self, token: str, ctx: CryptoContext) -> None:
         """Init constructor of DataProviderAPI."""
-        super().__init__(Side.DataProvider, token, ctx)
+        if ctx.side != Side.DataProvider:
+            raise Exception(
+                f"Can't create {self.__class__} with CryptoContext side {ctx.side}"
+            )
+        super().__init__(token, ctx)
 
     def upload_data(self, computation_uuid: str, data_name: str,
                     data: bytes) -> None:
