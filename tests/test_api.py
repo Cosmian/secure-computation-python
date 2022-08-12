@@ -12,6 +12,7 @@ from keys import *
 @dataclass
 class State:
     enclave_public_key: Optional[bytes]
+    compressed_code_hash: Optional[bytes]
 
 
 @pytest.mark.slow
@@ -20,7 +21,7 @@ class TestAPI:
     @staticmethod
     @pytest.fixture(autouse=True, scope="class")
     def state() -> State:
-        return State(enclave_public_key=None)
+        return State(enclave_public_key=None, compressed_code_hash=None)
 
     @staticmethod
     def test_register(computation_uuid, cp, dp1, rc):
@@ -40,23 +41,27 @@ class TestAPI:
             computation.result_consumers[0].public_key.content) == RC_ED25519_PUBKEY
 
     @staticmethod
-    def test_cp_upload(computation_uuid, cp, code_path):
-        cp.upload_code(
+    def test_cp_upload(state, computation_uuid, cp, code_path):
+        tar_path = cp.upload_code(
             computation_uuid=computation_uuid,
             directory_path=code_path)
+
+        state.compressed_code_hash = hashlib.sha256(tar_path.read_bytes()).digest()
 
         computation = cp.get_computation(computation_uuid)
 
         assert computation.code_provider.code_uploaded_at is not None
 
     @staticmethod
-    def test_dp_download(tmp_path_factory, computation_uuid, dp1):
+    def test_dp_download(state, tmp_path_factory, computation_uuid, dp1):
         out_dir_path = tmp_path_factory.mktemp("code")
         tar_path = dp1.download_code(
             computation_uuid=computation_uuid,
             directory_path=out_dir_path)
 
-        print(f"Code downloaded to: {tar_path}")
+        assert state.compressed_code_hash is not None
+        compressed_code_hash = hashlib.sha256(tar_path.read_bytes()).digest()
+        assert compressed_code_hash == state.compressed_code_hash
 
     @staticmethod
     def test_identity_and_remote_attestation(state, computation_uuid, cp):
