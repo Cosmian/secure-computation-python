@@ -170,8 +170,18 @@ test_unit:
 test_e2e:
   stage: test_e2e
   rules:
-   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-     when: on_success
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: on_success
+  variables:
+    # We can assume CSCC_BRANCH is the current branch
+    # We assume the value for ENCLAVE_HTTP_BRANCH and BACKEND_BRANCH is develop
+    # But e2e is manual so anyone can override them if needed 
+    CSCC_BRANCH: "${CI_COMMIT_REF_NAME}"
+    ENCLAVE_HTTP_BRANCH: develop
+    BACKEND_BRANCH: develop
   trigger:
     project: "core/cosmian-secure-computation-e2e"
     strategy: depend
+    forward:
+      pipeline_variables: false
+      yaml_variables: true
