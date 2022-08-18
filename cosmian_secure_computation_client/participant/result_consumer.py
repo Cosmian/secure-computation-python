@@ -25,21 +25,24 @@ class ResultConsumerAPI(BaseAPI):
 
     def __init__(self, token: str, ctx: CryptoContext) -> None:
         """Init constructor of ResultConsumerAPI."""
-        super().__init__(Side.ResultConsumer, token, ctx)
+        if ctx.side != Side.ResultConsumer:
+            raise Exception(
+                f"Can't create {self.__class__} with CryptoContext side {ctx.side}"
+            )
+        super().__init__(token, ctx)
 
     def fetch_result(self, computation_uuid: str) -> Optional[bytes]:
         """Download the result of the computation if available."""
         self.log.debug("Result available")
         r: requests.Response = download_result(
-            conn=self.conn,
-            computation_uuid=computation_uuid
-        )
+            conn=self.conn, computation_uuid=computation_uuid)
 
         if r.status_code == requests.codes["accepted"]:
             return None
 
         if not r.ok:
-            raise Exception(f"Unexpected response ({r.status_code}): {r.content!r}")
+            raise Exception(
+                f"Unexpected response ({r.status_code}): {r.content!r}")
 
         encrypted_result: bytes
         try:
@@ -65,8 +68,9 @@ class ResultConsumerAPI(BaseAPI):
             if comp.runs.current is None and len(comp.runs.previous) == 1:
                 run = comp.runs.previous[0]
                 if run.exit_code != 0:
-                    raise Exception("Execution failed: "
-                                    f"{(run.exit_code, run.stdout, run.stderr)}")
+                    raise Exception(
+                        "Execution failed: "
+                        f"{(run.exit_code, run.stdout, run.stderr)}")
                 return cast(bytes, self.fetch_result(computation_uuid))
 
             time.sleep(sleep_duration)

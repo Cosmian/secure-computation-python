@@ -1,6 +1,17 @@
 """cosmian_secure_computation_client.util.base64url module."""
 
 import base64
+import json
+
+
+class Base64Encoder(json.JSONEncoder):
+    """Encode bytes to base64 in JSON serialization."""
+
+    def default(self, o):
+        """Implement default method."""
+        if isinstance(o, bytes):
+            return base64.b64encode(o).decode()
+        return json.JSONEncoder.default(self, o)
 
 
 def base64url_encode(value: bytes) -> str:

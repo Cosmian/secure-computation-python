@@ -4,6 +4,8 @@ stages:
   - lint
   - build
   - test
+  - test_e2e
+
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -24,6 +26,17 @@ workflow:
     - if: $CI_COMMIT_BRANCH
     # Run pipeline for tags
     - if: $CI_COMMIT_TAG
+
+code_format:
+  stage: lint
+  before_script:
+    - python --version
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements-dev.txt
+  script:
+    - yapf -d -r cosmian_secure_computation_client/
 
 code_style:
   stage: lint
@@ -49,7 +62,7 @@ doc_style:
     - pip install -r requirements-dev.txt
     - pip install .
   script:
-    - pycodestyle cosmian_secure_computation_client/
+    - pydocstyle cosmian_secure_computation_client/
 
 static_analysis:
   stage: lint
@@ -76,11 +89,24 @@ type_check:
     - pip install .
   script:
     - mypy cosmian_secure_computation_client/
-  allow_failure: true
 
 doc:
   stage: build
+  rules:
+    # Deploy on prod on tag
+    - if: '$CI_COMMIT_TAG =~ /^\d+.\d+.\d+$/'
+      variables:
+        REMOTE_HOST: "ui.prod.sc.cosmian.com"
+    # Deploy on test on develop
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      variables:
+        REMOTE_HOST: "ui.test.sc.cosmian.com"
+        CI_COMMIT_TAG: "dev"
+    - when: on_success
+  allow_failure: false
   before_script:
+    - apt update -y
+    - apt install -y ssh
     - python --version
     - pip install virtualenv
     - virtualenv venv
@@ -89,6 +115,15 @@ doc:
   script:
     - sphinx-build docs docs/_build -E -a -W
     - mkdir html/ && mv docs/_build/* html/
+    - echo $CI_COMMIT_TAG
+    - echo $REMOTE_HOST
+    - >
+      if ! [ -z "$REMOTE_HOST" ]; then
+        ssh cosmian@$REMOTE_HOST "rm -fr /var/www/documentation_root/secure_computation/python-versions/${CI_COMMIT_TAG}"
+        scp -r html cosmian@$REMOTE_HOST:/var/www/documentation_root/secure_computation/python-versions/${CI_COMMIT_TAG}
+        ssh cosmian@$REMOTE_HOST "unlink /var/www/documentation_root/secure_computation/python || true"
+        ssh cosmian@$REMOTE_HOST "ln -s /var/www/documentation_root/secure_computation/python-versions/${CI_COMMIT_TAG} /var/www/documentation_root/secure_computation/python"
+      fi
   artifacts:
     name: "documentation"
     paths:
@@ -119,41 +154,34 @@ release_wheel:
     paths:
       - dist/*.whl
 
-test_e2e_dev:
-  image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
+test_unit:
   stage: test
-  rules:
-    # Don't run on branch master and tags
-    - if: $CI_COMMIT_BRANCH == 'master' || $CI_COMMIT_TAG
-      when: never
-    # Don't run on MR targeting master
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == 'master'
-      when: never
-    # Otherwise, run
-    - when: always
-  variables:
-    BACKEND_BRANCH: develop
-    ENCLAVE_IMAGE: enclave-http_test:latest
-    PYTHON_CLIENT_BRANCH: $CI_COMMIT_REF_NAME
-  tags: [sgx]
+  before_script:
+    - python --version
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
+    - pip install .
   script:
-    - secure_computation_e2e
+    - pytest -m "not slow"
 
-test_e2e_prod:
-  image: gitlab.cosmian.com:5000/core/secure-computation-e2e:master
-  stage: test
+test_e2e:
+  stage: test_e2e
   rules:
-    # Run on MR targeting master
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == 'master'
-      allow_failure: false
-    # Manual on other MR
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != 'master'
-      when: manual
-      allow_failure: true
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: on_success
   variables:
-    BACKEND_BRANCH: main
-    ENCLAVE_IMAGE: enclave-http:latest
-    PYTHON_CLIENT_BRANCH: $CI_COMMIT_REF_NAME
-  tags: [sgx]
-  script:
-    - secure_computation_e2e
+    # We can assume CSCC_BRANCH is the current branch
+    # We assume the value for ENCLAVE_HTTP_BRANCH and BACKEND_BRANCH is develop
+    # But e2e is manual so anyone can override them if needed 
+    CSCC_BRANCH: "${CI_COMMIT_REF_NAME}"
+    ENCLAVE_HTTP_BRANCH: develop
+    BACKEND_BRANCH: develop
+  trigger:
+    project: "core/cosmian-secure-computation-e2e"
+    strategy: depend
+    forward:
+      pipeline_variables: false
+      yaml_variables: true
