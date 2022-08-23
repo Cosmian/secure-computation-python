@@ -2,7 +2,7 @@
 
 from pathlib import Path
 import tempfile
-from typing import List, Optional
+from typing import List, Optional, Set
 
 import requests
 
@@ -52,11 +52,13 @@ class CodeProviderAPI(BaseAPI):
 
         self.log.debug("Encrypt code in %s to %s...", directory_path,
                        enc_directory_path)
+
+        whitelist: Set[str] = {"run.py", "requirements.txt"}
         self.ctx.encrypt_directory(
             dir_path=directory_path,
             patterns=(["*"] if patterns is None else patterns),
-            exceptions=(["run.py"] if file_exceptions is None else
-                        file_exceptions + ["run.py"]),
+            exceptions=(list(whitelist) if file_exceptions is None else
+                        list(set(file_exceptions) | whitelist)),
             dir_exceptions=([] if dir_exceptions is None else dir_exceptions),
             out_dir_path=enc_directory_path)
         tar_path = tar(dir_path=enc_directory_path,
