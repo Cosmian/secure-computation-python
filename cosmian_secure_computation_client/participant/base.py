@@ -12,9 +12,11 @@ from cosmian_secure_computation_client.api.provider import (computation,
                                                             computations,
                                                             download_code,
                                                             key_provisioning,
-                                                            register)
-from cosmian_secure_computation_client.computations import (Computation,
-                                                            EnclaveIdentity)
+                                                            status, register)
+from cosmian_secure_computation_client.computations import (
+    Computation,
+    ComputationStatus,
+)
 from cosmian_secure_computation_client.crypto.context import CryptoContext
 from cosmian_secure_computation_client.log import LOGGER
 
@@ -75,6 +77,16 @@ class BaseAPI:
 
         return Computation.from_json_dict(r.json())
 
+    def get_status(self, computation_uuid: str) -> ComputationStatus:
+        """Retrieve computation status related to `computation_uuid`."""
+        r: requests.Response = status(conn=self.conn,
+                                      computation_uuid=computation_uuid)
+        if not r.ok:
+            raise Exception(
+                f"Unexpected response ({r.status_code}): {r.content!r}")
+
+        return ComputationStatus.from_json_dict(r.json())
+
     def get_computations(self) -> List[Computation]:
         """Retriveve all computations related to your account."""
         r: requests.Response = computations(conn=self.conn)
@@ -114,18 +126,20 @@ class BaseAPI:
                                   computation_uuid: str,
                                   sleep_duration: int = 10) -> bytes:
         """Wait for enclave's public key to be available."""
-        comp = self.get_computation(computation_uuid)
+        current_status = self.get_status(computation_uuid)
 
         self.log.info("Waiting for enclave's identity...")
-        while comp.enclave.identity is None:
+        while not current_status.has_enclave_identity():
             time.sleep(float(sleep_duration))
-            comp = self.get_computation(computation_uuid)
+            current_status = self.get_status(computation_uuid)
+
+        comp = self.get_computation(computation_uuid)
 
         enclave_public_key: bytes
-        if isinstance(comp.enclave.identity, EnclaveIdentity):
+        if comp.enclave.identity:
             enclave_public_key = comp.enclave.identity.public_key
         else:
-            raise Exception(f"Failed to lock enclave: {comp.enclave.identity}")
+            raise Exception(f"Failed to lock enclave: {comp.enclave}")
 
         self.log.info("Enclave's identity generated: %s",
                       enclave_public_key.hex()[:16])

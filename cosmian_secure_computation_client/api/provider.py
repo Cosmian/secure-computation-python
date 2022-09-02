@@ -33,6 +33,11 @@ def computation(conn: Connection, computation_uuid: str) -> requests.Response:
     return conn.get(url=f"/computations/{computation_uuid}")
 
 
+def status(conn: Connection, computation_uuid: str) -> requests.Response:
+    """GET `/computations/{computation_uuid}/status` (for CP, DP and RC)."""
+    return conn.get(url=f"/computations/{computation_uuid}/status")
+
+
 def register(conn: Connection, computation_uuid: str, side: Side,
              public_key: bytes) -> requests.Response:
     """POST `/computations/{computation_uuid}/register` (for CP, DP and RC)."""

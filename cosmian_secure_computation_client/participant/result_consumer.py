@@ -6,6 +6,7 @@ from typing import Optional, cast
 import requests
 
 from cosmian_secure_computation_client.api.provider import download_result
+from cosmian_secure_computation_client.computations import EnclaveStateType
 from cosmian_secure_computation_client.participant.base import BaseAPI
 from cosmian_secure_computation_client.side import Side
 from cosmian_secure_computation_client.crypto.context import CryptoContext
@@ -62,15 +63,13 @@ class ResultConsumerAPI(BaseAPI):
                     sleep_duration: int = 30) -> bytes:
         """Wait for the result to be available and fetch it."""
         self.log.info("Waiting for result...")
-        while True:
-            comp = self.get_computation(computation_uuid)
-
-            if comp.runs.current is None and len(comp.runs.previous) == 1:
-                run = comp.runs.previous[0]
-                if run.exit_code != 0:
-                    raise Exception(
-                        "Execution failed: "
-                        f"{(run.exit_code, run.stdout, run.stderr)}")
-                return cast(bytes, self.fetch_result(computation_uuid))
-
+        status = self.get_status(computation_uuid)
+        while not status.has_result():
             time.sleep(sleep_duration)
+            status = self.get_status(computation_uuid)
+
+        if status.enclave_state == EnclaveStateType.Failure:
+            raise Exception("Execution failed: "
+                            f"{status.enclave_state}")
+
+        return cast(bytes, self.fetch_result(computation_uuid))

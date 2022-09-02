@@ -44,25 +44,7 @@ Response
   :undoc-members:
   :exclude-members: from_json_dict
 
-.. autoclass:: cosmian_secure_computation_client.EnclaveIdentityLockError
-  :members:
-  :member-order: bysource
-  :undoc-members:
-  :exclude-members: from_json_dict
-
-.. autoclass:: cosmian_secure_computation_client.Runs
-  :members:
-  :member-order: bysource
-  :undoc-members:
-  :exclude-members: from_json_dict
-
-.. autoclass:: cosmian_secure_computation_client.CurrentRun
-  :members:
-  :member-order: bysource
-  :undoc-members:
-  :exclude-members: from_json_dict
-
-.. autoclass:: cosmian_secure_computation_client.PreviousRun
+.. autoclass:: cosmian_secure_computation_client.Run
   :members:
   :member-order: bysource
   :undoc-members:
@@ -75,6 +57,30 @@ Response
   :exclude-members: from_json_dict
 
 .. autoclass:: cosmian_secure_computation_client.Role
+  :members:
+  :member-order: bysource
+  :undoc-members:
+  :exclude-members: from_json_dict
+
+.. autoclass:: cosmian_secure_computation_client.ComputationStatus
+  :members:
+  :member-order: bysource
+  :undoc-members:
+  :exclude-members: from_json_dict
+
+.. autoclass:: cosmian_secure_computation_client.ComputationStatusType
+  :members:
+  :member-order: bysource
+  :undoc-members:
+  :exclude-members: from_json_dict
+
+.. autoclass:: cosmian_secure_computation_client.EnclaveState
+  :members:
+  :member-order: bysource
+  :undoc-members:
+  :exclude-members: from_json_dict
+  
+.. autoclass:: cosmian_secure_computation_client.EnclaveStateType
   :members:
   :member-order: bysource
   :undoc-members:
