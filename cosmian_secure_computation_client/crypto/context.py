@@ -68,7 +68,8 @@ class CryptoContext:
         self._symkey: bytes = symkey if symkey else random_symkey()
         self._words: Tuple[str, str, str] = (parse_words(words) if isinstance(
             words, str) else words)
-        self.preshared_sk: bytes = derive_psk(self._words)
+        self.preshared_sk: bytes = derive_psk(words=self._words,
+                                              salt=self.computation_uuid.bytes)
 
     @classmethod
     def from_path(cls, computation_uuid: str, side: Side,

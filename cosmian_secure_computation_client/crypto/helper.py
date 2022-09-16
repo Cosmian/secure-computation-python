@@ -471,13 +471,15 @@ def random_symkey() -> bytes:
     return nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE)
 
 
-def derive_psk(words: Tuple[str, str, str]) -> bytes:
+def derive_psk(words: Tuple[str, str, str], salt: bytes = b"") -> bytes:
     """Derive the pre-shared secret from BIP39 mnemonic wordlist.
 
     Parameters
     ----------
     words: Tuple[str, str, str]
         Triple of 3 words from BIP39 mnemonic wordlist.
+    salt: bytes
+        Cryptographic salt used as additional input to the hash function.
 
     Returns
     -------
@@ -491,7 +493,7 @@ def derive_psk(words: Tuple[str, str, str]) -> bytes:
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
-        salt=b"csc",
+        salt=hashlib.sha256(salt).digest(),
         iterations=390000,
     )
 
