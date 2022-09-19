@@ -17,11 +17,11 @@ setup(name="cosmian_secure_computation_client",
       packages=find_packages(),
       zip_safe=True,
       install_requires=[
-          "requests>=2.27.0,<3.0.0", "pynacl>=1.5.0,<1.6.0",
-          "cryptography>=36.0.2,<37.0.0", "pyjwt>=2.3.0,<2.4.0",
-          "urllib3>=1.26.9,<1.27.0"
+          "requests>=2.28.1,<3.0.0", "pynacl>=1.5.0,<1.6.0",
+          "cryptography>=38.0.1,<39.0.0", "pyjwt>=2.5.0,<2.6.0",
+          "urllib3>=1.26.12,<1.27.0"
       ],
-      tests_require=["pytest>=7.0.1,<8.0.0"],
+      tests_require=["pytest>=7.1.3,<7.2.0"],
       classifiers=[
           "Development Status :: 5 - Production/Stable",
           "Environment :: Console", "License :: OSI Approved :: MIT License",
