@@ -204,29 +204,34 @@ class ComputationStatus:
 
     def has_enclave_identity(self) -> bool:
         """Check if the status means that the computation has an identity."""
-        if self.status != ComputationStatusType.Started:
+        if self.status in (ComputationStatusType.Archived,
+                           ComputationStatusType.Removed):
+            raise Exception(f"Computation is {self.status}")
+
+        if self.status != ComputationStatusType.Started or not self.enclave_state:
             return False
 
-        if not self.enclave_state:
-            return False
+        if self.enclave_state.state == EnclaveStateType.Failure:
+            raise Exception("Enclave identity generation failed with status: "
+                            f"{self.enclave_state}")
 
-        enclave_state: EnclaveState = self.enclave_state
-
-        return enclave_state.state not in (EnclaveStateType.Init,
-                                           EnclaveStateType.IdentityProcessing)
+        return self.enclave_state.state not in (
+            EnclaveStateType.Init, EnclaveStateType.IdentityProcessing)
 
     def has_result(self) -> bool:
         """Check if the status means that the computation has an run result."""
-        if self.status != ComputationStatusType.Started:
+        if self.status in (ComputationStatusType.Archived,
+                           ComputationStatusType.Removed):
+            raise Exception(f"Computation is {self.status}")
+
+        if self.status != ComputationStatusType.Started or not self.enclave_state:
             return False
 
-        if not self.enclave_state:
-            return False
+        if self.enclave_state.state == EnclaveStateType.Failure:
+            raise Exception("Enclave run failed with status: "
+                            f"{self.enclave_state}")
 
-        enclave_state: EnclaveState = self.enclave_state
-
-        return enclave_state.state in (EnclaveStateType.Success,
-                                       EnclaveStateType.Failure)
+        return self.enclave_state.state == EnclaveStateType.Success
 
     @staticmethod
     def from_json_dict(json):
