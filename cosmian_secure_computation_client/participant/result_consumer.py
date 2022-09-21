@@ -6,7 +6,6 @@ from typing import Optional, cast
 import requests
 
 from cosmian_secure_computation_client.api.provider import download_result
-from cosmian_secure_computation_client.computations import EnclaveStateType
 from cosmian_secure_computation_client.participant.base import BaseAPI
 from cosmian_secure_computation_client.side import Side
 from cosmian_secure_computation_client.crypto.context import CryptoContext
@@ -67,9 +66,5 @@ class ResultConsumerAPI(BaseAPI):
         while not status.has_result():
             time.sleep(sleep_duration)
             status = self.get_status(computation_uuid)
-
-        if status.enclave_state == EnclaveStateType.Failure:
-            raise Exception("Execution failed: "
-                            f"{status.enclave_state}")
 
         return cast(bytes, self.fetch_result(computation_uuid))
