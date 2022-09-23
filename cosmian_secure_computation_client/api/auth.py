@@ -176,7 +176,8 @@ def get_access_token(url: str, refresh_token: str) -> str:
                                 json={
                                     "type": "refresh_token",
                                     "refresh_token": refresh_token,
-                                })
+                                },
+                                timeout=30)
 
     if not r.ok:
         raise Exception(
