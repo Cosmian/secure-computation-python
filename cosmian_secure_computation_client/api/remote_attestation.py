@@ -43,7 +43,8 @@ def microsoft_azure_attest(
     response = requests.post(
         url="https://sharedneu.neu.attest.azure.net/attest/SgxEnclave",
         params={"api-version": "2020-10-01"},
-        json=payload)
+        json=payload,
+        timeout=30)
 
     response.raise_for_status()
 
@@ -52,7 +53,8 @@ def microsoft_azure_attest(
 
 def microsoft_signing_certs() -> Dict[str, Any]:
     """Retrieve Microsoft certificates to check Azure remote attestation."""
-    response = requests.get(url="https://sharedneu.neu.attest.azure.net/certs",)
+    response = requests.get(url="https://sharedneu.neu.attest.azure.net/certs",
+                            timeout=30)
 
     return response.json()
 
