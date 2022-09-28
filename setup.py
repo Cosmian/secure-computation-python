@@ -5,7 +5,7 @@ from pathlib import Path
 from setuptools import setup, find_packages
 
 setup(name="cosmian_secure_computation_client",
-      version="0.5b1",
+      version="0.5.0",
       url="https://cosmian.com",
       license="MIT",
       author="Cosmian Tech",
