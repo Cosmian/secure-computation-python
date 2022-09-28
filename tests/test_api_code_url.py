@@ -43,12 +43,9 @@ class TestAPI:
                             ) == RC_ED25519_PUBKEY
 
     @staticmethod
-    def test_cp_upload(state, computation_uuid, cp, code_path):
-        tar_path = cp.upload_code(computation_uuid=computation_uuid,
-                                  directory_path=code_path)
-
-        state.compressed_code_hash = hashlib.sha256(
-            tar_path.read_bytes()).digest()
+    def test_cp_upload_git_url(state, computation_uuid, cp):
+        cp.upload_code_from_git(computation_uuid=computation_uuid,
+                                git_url="https://github.com/Cosmian/csc-csv-merge")
 
         computation = cp.get_computation(computation_uuid)
 

@@ -1,7 +1,7 @@
 """cosmian_secure_computation_client.computations module."""
 
 from dataclasses import dataclass
-from typing import Optional, Dict, Union, List
+from typing import Optional, Dict, List
 from enum import Enum
 
 import inspect
@@ -109,7 +109,6 @@ class ResultConsumer:
 class EnclaveIdentity:
     """Subdict in Computation.enclave.identity."""
 
-    status: str
     public_key: bytes
     # Some endpoints omit the manifest in the response for performance reasons,
     # please call `get_computation()` to fetch it
@@ -125,89 +124,124 @@ class EnclaveIdentity:
 
 
 @dataclass(frozen=True)
-class EnclaveIdentityLockError:
-    """Subdict in Computation.enclave.identity."""
-
-    status: str
-    stdout: str
-    stderr: str
-
-    @staticmethod
-    def from_json_dict(json):
-        """Construct dataclass from dict."""
-        return construct_dataclass(EnclaveIdentityLockError, json)
-
-
-@dataclass(frozen=True)
 class Enclave:
     """Subdict in Computation.enclave."""
 
-    identity: Optional[Union[EnclaveIdentity, EnclaveIdentityLockError]]
+    identity: Optional[EnclaveIdentity]
 
     @staticmethod
     def from_json_dict(json):
         """Construct dataclass from dict."""
         if json['identity'] is not None:
-            if json['identity']['status'] == "Locked":
-                json['identity'] = EnclaveIdentity.from_json_dict(
-                    json['identity'])
-            elif json['identity']['status'] == "Failed":
-                json['identity'] = EnclaveIdentityLockError.from_json_dict(
-                    json['identity'])
-            else:
-                raise ValueError(
-                    f"Invalid status {json['identity']['status']} for enclave identity "
-                    "('Locked' or 'Failed' expected). Maybe update your client?"
-                )
+            json['identity'] = EnclaveIdentity.from_json_dict(json['identity'])
 
         return construct_dataclass(Enclave, json)
 
 
 @dataclass(frozen=True)
-class CurrentRun:
-    """Subdict in Comutation.runs.current."""
+class Run:
+    """Subdict in Computation.run."""
 
-    created_at: str
-
-    @staticmethod
-    def from_json_dict(json):
-        """Construct dataclass from dict."""
-        return construct_dataclass(CurrentRun, json)
-
-
-@dataclass(frozen=True)
-class PreviousRun:
-    """Subdict in Computation.runs.previous."""
-
+    uuid: str
     created_at: str
     ended_at: str
     exit_code: int
-    stdout: str
-    stderr: str
+    output: str
     results_fetches_datetimes_by_result_consumers_uuid: Dict[str, str]
 
     @staticmethod
     def from_json_dict(json):
         """Construct dataclass from dict."""
-        return construct_dataclass(PreviousRun, json)
+        return construct_dataclass(Run, json)
+
+
+class EnclaveStateType(Enum):
+    """State enum of an enclave."""
+
+    Init = "Init"
+    IdentityProcessing = "IdentityProcessing"
+    SetupInput = "SetupInput"
+    Running = "Running"
+    Success = "Success"
+    Failure = "Failure"
+
+    def __str__(self) -> str:
+        """Use name for string representation."""
+        return f"{self.name}"
 
 
 @dataclass(frozen=True)
-class Runs:
-    """Subdict in Computation.runs."""
+class EnclaveState:
+    """State of the computation enclave."""
 
-    current: Optional[CurrentRun]
-    previous: List[PreviousRun]
+    state: EnclaveStateType
+    inner: Optional[dict]
 
     @staticmethod
     def from_json_dict(json):
         """Construct dataclass from dict."""
-        json['current'] = (None if json['current'] is None else
-                           CurrentRun.from_json_dict(json['current']))
-        json['previous'] = list(
-            map(PreviousRun.from_json_dict, json['previous']))
+        if isinstance(json, dict):
+            state = next(iter(json))
+            return EnclaveState(EnclaveStateType[state], json[state])
+        return EnclaveState(EnclaveStateType[json], None)
 
-        return construct_dataclass(Runs, json)
+
+class ComputationStatusType(Enum):
+    """State enum of a computation."""
+
+    NotStarted = "NotStarted"
+    Archived = "Archived"
+    Removed = "Removed"
+    Started = "Started"
+
+
+@dataclass(frozen=True)
+class ComputationStatus:
+    """Status of the computation."""
+
+    status: ComputationStatusType
+    enclave_state: Optional[EnclaveState]
+
+    def has_enclave_identity(self) -> bool:
+        """Check if the status means that the computation has an identity."""
+        if self.status in (ComputationStatusType.Archived,
+                           ComputationStatusType.Removed):
+            raise Exception(f"Computation is {self.status}")
+
+        if self.status != ComputationStatusType.Started or not self.enclave_state:
+            return False
+
+        if self.enclave_state.state == EnclaveStateType.Failure:
+            raise Exception("Enclave identity generation failed with status: "
+                            f"{self.enclave_state}")
+
+        return self.enclave_state.state not in (
+            EnclaveStateType.Init, EnclaveStateType.IdentityProcessing)
+
+    def has_result(self) -> bool:
+        """Check if the status means that the computation has an run result."""
+        if self.status in (ComputationStatusType.Archived,
+                           ComputationStatusType.Removed):
+            raise Exception(f"Computation is {self.status}")
+
+        if self.status != ComputationStatusType.Started or not self.enclave_state:
+            return False
+
+        if self.enclave_state.state == EnclaveStateType.Failure:
+            raise Exception("Enclave run failed with status: "
+                            f"{self.enclave_state}")
+
+        return self.enclave_state.state == EnclaveStateType.Success
+
+    @staticmethod
+    def from_json_dict(json):
+        """Construct dataclass from dict."""
+        if isinstance(json, dict):
+            state = next(iter(json))
+            return ComputationStatus(ComputationStatusType[state],
+                                     EnclaveState.from_json_dict(json[state]))
+
+        return ComputationStatus(ComputationStatusType[json], None)
 
 
 @dataclass(frozen=True)
@@ -221,7 +255,7 @@ class Computation:
     data_providers: List[DataProvider]
     result_consumers: List[ResultConsumer]
     enclave: Enclave
-    runs: Runs
+    runs: List[Run]
     my_roles: List[Role]
     created_at: str
 
@@ -236,7 +270,7 @@ class Computation:
         json['result_consumers'] = list(
             map(ResultConsumer.from_json_dict, json['result_consumers']))
         json['enclave'] = Enclave.from_json_dict(json['enclave'])
-        json['runs'] = Runs.from_json_dict(json['runs'])
+        json['runs'] = list(map(Run.from_json_dict, json['runs']))
         json['my_roles'] = list(map(Role, json['my_roles']))
 
         return construct_dataclass(Computation, json)

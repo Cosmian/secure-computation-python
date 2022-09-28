@@ -119,6 +119,7 @@ doc:
     - echo $REMOTE_HOST
     - >
       if ! [ -z "$REMOTE_HOST" ]; then
+        ssh cosmian@$REMOTE_HOST "mkdir -p /var/www/documentation_root/secure_computation/python-versions"
         ssh cosmian@$REMOTE_HOST "rm -fr /var/www/documentation_root/secure_computation/python-versions/${CI_COMMIT_TAG}"
         scp -r html cosmian@$REMOTE_HOST:/var/www/documentation_root/secure_computation/python-versions/${CI_COMMIT_TAG}
         ssh cosmian@$REMOTE_HOST "unlink /var/www/documentation_root/secure_computation/python || true"

@@ -12,13 +12,14 @@ from cosmian_secure_computation_client.participant.result_consumer import (
     ResultConsumerAPI)
 from cosmian_secure_computation_client.computations import (
     Computation, Owner, CodeProvider, DataProvider, ResultConsumer, Enclave,
-    EnclaveIdentity, EnclaveIdentityLockError, Runs, CurrentRun, PreviousRun,
-    PublicKey, Role)
+    EnclaveIdentity, Run, PublicKey, Role, ComputationStatus,
+    ComputationStatusType, EnclaveStateType, EnclaveState)
 
 __all__ = [
     "azure_remote_attestation", "CryptoContext", "Side", "CodeProviderAPI",
     "ComputationOwnerAPI", "DataProviderAPI", "ResultConsumerAPI",
     "Computation", "Owner", "CodeProvider", "DataProvider", "ResultConsumer",
-    "Enclave", "EnclaveIdentity", "EnclaveIdentityLockError", "Runs",
-    "CurrentRun", "PreviousRun", "PublicKey", "Role"
+    "Enclave", "EnclaveIdentity", "Run", "PublicKey", "Role",
+    "ComputationStatus", "ComputationStatusType", "EnclaveStateType",
+    "EnclaveState"
 ]
